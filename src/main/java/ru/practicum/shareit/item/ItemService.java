@@ -36,4 +36,7 @@ public class ItemService {
     public Item getItem(long itemId) {
         return itemStorage.getItem(itemId);
     }
+
+    public Collection<Item> searchItem(String text) { return itemStorage.searchItem(text);
+    }
 }

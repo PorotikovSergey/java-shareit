@@ -5,9 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -34,5 +32,25 @@ public class ItemStorage {
 
     public Item patchItem(long id, Item newItem) {
         return items.replace(id, newItem);
+    }
+
+    public Collection<Item> searchItem(String text) {
+        Collection<Item> resultList = new ArrayList<>();
+        Collection<Item> itemList = items.values();
+        for (Item item: itemList) {
+            if(checkTextInDescriptionAndName(item, text)) {
+                resultList.add(item);
+            }
+        }
+        return resultList;
+    }
+
+//==================================================================
+
+    private boolean checkTextInDescriptionAndName(Item item, String text) {
+        String checkText = text.toLowerCase();
+        String description = item.getDescription().toLowerCase();
+        String name = item.getName().toLowerCase();
+        return description.contains(checkText) || name.contains(checkText);
     }
 }

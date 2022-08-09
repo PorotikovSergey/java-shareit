@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
 import lombok.Data;
+import lombok.NonNull;
+
 /**
  * // TODO .
  */

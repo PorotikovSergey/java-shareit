@@ -14,9 +14,10 @@ public class Item {
     private boolean available;
     private long ownerId = 0;
 
-    public Item(String name, String description) {
+    public Item(String name, String description, boolean available) {
         this.name = name;
         this.description = description;
+        this.available = available;
         this.id = ItemIdManager.getItemId();
     }
 }

@@ -44,4 +44,9 @@ public class ItemController {
     public Item getItem(@PathVariable long itemId) {
         return itemService.getItem(itemId);
     }
+
+    @GetMapping("/search?text={text}")
+    public Collection<Item> searchItem(@RequestParam String text) {
+        return itemService.searchItem(text);
+    }
 }
