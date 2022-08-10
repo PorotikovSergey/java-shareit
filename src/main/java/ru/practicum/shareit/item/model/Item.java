@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.Data;
-import ru.practicum.shareit.item.ItemIdManager;
 
 /**
  * // TODO .
@@ -18,6 +17,5 @@ public class Item {
         this.name = name;
         this.description = description;
         this.available = available;
-        this.id = ItemIdManager.getItemId();
     }
 }

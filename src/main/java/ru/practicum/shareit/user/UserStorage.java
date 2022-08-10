@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.ValidationException;
 
 import java.util.*;
@@ -20,6 +21,7 @@ public class UserStorage {
 
     public User addUser(User user) {
         validateUser(user);
+        user.setId(UserIdManager.getUserId());
         users.put(user.getId(), user);
         return user;
     }
@@ -34,7 +36,9 @@ public class UserStorage {
 
     public User patchUser(long id, User newUser) {
         validateUser(newUser);
-        return users.replace(id, newUser);
+        newUser.setId(id);
+        users.replace(id, newUser);
+        return newUser;
     }
 
 //=======================================================================
@@ -47,12 +51,15 @@ public class UserStorage {
             throw new ValidationException("Id юзера не может быть отрицательным. " +
                     "Вы пытаетесь задать id: " + testUser.getId());
         }
+        if (testUser.getEmail()==null) {
+            throw new ValidationException("У юзера должен быть email");
+        }
         if (!emailPattern.matcher(testUser.getEmail()).matches()) {
             throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
         }
         for (User user: users.values()) {
             if(user.getEmail().equals(testUser.getEmail())) {
-                throw new ValidationException("Юзер с таким email уже существует.");
+                throw new ConflictException("Юзер с таким email уже существует.");
             }
         }
     }

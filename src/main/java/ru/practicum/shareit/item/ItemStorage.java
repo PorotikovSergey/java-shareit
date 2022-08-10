@@ -18,6 +18,7 @@ public class ItemStorage {
     }
 
     public Item addItem(Item item) {
+        item.setId(ItemIdManager.getItemId());
         items.put(item.getId(), item);
         return item;
     }
