@@ -35,10 +35,9 @@ public class UserStorage {
     }
 
     public User patchUser(long id, User newUser) {
-        validateUser(newUser);
-        newUser.setId(id);
-        users.replace(id, newUser);
-        return newUser;
+        User user = patchOneUserFromAnother(newUser, users.get(id));
+        users.replace(id, user);
+        return user;
     }
 
 //=======================================================================
@@ -62,5 +61,20 @@ public class UserStorage {
                 throw new ConflictException("Юзер с таким email уже существует.");
             }
         }
+    }
+
+    private User patchOneUserFromAnother(User donor, User recipient) {
+        if(donor.getEmail()!=null) {
+            for (User user: users.values()) {
+                if(user.getEmail().equals(donor.getEmail())) {
+                    throw new ConflictException("Юзер с таким email уже существует.");
+                }
+            }
+            recipient.setEmail(donor.getEmail());
+        }
+        if(donor.getName()!=null) {
+            recipient.setName(donor.getName());
+        }
+        return recipient;
     }
 }

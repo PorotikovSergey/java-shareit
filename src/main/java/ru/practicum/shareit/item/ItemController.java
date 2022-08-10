@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Collection;
  */
 @RestController
 @RequestMapping("/items")
-public class ItemController {
+public class ItemController {              //X-Sharer-User-Id
     private final ItemService itemService;
 
     @Autowired
@@ -26,18 +27,18 @@ public class ItemController {
     }
 
     @PostMapping
-    public Item postItem(@RequestBody Item item) {
-        return itemService.postItem(item);
+    public Item postItem(HttpServletRequest request, @RequestBody Item item) {
+        return itemService.postItem(item, request.getHeader("X-Sharer-User-Id"));
     }
 
     @DeleteMapping("/{itemId}")
-    public void deleteItem(@PathVariable long itemId) {
+    public void deleteItem(HttpServletRequest request, @PathVariable long itemId) {
         itemService.deleteItem(itemId);
     }
 
     @PatchMapping("/{itemId}")
-    public Item patchItem(@PathVariable long itemId, @RequestBody Item item) {
-        return itemService.patchItem(itemId, item);
+    public Item patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item) {
+        return itemService.patchItem(itemId, item, request.getHeader("X-Sharer-User-Id"));
     }
 
     @GetMapping("/{itemId}")
