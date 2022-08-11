@@ -11,7 +11,8 @@ import java.util.Collection;
  */
 @RestController
 @RequestMapping("/items")
-public class ItemController {              //X-Sharer-User-Id
+public class ItemController {
+    private static final String SHARER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
 
     @Autowired
@@ -21,12 +22,12 @@ public class ItemController {              //X-Sharer-User-Id
 
     @GetMapping
     public Collection<ItemDto> getAll(HttpServletRequest request) {
-        return itemService.getAll(request.getHeader("X-Sharer-User-Id"));
+        return itemService.getAll(request.getHeader(SHARER_ID_HEADER));
     }
 
     @PostMapping
     public ItemDto postItem(HttpServletRequest request, @RequestBody Item item) {
-        return itemService.postItem(item, request.getHeader("X-Sharer-User-Id"));
+        return itemService.postItem(item, request.getHeader(SHARER_ID_HEADER));
     }
 
     @DeleteMapping("/{itemId}")
@@ -36,7 +37,7 @@ public class ItemController {              //X-Sharer-User-Id
 
     @PatchMapping("/{itemId}")
     public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item){
-            return itemService.patchItem(itemId, item, request.getHeader("X-Sharer-User-Id"));
+            return itemService.patchItem(itemId, item, request.getHeader(SHARER_ID_HEADER));
     }
 
     @GetMapping("/{itemId}")

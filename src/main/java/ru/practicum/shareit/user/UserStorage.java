@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @Repository
 @Qualifier("userStorage")
 public class UserStorage {
-    private Map<Long, User> users = new HashMap();
+    private final Map<Long, User> users = new HashMap();
 
     public Collection<User> getAll() {
         return users.values();

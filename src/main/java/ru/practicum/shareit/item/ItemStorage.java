@@ -23,7 +23,9 @@ public class ItemStorage {
     }
 
     public Collection<Item> getAll(String ownerId) {
-        return items.stream().filter(i -> i.getOwnerId() == Long.parseLong(ownerId)).collect(Collectors.toList());
+        return items.stream()
+                .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
+                .collect(Collectors.toList());
     }
 
     public Item addItem(Item item, String ownerId) {
@@ -35,7 +37,10 @@ public class ItemStorage {
     }
 
     public Item getItem(long id) {
-        return items.stream().filter(i->i.getId()==id).findFirst().get();
+        return items.stream()
+                .filter(i->i.getId()==id)
+                .findFirst()
+                .orElse(null);
     }
 
     public void deleteItem(long id) {

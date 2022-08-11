@@ -3,11 +3,9 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserDto;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,11 +20,9 @@ public class ItemService {
     }
 
     public Collection<ItemDto> getAll(String ownerId) {
-        Collection<ItemDto> resultCollection = new ArrayList<>();
-        for(Item item: itemStorage.getAll(ownerId)) {
-            resultCollection.add(itemMapper.fromItemToDto(item));
-        }
-        return resultCollection;
+        return itemStorage.getAll(ownerId).stream()
+                .map(itemMapper::fromItemToDto)
+                .collect(Collectors.toList());
     }
 
     public ItemDto postItem(Item item, String ownerId) {
@@ -46,10 +42,8 @@ public class ItemService {
     }
 
     public Collection<ItemDto> searchItem(String text) {
-        Collection<ItemDto> resultCollection = new ArrayList<>();
-        for(Item item: itemStorage.searchItem(text)) {
-            resultCollection.add(itemMapper.fromItemToDto(item));
-        }
-        return resultCollection;
+        return itemStorage.searchItem(text).stream()
+                .map(itemMapper::fromItemToDto)
+                .collect(Collectors.toList());
     }
 }
