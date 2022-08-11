@@ -1,11 +1,21 @@
 package ru.practicum.shareit.item;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.configurationprocessor.json.JSONException;
+import org.springframework.boot.configurationprocessor.json.JSONObject;
+import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.sound.midi.Soundbank;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 /**
@@ -22,8 +32,8 @@ public class ItemController {              //X-Sharer-User-Id
     }
 
     @GetMapping
-    public Collection<Item> getAll() {
-        return itemService.getAll();
+    public Collection<Item> getAll(HttpServletRequest request) {
+        return itemService.getAll(request.getHeader("X-Sharer-User-Id"));
     }
 
     @PostMapping
@@ -37,8 +47,8 @@ public class ItemController {              //X-Sharer-User-Id
     }
 
     @PatchMapping("/{itemId}")
-    public Item patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item) {
-        return itemService.patchItem(itemId, item, request.getHeader("X-Sharer-User-Id"));
+    public Item patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item){
+            return itemService.patchItem(itemId, item, request.getHeader("X-Sharer-User-Id"));
     }
 
     @GetMapping("/{itemId}")
@@ -46,7 +56,7 @@ public class ItemController {              //X-Sharer-User-Id
         return itemService.getItem(itemId);
     }
 
-    @GetMapping("/search?text={text}")
+    @GetMapping("/search")
     public Collection<Item> searchItem(@RequestParam String text) {
         return itemService.searchItem(text);
     }

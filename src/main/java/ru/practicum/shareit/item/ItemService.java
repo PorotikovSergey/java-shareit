@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserStorage;
 
 import java.util.Collection;
 
@@ -18,8 +17,8 @@ public class ItemService {
         this.itemStorage = itemStorage;
     }
 
-    public Collection<Item> getAll() {
-        return itemStorage.getAll();
+    public Collection<Item> getAll(String ownerId) {
+        return itemStorage.getAll(ownerId);
     }
 
     public Item postItem(Item item, String ownerId) {
