@@ -19,12 +19,12 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<User> getAll() {
+    public Collection<UserDto> getAll() {
         return userService.getAll();
     }
 
     @PostMapping
-    public User postUser(@RequestBody User user) {
+    public UserDto postUser(@RequestBody User user) {
         return userService.postUser(user);
     }
 
@@ -34,12 +34,12 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public User patchUser(@PathVariable long userId, @RequestBody User user) {
+    public UserDto patchUser(@PathVariable long userId, @RequestBody User user) {
         return userService.patchUser(userId, user);
     }
 
     @GetMapping("/{userId}")
-    public User getUser(@PathVariable long userId) {
+    public UserDto getUser(@PathVariable long userId) {
         return userService.getUser(userId);
     }
 }

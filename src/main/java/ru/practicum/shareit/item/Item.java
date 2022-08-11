@@ -1,13 +1,11 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * // TODO .
  */
 @Data
-@NoArgsConstructor
 public class Item {
     private long id;
     private String name;

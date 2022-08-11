@@ -1,21 +1,9 @@
 package ru.practicum.shareit.item;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
-import org.springframework.http.HttpEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.sound.midi.Soundbank;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 /**
@@ -32,12 +20,12 @@ public class ItemController {              //X-Sharer-User-Id
     }
 
     @GetMapping
-    public Collection<Item> getAll(HttpServletRequest request) {
+    public Collection<ItemDto> getAll(HttpServletRequest request) {
         return itemService.getAll(request.getHeader("X-Sharer-User-Id"));
     }
 
     @PostMapping
-    public Item postItem(HttpServletRequest request, @RequestBody Item item) {
+    public ItemDto postItem(HttpServletRequest request, @RequestBody Item item) {
         return itemService.postItem(item, request.getHeader("X-Sharer-User-Id"));
     }
 
@@ -47,17 +35,17 @@ public class ItemController {              //X-Sharer-User-Id
     }
 
     @PatchMapping("/{itemId}")
-    public Item patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item){
+    public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item){
             return itemService.patchItem(itemId, item, request.getHeader("X-Sharer-User-Id"));
     }
 
     @GetMapping("/{itemId}")
-    public Item getItem(@PathVariable long itemId) {
+    public ItemDto getItem(@PathVariable long itemId) {
         return itemService.getItem(itemId);
     }
 
     @GetMapping("/search")
-    public Collection<Item> searchItem(@RequestParam String text) {
+    public Collection<ItemDto> searchItem(@RequestParam String text) {
         return itemService.searchItem(text);
     }
 }
