@@ -9,26 +9,21 @@ import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.UserStorage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
 @Qualifier("itemStorage")
 public class ItemStorage {
     private final UserStorage userStorage;
-    private List<Item> items = new ArrayList<>();
+    private final List<Item> items = new ArrayList<>();
 
     public ItemStorage(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
     public Collection<Item> getAll(String ownerId) {
-        Collection<Item> resultCollection = new ArrayList<>();
-        for(Item item: items) {
-            if(item.getOwnerId()==Long.parseLong(ownerId)) {
-                resultCollection.add(item);
-            }
-        }
-        return resultCollection;
+        return items.stream().filter(i -> i.getOwnerId() == Long.parseLong(ownerId)).collect(Collectors.toList());
     }
 
     public Item addItem(Item item, String ownerId) {
@@ -40,12 +35,7 @@ public class ItemStorage {
     }
 
     public Item getItem(long id) {
-        for(Item item: items) {
-            if(item.getId()==id) {
-                return item;
-            }
-        }
-        return null;
+        return items.stream().filter(i->i.getId()==id).findFirst().get();
     }
 
     public void deleteItem(long id) {
@@ -53,10 +43,7 @@ public class ItemStorage {
     }
 
     public Item patchItem(long id, Item newItem, String ownerId) {
-        validateItemOwnerForPatch(ownerId);
-        if(Long.parseLong(ownerId)!= getItem(id).getOwnerId()) {
-            throw new NotFoundException("Патчить вещь может только её владелец.");
-        }
+        validateItemForPatch(ownerId, id);
         Item item = patchOneItemFromAnother(newItem, getItem(id));
         deleteItem(id);
         items.add(item);
@@ -64,20 +51,17 @@ public class ItemStorage {
     }
 
     public Collection<Item> searchItem(String text) {
-        Collection<Item> resultList = new ArrayList<>();
-        if(!text.isBlank()) {
-            for (Item item : items) {
-                if (checkTextInDescriptionAndName(item, text) && item.getAvailable()) {
-                    resultList.add(item);
-                }
-            }
-        }
-        return resultList;
+        return items.stream()
+                .filter(i -> checkTextInDescriptionAndName(i, text) && i.getAvailable())
+                .collect(Collectors.toList());
     }
 
 //==================================================================================================
 
     private boolean checkTextInDescriptionAndName(Item item, String text) {
+        if (text.isBlank()) {
+            return false;
+        }
         String checkText = text.toLowerCase();
         String description = item.getDescription().toLowerCase();
         String name = item.getName().toLowerCase();
@@ -91,7 +75,7 @@ public class ItemStorage {
         if (userStorage.getUser(Long.parseLong(ownerId)) == null) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (item.getAvailable()==null) {
+        if (item.getAvailable() == null) {
             throw new ValidationException("Вещь без доступности.");
         }
         if (item.getName() == null || item.getName().isBlank()) {
@@ -100,25 +84,28 @@ public class ItemStorage {
         if (item.getDescription() == null || item.getDescription().isBlank()) {
             throw new ValidationException("Вещь с пустым описанием");
         }
-     }
+    }
 
-    private void validateItemOwnerForPatch(String ownerId) {
+    private void validateItemForPatch(String ownerId, long id) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
         }
         if (userStorage.getUser(Long.parseLong(ownerId)) == null) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
+        if (Long.parseLong(ownerId) != getItem(id).getOwnerId()) {
+            throw new NotFoundException("Патчить вещь может только её владелец.");
+        }
     }
 
     private Item patchOneItemFromAnother(Item donor, Item recipient) {
-        if(donor.getName()!=null) {
+        if (donor.getName() != null) {
             recipient.setName(donor.getName());
         }
-        if(donor.getDescription()!=null) {
+        if (donor.getDescription() != null) {
             recipient.setDescription(donor.getDescription());
         }
-        if(donor.getAvailable()!=null) {
+        if (donor.getAvailable() != null) {
             recipient.setAvailable(donor.getAvailable());
         }
         return recipient;

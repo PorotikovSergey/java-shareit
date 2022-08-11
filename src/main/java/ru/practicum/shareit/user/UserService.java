@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,11 +20,7 @@ public class UserService {
     }
 
     public Collection<UserDto> getAll() {
-        Collection<UserDto> resultCollection = new ArrayList<>();
-        for(User user: userStorage.getAll()) {
-            resultCollection.add(userMapper.fromUserToDto(user));
-        }
-        return resultCollection;
+        return userStorage.getAll().stream().map(userMapper::fromUserToDto).collect(Collectors.toList());
     }
 
     public UserDto postUser(User user) {

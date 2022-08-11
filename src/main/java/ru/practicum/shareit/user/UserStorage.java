@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 @Repository
 @Qualifier("userStorage")
 public class UserStorage {
-    private UserMapper userMapper;
     private Map<Long, User> users = new HashMap();
 
     public Collection<User> getAll() {
