@@ -52,7 +52,7 @@ public class UserStorage {
         if (!emailPattern.matcher(testUser.getEmail()).matches()) {
             throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
         }
-        for (User user: users.values()) {
+        for (User user : users.values()) {
             if(user.getEmail().equals(testUser.getEmail())) {
                 throw new ConflictException("Юзер с таким email уже существует.");
             }
@@ -61,7 +61,7 @@ public class UserStorage {
 
     private User patchOneUserFromAnother(User donor, User recipient) {
         if(donor.getEmail()!=null) {
-            for (User user: users.values()) {
+            for (User user : users.values()) {
                 if(user.getEmail().equals(donor.getEmail())) {
                     throw new ConflictException("Юзер с таким email уже существует.");
                 }

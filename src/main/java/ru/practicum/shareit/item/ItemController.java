@@ -38,8 +38,8 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item){
-            return itemMapper.fromItemToDto(itemService.patchItem(itemId, item, request.getHeader(SHARER_ID_HEADER)));
+    public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item) {
+        return itemMapper.fromItemToDto(itemService.patchItem(itemId, item, request.getHeader(SHARER_ID_HEADER)));
     }
 
     @GetMapping("/{itemId}")

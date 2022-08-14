@@ -8,7 +8,7 @@ import java.util.Collection;
 
 @Slf4j
 @Service
-public class ItemServiceImpl implements ItemService{
+public class ItemServiceImpl implements ItemService {
     private final ItemStorage itemStorage;
 
     @Autowired

@@ -22,7 +22,7 @@ public class ItemStorage {
 
     public Collection<Item> getAll(String ownerId) {
         return items.stream()
-                .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
+                .filter(i->i.getOwnerId()==Long.parseLong(ownerId))
                 .collect(Collectors.toList());
     }
 
@@ -55,7 +55,7 @@ public class ItemStorage {
 
     public Collection<Item> searchItem(String text) {
         return items.stream()
-                .filter(i -> checkTextInDescriptionAndName(i, text) && i.getAvailable())
+                .filter(i->checkTextInDescriptionAndName(i, text) && i.getAvailable())
                 .collect(Collectors.toList());
     }
 
@@ -70,43 +70,43 @@ public class ItemStorage {
     }
 
     private void validateItem(Item item, String ownerId) {
-        if (ownerId == null) {
+        if (ownerId==null) {
             throw new ServiceException("Отсутствует владелец");
         }
-        if (userStorage.getUser(Long.parseLong(ownerId)) == null) {
+        if (userStorage.getUser(Long.parseLong(ownerId))==null) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (item.getAvailable() == null) {
+        if (item.getAvailable()==null) {
             throw new ValidationException("Вещь без доступности.");
         }
-        if (item.getName() == null || item.getName().isBlank()) {
+        if (item.getName()==null || item.getName().isBlank()) {
             throw new ValidationException("Вещь с пустым именем.");
         }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
+        if (item.getDescription()==null || item.getDescription().isBlank()) {
             throw new ValidationException("Вещь с пустым описанием");
         }
     }
 
     private void validateItemForPatch(String ownerId, long id) {
-        if (ownerId == null) {
+        if (ownerId==null) {
             throw new ServiceException("Отсутствует владелец");
         }
         if (userStorage.getUser(Long.parseLong(ownerId)) == null) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (Long.parseLong(ownerId) != getItem(id).getOwnerId()) {
+        if (Long.parseLong(ownerId)!=getItem(id).getOwnerId()) {
             throw new NotFoundException("Патчить вещь может только её владелец.");
         }
     }
 
     private Item patchOneItemFromAnother(Item donor, Item recipient) {
-        if (donor.getName() != null) {
+        if (donor.getName()!=null) {
             recipient.setName(donor.getName());
         }
-        if (donor.getDescription() != null) {
+        if (donor.getDescription()!=null) {
             recipient.setDescription(donor.getDescription());
         }
-        if (donor.getAvailable() != null) {
+        if (donor.getAvailable()!=null) {
             recipient.setAvailable(donor.getAvailable());
         }
         return recipient;
