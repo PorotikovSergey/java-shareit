@@ -53,7 +53,7 @@ public class UserStorage {
             throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
         }
         for (User user : users.values()) {
-            if(user.getEmail().equals(testUser.getEmail())) {
+            if (user.getEmail().equals(testUser.getEmail())) {
                 throw new ConflictException("Юзер с таким email уже существует.");
             }
         }
