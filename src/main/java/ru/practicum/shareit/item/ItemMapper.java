@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ItemMapper {
 
-    public ItemDto fromItemToDto (Item item) {
+    public ItemDto fromItemToDto(Item item) {
         ItemDto itemDto = new ItemDto();
         itemDto.setId(item.getId());
         itemDto.setName(item.getName());
@@ -15,7 +15,7 @@ public class ItemMapper {
         return itemDto;
     }
 
-    public Item fromDtoToItem (ItemDto itemDto) {
+    public Item fromDtoToItem(ItemDto itemDto) {
         Item item = new Item();
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());

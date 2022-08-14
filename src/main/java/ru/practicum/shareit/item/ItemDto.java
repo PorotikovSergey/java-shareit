@@ -2,9 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.Data;
 
-/**
- * // TODO .
- */
 @Data
 public class ItemDto {
     private long id;

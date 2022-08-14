@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ServiceException;
@@ -13,7 +12,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
-@Qualifier("itemStorage")
 public class ItemStorage {
     private final UserStorage userStorage;
     private final List<Item> items = new ArrayList<>();
@@ -60,8 +58,6 @@ public class ItemStorage {
                 .filter(i -> checkTextInDescriptionAndName(i, text) && i.getAvailable())
                 .collect(Collectors.toList());
     }
-
-//==================================================================================================
 
     private boolean checkTextInDescriptionAndName(Item item, String text) {
         if (text.isBlank()) {

@@ -5,37 +5,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService{
-    private final UserMapper userMapper;
     private final UserStorage userStorage;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserStorage userStorage) {
-        this.userMapper = userMapper;
+    public UserServiceImpl(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public Collection<UserDto> getAll() {
-        return userStorage.getAll().stream().map(userMapper::fromUserToDto).collect(Collectors.toList());
+    public Collection<User> getAll() {
+        return userStorage.getAll();
     }
 
-    public UserDto postUser(User user) {
-        return userMapper.fromUserToDto(userStorage.addUser(user));
+    public User postUser(User user) {
+        return userStorage.addUser(user);
     }
 
     public void deleteUser(long userId) {
         userStorage.deleteUser(userId);
     }
 
-    public UserDto patchUser(long userId, User user) {
-        return userMapper.fromUserToDto(userStorage.patchUser(userId, user));
+    public User patchUser(long userId, User user) {
+        return userStorage.patchUser(userId, user);
     }
 
-    public UserDto getUser(long userId) {
-        return userMapper.fromUserToDto(userStorage.getUser(userId));
+    public User getUser(long userId) {
+        return userStorage.getUser(userId);
     }
 }
