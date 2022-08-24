@@ -22,13 +22,13 @@ public class ItemStorage {
 
     public Collection<Item> getAll(String ownerId) {
         return items.stream()
-                .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
+                .filter(i -> i.getOwner() == Long.parseLong(ownerId))
                 .collect(Collectors.toList());
     }
 
     public Item addItem(Item item, String ownerId) {
         validateItem(item, ownerId);
-        item.setOwnerId(Long.parseLong(ownerId));
+        item.setOwner(Long.parseLong(ownerId));
         item.setId(ItemIdManager.getItemId());
         items.add(item);
         return item;
@@ -94,7 +94,7 @@ public class ItemStorage {
         if (userStorage.getUser(Long.parseLong(ownerId)) == null) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (Long.parseLong(ownerId) != getItem(id).getOwnerId()) {
+        if (Long.parseLong(ownerId) != getItem(id).getOwner()) {
             throw new NotFoundException("Патчить вещь может только её владелец.");
         }
     }
