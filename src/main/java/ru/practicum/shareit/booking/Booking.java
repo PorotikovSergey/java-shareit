@@ -25,6 +25,7 @@ public class Booking {
     @Column(name = "bookerId")
     private long booker;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingStatus status;
 }
