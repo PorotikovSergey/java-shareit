@@ -15,49 +15,44 @@ import java.util.regex.Pattern;
 @Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final UserStorage userStorage;
 
     @Autowired
-    public UserServiceImpl(UserStorage userStorage, UserRepository userRepository, UserStorage userStorage1) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.userStorage = userStorage1;
     }
 
     @Override
     public List<User> getAll() {
         return userRepository.findAll();
     }
-//    public Collection<User> getAll() {
-//        return userRepository.getAll();
-//    }
 
     @Transactional
     @Override
     public User postUser(User user) {
+        System.out.println("ДО поста нового пользователя-----"+getAll());
+        System.out.println("Постим === "+user);
         validateUser(user);
         userRepository.save(user);
+        System.out.println("После поста нового пользователя-----"+getAll());
         return user;
     }
 
-//    public User postUser(User user) {
-//        return userRepository.addUser(user);
-//    }
-
     public void deleteUser(long userId) {
-        userStorage.deleteUser(userId);
+        userRepository.deleteById(userId);
     }
 
-//    public User patchUser(long id, User newUser) {
-//        User user = patchOneUserFromAnother(newUser, userRepository.getReferenceById(id));
-//        users.replace(id, user);
-//        return user;
-//    }
+    @Transactional
+    @Override
     public User patchUser(long userId, User user) {
-        return patchOneUserFromAnother(user, userRepository.getReferenceById(userId));
+        System.out.println("ДО патча нового пользователя-----"+getAll());
+        System.out.println("Патчим === "+userRepository.getReferenceById(userId)+" на "+ user);
+        patchOneUserFromAnother(user, userRepository.getReferenceById(userId));
+        System.out.println("После патча нового пользователя-----"+getAll());
+        return userRepository.getReferenceById(userId);
     }
 
     public User getUser(long userId) {
-        return userStorage.getUser(userId);
+        return userRepository.getReferenceById(userId);
     }
 
     private void validateUser(User testUser) {
