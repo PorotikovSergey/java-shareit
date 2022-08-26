@@ -2,9 +2,13 @@ package ru.practicum.shareit.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.practicum.shareit.exceptions.ConflictException;
+import ru.practicum.shareit.exceptions.ErrorHandler;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 
 import java.util.List;
@@ -29,29 +33,30 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User postUser(User user) {
-        System.out.println("ДО поста нового пользователя-----"+getAll());
-        System.out.println("Постим === "+user);
         validateUser(user);
         userRepository.save(user);
-        System.out.println("После поста нового пользователя-----"+getAll());
         return user;
     }
 
+    @Transactional
     public void deleteUser(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким id не существует!");
+        }
         userRepository.deleteById(userId);
     }
 
     @Transactional
     @Override
     public User patchUser(long userId, User user) {
-        System.out.println("ДО патча нового пользователя-----"+getAll());
-        System.out.println("Патчим === "+userRepository.getReferenceById(userId)+" на "+ user);
         patchOneUserFromAnother(user, userRepository.getReferenceById(userId));
-        System.out.println("После патча нового пользователя-----"+getAll());
         return userRepository.getReferenceById(userId);
     }
 
     public User getUser(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким id не существует!");
+        }
         return userRepository.getReferenceById(userId);
     }
 
@@ -69,11 +74,11 @@ public class UserServiceImpl implements UserService {
         if (!emailPattern.matcher(testUser.getEmail()).matches()) {
             throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
         }
-        for (User user : getAll()) {
-            if (user.getEmail().equals(testUser.getEmail())) {
-                throw new ConflictException("Юзер с таким email уже существует.");
-            }
-        }
+//        for (User user : getAll()) {
+//            if (user.getEmail().equals(testUser.getEmail())) {
+//                throw new ConflictException("Юзер с таким email уже существует.");
+//            }
+//        }
     }
 
     private User patchOneUserFromAnother(User donor, User recipient) {
