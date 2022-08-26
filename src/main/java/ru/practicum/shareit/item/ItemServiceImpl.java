@@ -8,7 +8,9 @@ import ru.practicum.shareit.exceptions.ServiceException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,12 +24,16 @@ public class ItemServiceImpl implements ItemService {
         this.userRepository = userRepository;
     }
 
+    //вот этот метод переделать на нормальный, что б в запросе, а не через стрим!!!
     public Collection<Item> getAll(String ownerId) {
-        return itemRepository.findAll();
+        return itemRepository.findAll().stream()
+                .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
+                .collect(Collectors.toList());
     }
 
     public Item postItem(Item item, String ownerId) {
-        item.setOwner(Long.parseLong(ownerId));
+        item.setOwnerId(Long.parseLong(ownerId));
+        validateItem(item, ownerId);
         itemRepository.save(item);
         return item;
     }
@@ -38,16 +44,27 @@ public class ItemServiceImpl implements ItemService {
 
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
-        validateItem(item, ownerId);
-        return patchOneItemFromAnother(item, getItem(itemId));
+        itemRepository.save(patchOneItemFromAnother(item, getItem(itemId)));
+        return getItem(itemId);
     }
 
     public Item getItem(long itemId) {
+        if (!itemRepository.existsById(itemId)) {
+            throw new NotFoundException("Айтема с таким id не существует");
+        }
         return itemRepository.getReferenceById(itemId);
     }
 
-    public Collection<Item> searchItem(String text) {
-        return null;
+    //Этот ебанутый метод тоже нужно из стрима переделать в нормальный запрос
+    public Collection<Item> searchItem(String text, String ownerId) {
+        if(text.isBlank()) {
+            return new ArrayList<Item>();
+        }
+        return itemRepository.findAll().stream()
+                .filter(i -> i.getName().toLowerCase().contains(text.toLowerCase())
+                        || i.getDescription().toLowerCase().contains(text.toLowerCase()))
+                .filter(Item::getAvailable)
+                .collect(Collectors.toList());
     }
 
     private boolean checkTextInDescriptionAndName(Item item, String text) {
@@ -85,7 +102,7 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(Long.parseLong(ownerId))) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (Long.parseLong(ownerId) != getItem(id).getOwner()) {
+        if (Long.parseLong(ownerId) != getItem(id).getOwnerId()) {
             throw new NotFoundException("Патчить вещь может только её владелец.");
         }
     }

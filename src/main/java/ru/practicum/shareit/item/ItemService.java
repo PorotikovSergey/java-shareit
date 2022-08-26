@@ -13,5 +13,5 @@ public interface ItemService {
 
     Item getItem(long itemId);
 
-    Collection<Item> searchItem(String text);
+    Collection<Item> searchItem(String text, String ownerId);
 }

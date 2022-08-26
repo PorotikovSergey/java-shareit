@@ -48,8 +48,8 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> searchItem(@RequestParam String text) {
-        return itemService.searchItem(text).stream()
+    public Collection<ItemDto> searchItem(HttpServletRequest request, @RequestParam String text) {
+        return itemService.searchItem(text, request.getHeader(SHARER_ID_HEADER)).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
     }
