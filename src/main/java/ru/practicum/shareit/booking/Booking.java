@@ -17,12 +17,12 @@ public class Booking {
     private LocalDateTime start;
 
     @Column(name = "finish")
-    private LocalDateTime finish;
+    private LocalDateTime end;
 
-    @Column(name = "itemId")
-    private long item;
+    @Column(name = "item_Id")
+    private long itemId;
 
-    @Column(name = "bookerId")
+    @Column(name = "booker_Id")
     private long booker;
 
     @Enumerated(EnumType.STRING)
