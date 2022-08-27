@@ -23,7 +23,7 @@ public class Booking {
     private long itemId;
 
     @Column(name = "booker_Id")
-    private long booker;
+    private long bookerId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

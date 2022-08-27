@@ -26,34 +26,45 @@ public class BookingServiceImpl implements BookingService{
     }
     @Override
     public Booking postBooking(Booking booking, String bookerId) {
-        System.out.println(itemRepository.findAll());
-        System.out.println(booking);
-        System.out.println("юзер "+bookerId+"- хочет забронировать вещь  "+itemRepository.findById(booking.getItemId()));
+        validateBooking(booking, bookerId);
+        booking.setBookerId(Long.parseLong(bookerId));
+        booking.setStatus(BookingStatus.WAITING);
+        bookingRepository.save(booking);
+        bookingRepository.findAll();
+        return booking;
+    }
+
+    @Override
+    public Booking patchBooking(String bookingId, String sharerId, String approved) {
+        if(!bookingRepository.existsById(Long.parseLong(bookingId))) {
+            throw new NotFoundException("Бронирования с таким id не существует");
+        }
+        if(Long.parseLong(sharerId)
+                !=itemRepository.findById(bookingRepository.findById(Long.parseLong(bookingId)).get().getItemId()).get().getOwnerId()) {
+            throw new ValidationException("Патчить статус вещи может только её владелец");
+        }
+        if(approved.equals("true")) {
+            bookingRepository.findById(Long.parseLong(bookingId)).get().setStatus(BookingStatus.APPROVED);
+        } else {
+            bookingRepository.findById(Long.parseLong(bookingId)).get().setStatus(BookingStatus.REJECTED);
+        }
+        return bookingRepository.findById(Long.parseLong(bookingId)).get();
+    }
+
+    private void validateBooking(Booking booking, String bookerId) {
         if(!userRepository.existsById(Long.parseLong(bookerId))) {
-            throw new NotFoundException("У айтема несуществующий букер");
+            throw new NotFoundException("Букера с таким id не существует");
         }
         if(!itemRepository.existsById(booking.getItemId())) {
             throw new NotFoundException("Нет айтема с таким id");
         }
-        if(!itemRepository.existsById(booking.getItemId())) {
-            throw new ValidationException("Такого айтема нет для бронирования");
-        }
         if(!itemRepository.findById(booking.getItemId()).get().getAvailable()) {
             throw new ValidationException("Недоступный для бронирования");
-        }
-        if(!userRepository.existsById(itemRepository.findById(booking.getItemId()).get().getOwnerId())) {
-            throw new NotFoundException("У айтема несуществующий владелец");
         }
         if((booking.getEnd().isBefore(booking.getStart()))
                 || (booking.getEnd().isBefore(LocalDateTime.now()))
                 || (booking.getStart().isBefore(LocalDateTime.now()))) {
             throw new ValidationException("Время аренды не может быть в прошлом");
         }
-        booking.setStatus(BookingStatus.WAITING);
-        bookingRepository.save(booking);
-        System.out.println("========\n==========\n=======\n==========");
-        itemRepository.findAll();
-        System.out.println(booking);
-        return booking;
     }
 }

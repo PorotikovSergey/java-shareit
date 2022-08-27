@@ -1,10 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -24,5 +21,12 @@ public class BookingController {
     @PostMapping
     public BookingDto postBooking(HttpServletRequest request, @RequestBody Booking booking) {
         return bookingMapper.fromBookingToDto(bookingService.postBooking(booking, request.getHeader(SHARER_ID_HEADER)));
+    }
+
+    @PatchMapping("/{bookingId}")
+    public BookingDto patchBooking(HttpServletRequest request, @PathVariable String bookingId,
+                                   @RequestParam String approved) {
+        return bookingMapper.fromBookingToDto(bookingService.patchBooking(bookingId,
+                request.getHeader(SHARER_ID_HEADER), approved));
     }
 }
