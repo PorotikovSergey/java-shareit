@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(path = "/bookings")
@@ -28,5 +30,17 @@ public class BookingController {
                                    @RequestParam String approved) {
         return bookingMapper.fromBookingToDto(bookingService.patchBooking(bookingId,
                 request.getHeader(SHARER_ID_HEADER), approved));
+    }
+
+    @GetMapping("/{bookingId}")
+    public BookingDto getBooking(HttpServletRequest request, @PathVariable String bookingId) {
+        return bookingMapper.fromBookingToDto(bookingService.getBooking(request.getHeader(SHARER_ID_HEADER), bookingId));
+    }
+
+    @GetMapping
+    public Collection<BookingDto> getAll(HttpServletRequest request) {
+        return bookingService.getAll(request.getHeader(SHARER_ID_HEADER)).stream()
+                .map(bookingMapper::fromBookingToDto)
+                .collect(Collectors.toList());
     }
 }

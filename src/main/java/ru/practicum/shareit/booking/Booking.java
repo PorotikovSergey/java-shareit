@@ -34,7 +34,7 @@ public class Booking {
 
     @Transient
     @OneToOne
-    private Item item = new Item();
+    private Item item;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
