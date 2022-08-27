@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -33,13 +34,9 @@ public class BookingServiceImpl implements BookingService{
         bookingRepository.save(booking);
         Booking result = bookingRepository.findById(booking.getId()).get();
         User booker = userRepository.findById(Long.parseLong(bookerId)).get();
-        System.out.println("вещь, которую бронируем "+itemRepository.findById(booking.getId()).get());
-        System.out.println("Юзер, который должен стать букером "+booker);
+        Item item = itemRepository.findById(result.getItemId()).get();
         result.setBooker(booker);
-        System.out.println("\n\n");
-        System.out.println(bookingRepository.findAll());
-        System.out.println(result);
-        System.out.println("\n\n");
+        result.setItem(item);
         return result;
     }
 
@@ -53,12 +50,14 @@ public class BookingServiceImpl implements BookingService{
             throw new ValidationException("Патчить статус вещи может только её владелец");
         }
         User booker =  userRepository.findById(bookingRepository.findById(Long.parseLong(bookingId)).get().getBookerId()).get();
+        Item item = itemRepository.findById(bookingRepository.findById(Long.parseLong(bookingId)).get().getItemId()).get();
         if(approved.equals("true")) {
             bookingRepository.findById(Long.parseLong(bookingId)).get().setStatus(BookingStatus.APPROVED);
         } else {
             bookingRepository.findById(Long.parseLong(bookingId)).get().setStatus(BookingStatus.REJECTED);
         }
         bookingRepository.findById(Long.parseLong(bookingId)).get().setBooker(booker);
+        bookingRepository.findById(Long.parseLong(bookingId)).get().setItem(item);
         return bookingRepository.findById(Long.parseLong(bookingId)).get();
     }
 

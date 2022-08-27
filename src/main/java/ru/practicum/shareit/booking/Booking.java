@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import lombok.Data;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -30,6 +31,10 @@ public class Booking {
     @Transient
     @ManyToOne
     private User booker;
+
+    @Transient
+    @OneToOne
+    private Item item = new Item();
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
