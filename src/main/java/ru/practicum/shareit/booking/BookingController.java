@@ -50,4 +50,11 @@ public class BookingController {
                     .collect(Collectors.toList());
         }
     }
+
+    @GetMapping("/owner")
+    public Collection<BookingDto> getForCurrentUser(HttpServletRequest request) {
+        return bookingService.getAllForCurrentUser(request.getQueryString(), request.getHeader(SHARER_ID_HEADER)).stream()
+                .map(bookingMapper::fromBookingToDto)
+                .collect(Collectors.toList());
+    }
 }

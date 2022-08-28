@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -119,18 +120,40 @@ public class BookingServiceImpl implements BookingService {
             BookingState bookingState = BookingState.valueOf(state.substring(6));
             switch (bookingState) {
                 case FUTURE:
-                    return getAll(booker);
+                    return getAll(booker).stream().filter(b ->b.getBookerId()==Long.parseLong(booker)).collect(Collectors.toList());
+//                    return getAll(booker).stream().filter(b ->b.getBookerId()==Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.FUTURE)).collect(Collectors.toList());
                 case CURRENT:
-                    return getAll(booker);
+                    return getAll(booker).stream().filter(b ->b.getBookerId()==Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.CURRENT)).collect(Collectors.toList());
                 case WAITING:
-                    return getAll(booker);
+                    return getAll(booker).stream().filter(b ->b.getBookerId()==Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.WAITING)).collect(Collectors.toList());
                 case REJECTED:
-                    return getAll(booker);
+                    return getAll(booker).stream().filter(b ->b.getBookerId()==Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.REJECTED)).collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            System.out.println("Ошибочка");
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+        }
+        return getAll(booker).stream().filter(b ->b.getBookerId()==Long.parseLong(booker)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<Booking> getAllForCurrentUser(String state, String curUser) {
+        try {
+            BookingState bookingState = BookingState.valueOf(state.substring(6));
+            switch (bookingState) {
+                case FUTURE:
+                    return getAll(curUser);
+                case CURRENT:
+                    return getAll(curUser);
+                case WAITING:
+                    return getAll(curUser);
+                case REJECTED:
+                    return getAll(curUser);
             }
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return getAll(booker);
+        return getAll(curUser);
     }
 
 

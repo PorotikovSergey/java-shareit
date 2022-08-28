@@ -12,4 +12,6 @@ public interface BookingService {
     Collection<Booking> getAll(String ownerOrBooker);
 
     Collection<Booking> getAllByBooker(String state, String booker);
+
+    Collection<Booking> getAllForCurrentUser(String state, String curUser);
 }
