@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -39,8 +40,14 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingDto> getAll(HttpServletRequest request) {
-        return bookingService.getAll(request.getHeader(SHARER_ID_HEADER)).stream()
-                .map(bookingMapper::fromBookingToDto)
-                .collect(Collectors.toList());
+        if (request.getQueryString() == null) {
+            return bookingService.getAll(request.getHeader(SHARER_ID_HEADER)).stream()
+                    .map(bookingMapper::fromBookingToDto)
+                    .collect(Collectors.toList());
+        } else {
+            return bookingService.getAllByBooker(request.getQueryString(), request.getHeader(SHARER_ID_HEADER)).stream()
+                    .map(bookingMapper::fromBookingToDto)
+                    .collect(Collectors.toList());
+        }
     }
 }

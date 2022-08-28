@@ -10,4 +10,6 @@ public interface BookingService {
     Booking getBooking(String ownerOrBooker, String bookingId);
 
     Collection<Booking> getAll(String ownerOrBooker);
+
+    Collection<Booking> getAllByBooker(String state, String booker);
 }

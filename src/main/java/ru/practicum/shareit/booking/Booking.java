@@ -29,7 +29,7 @@ public class Booking {
     private long bookerId;
 
     @Transient
-    @ManyToOne
+    @OneToOne
     private User booker;
 
     @Transient
@@ -39,5 +39,9 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state")
+    private BookingState state = BookingState.ALL;
 
 }

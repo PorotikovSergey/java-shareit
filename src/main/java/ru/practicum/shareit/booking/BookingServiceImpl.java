@@ -11,8 +11,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -31,6 +30,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking postBooking(Booking booking, String bookerId) {
+        if (!itemRepository.existsById(booking.getItemId())) {
+            throw new NotFoundException("Айтема с таким id не существует");
+        }
         validateBooking(booking, bookerId);
         booking.setBookerId(Long.parseLong(bookerId));
         booking.setStatus(BookingStatus.WAITING);
@@ -52,21 +54,23 @@ public class BookingServiceImpl implements BookingService {
                 != itemRepository.findById(bookingRepository.findById(Long.parseLong(bookingId)).get().getItemId()).get().getOwnerId()) {
             throw new ValidationException("Патчить статус вещи может только её владелец");
         }
-        User booker = userRepository.findById(bookingRepository.findById(Long.parseLong(bookingId)).get().getBookerId()).get();
-        Item item = itemRepository.findById(bookingRepository.findById(Long.parseLong(bookingId)).get().getItemId()).get();
+        Booking booking = bookingRepository.findById(Long.parseLong(bookingId)).get();
+        User booker = userRepository.findById(booking.getBookerId()).get();
+        Item item = itemRepository.findById(booking.getItemId()).get();
         if (approved.equals("true")) {
-            bookingRepository.findById(Long.parseLong(bookingId)).get().setStatus(BookingStatus.APPROVED);
-        } else {
-            bookingRepository.findById(Long.parseLong(bookingId)).get().setStatus(BookingStatus.REJECTED);
+            booking.setStatus(BookingStatus.APPROVED);
+        } else if (approved.equals("false")) {
+            booking.setStatus(BookingStatus.REJECTED);
         }
-        bookingRepository.findById(Long.parseLong(bookingId)).get().setBooker(booker);
-        bookingRepository.findById(Long.parseLong(bookingId)).get().setItem(item);
+        booking.setBooker(booker);
+        booking.setItem(item);
+        bookingRepository.save(booking);
         return bookingRepository.findById(Long.parseLong(bookingId)).get();
     }
 
     @Override
     public Booking getBooking(String ownerOrBooker, String bookingId) {
-        if(!userRepository.existsById(Long.parseLong(ownerOrBooker))) {
+        if (!userRepository.existsById(Long.parseLong(ownerOrBooker))) {
             throw new NotFoundException("Юзера с таким id не существует");
         }
         if (!bookingRepository.existsById(Long.parseLong(bookingId))) {
@@ -87,16 +91,48 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Collection<Booking> getAll(String ownerOrBooker) {
-        if(!userRepository.existsById(Long.parseLong(ownerOrBooker))) {
+        if (!userRepository.existsById(Long.parseLong(ownerOrBooker))) {
             throw new NotFoundException("Юзера с таким id не существует");
         }
-//        Collection<Long> items = itemRepository.findAll().stream().filter(i -> i.getOwnerId() == Long.parseLong(ownerOrBooker)).map(Item::getOwnerId).collect(Collectors.toList());
-//        Collection<Booking> collectionOne = bookingRepository.findAll().stream().filter(b -> b.getBookerId()==Long.parseLong(ownerOrBooker)).collect(Collectors.toList());
-//        Collection<Booking> collectionTwo = bookingRepository.findAll().stream().filter(b -> items.contains(ownerOrBooker)).collect(Collectors.toList());
-//        collectionOne.addAll(collectionTwo);
-//        return collectionOne;
-        return bookingRepository.findAll();
-     }
+        Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
+        for (Booking booking : bookingRepository.findAll()) {
+            User booker = new User();
+            booker.setId(booking.getBookerId());
+            booker.setName(getBookerByBooking(booking).getName());
+            booker.setEmail(getBookerByBooking(booking).getEmail());
+            booking.setBooker(booker);
+            Item item = new Item();
+            item.setId(booking.getItemId());
+            item.setName(getItemByBooking(booking).getName());
+            item.setDescription(getItemByBooking(booking).getDescription());
+            item.setAvailable(getItemByBooking(booking).getAvailable());
+            item.setOwnerId(getItemByBooking(booking).getOwnerId());
+            booking.setItem(item);
+            result.add(booking);
+        }
+        return result;
+    }
+
+    @Override
+    public Collection<Booking> getAllByBooker(String state, String booker) {
+        try {
+            BookingState bookingState = BookingState.valueOf(state.substring(6));
+            switch (bookingState) {
+                case FUTURE:
+                    return getAll(booker);
+                case CURRENT:
+                    return getAll(booker);
+                case WAITING:
+                    return getAll(booker);
+                case REJECTED:
+                    return getAll(booker);
+            }
+        } catch (Exception e) {
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+        }
+        return getAll(booker);
+    }
+
 
     private void validateBooking(Booking booking, String bookerId) {
         if (!userRepository.existsById(Long.parseLong(bookerId))) {
@@ -113,5 +149,13 @@ public class BookingServiceImpl implements BookingService {
                 || (booking.getStart().isBefore(LocalDateTime.now()))) {
             throw new ValidationException("Время аренды не может быть в прошлом");
         }
+    }
+
+    private Item getItemByBooking(Booking booking) {
+        return itemRepository.getReferenceById(booking.getItemId());
+    }
+
+    private User getBookerByBooking(Booking booking) {
+        return userRepository.getReferenceById(booking.getBookerId());
     }
 }

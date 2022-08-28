@@ -17,12 +17,4 @@ public class User {
 
     @Column(name = "email")
     private String email;
-
-    public User(long id) {
-        this.id = id;
-    }
-
-    public User() {
-
-    }
 }
