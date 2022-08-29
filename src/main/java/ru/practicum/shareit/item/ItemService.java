@@ -11,7 +11,7 @@ public interface ItemService {
 
     Item patchItem(long itemId, Item item, String ownerId);
 
-    Item getItem(long itemId);
+    Item getItem(String user, long itemId);
 
     Collection<Item> searchItem(String text, String ownerId);
 }

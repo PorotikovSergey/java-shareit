@@ -44,11 +44,26 @@ public class ItemServiceImpl implements ItemService {
 
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
-        itemRepository.save(patchOneItemFromAnother(item, getItem(itemId)));
-        return getItem(itemId);
+        itemRepository.save(patchOneItemFromAnother(item, getItem1(itemId)));
+        return getItem1(itemId);
     }
 
-    public Item getItem(long itemId) {
+    public Item getItem(String user, long itemId) {
+        if (user==null) {
+            return getItem1(itemId);
+        } else {
+            return getItem2(user, itemId);
+        }
+    }
+
+    public Item getItem1(long itemId) {
+        if (!itemRepository.existsById(itemId)) {
+            throw new NotFoundException("Айтема с таким id не существует");
+        }
+        return itemRepository.getReferenceById(itemId);
+    }
+
+    public Item getItem2(String user, long itemId) {
         if (!itemRepository.existsById(itemId)) {
             throw new NotFoundException("Айтема с таким id не существует");
         }
@@ -102,7 +117,7 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(Long.parseLong(ownerId))) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (Long.parseLong(ownerId) != getItem(id).getOwnerId()) {
+        if (Long.parseLong(ownerId) != getItem1(id).getOwnerId()) {
             throw new NotFoundException("Патчить вещь может только её владелец.");
         }
     }

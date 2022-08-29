@@ -25,11 +25,13 @@ CREATE TABLE IF NOT EXISTS bookings (
                                      finish timestamp NOT NULL,
                                      item_Id BIGINT NOT NULL,
                                      booker_Id BIGINT NOT NULL,
+                                     item_Owner_Id BIGINT NOT NULL,
                                      status status,
                                      state state,
                                      CONSTRAINT pk_booking PRIMARY KEY (id),
                                      CONSTRAINT item_for_booking FOREIGN KEY(item_Id) REFERENCES items(id),
-                                     CONSTRAINT owner_of_booking FOREIGN KEY(booker_Id) REFERENCES users(id)
+                                     CONSTRAINT booker_of_booking FOREIGN KEY(booker_Id) REFERENCES users(id),
+                                     CONSTRAINT owner_of_booking FOREIGN KEY(item_Owner_Id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS requests (

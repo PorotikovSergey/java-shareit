@@ -28,12 +28,13 @@ public class Booking {
     @Column(name = "booker_Id")
     private long bookerId;
 
+    @Column(name = "item_Owner_Id")
+    private long itemOwnerId;
+
     @Transient
-    @OneToOne
     private User booker;
 
     @Transient
-    @OneToOne
     private Item item;
 
     @Enumerated(EnumType.STRING)

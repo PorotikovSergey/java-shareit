@@ -13,7 +13,9 @@ public class BookingDto {
     private LocalDateTime end;
     private long itemId;
     private long bookerId;
+    private long itemOwnerId;
     private User booker;
     private Item item;
     private BookingStatus status;
+    private BookingState state;
 }

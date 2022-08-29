@@ -43,8 +43,8 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(@PathVariable long itemId) {
-        return itemMapper.fromItemToDto(itemService.getItem(itemId));
+    public ItemDto getItem(HttpServletRequest request, @PathVariable long itemId) {
+        return itemMapper.fromItemToDto(itemService.getItem(request.getHeader(SHARER_ID_HEADER), itemId));
     }
 
     @GetMapping("/search")

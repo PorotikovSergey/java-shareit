@@ -10,10 +10,12 @@ public class BookingMapper {
         bookingDto.setStart(booking.getStart());
         bookingDto.setEnd(booking.getEnd());
         bookingDto.setBookerId(booking.getBookerId());
-        bookingDto.setStatus(booking.getStatus());
-        bookingDto.setItemId(booking.getItemId());
         bookingDto.setBooker(booking.getBooker());
+        bookingDto.setStatus(booking.getStatus());
+        bookingDto.setState(booking.getState());
+        bookingDto.setItemId(booking.getItemId());
         bookingDto.setItem(booking.getItem());
+        bookingDto.setItemOwnerId(booking.getItemOwnerId());
         return bookingDto;
     }
 
@@ -23,10 +25,12 @@ public class BookingMapper {
         booking.setStart(bookingDto.getStart());
         booking.setEnd(bookingDto.getEnd());
         booking.setBookerId(bookingDto.getBookerId());
-        booking.setStatus(bookingDto.getStatus());
-        booking.setItemId(bookingDto.getItemId());
         booking.setBooker(bookingDto.getBooker());
+        booking.setItemOwnerId(bookingDto.getItemOwnerId());
+        booking.setItemId(bookingDto.getItemId());
         booking.setItem(bookingDto.getItem());
+        booking.setStatus(bookingDto.getStatus());
+        booking.setState(bookingDto.getState());
         return booking;
     }
 }
