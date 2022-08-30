@@ -3,13 +3,18 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ServiceException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -17,18 +22,30 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, BookingRepository bookingRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     //вот этот метод переделать на нормальный, что б в запросе, а не через стрим!!!
     public Collection<Item> getAll(String ownerId) {
-        return itemRepository.findAll().stream()
+        Collection<Item> resultCollection = new ArrayList<>();
+        Collection<Item> col = itemRepository.findAll().stream()
                 .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
                 .collect(Collectors.toList());
+        Collection<Booking> col2 = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
+        System.out.println("ВСЕ БРОНИ - "+bookingRepository.findAll());
+        for(Item item: col) {
+            Collection<Booking> col3 = col2.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
+            item.setNextBooking(getNextBooking(col3));
+            item.setLastBooking(getLastBooking(col3));
+        }
+        resultCollection = col;
+        return resultCollection;
     }
 
     public Item postItem(Item item, String ownerId) {
@@ -48,12 +65,9 @@ public class ItemServiceImpl implements ItemService {
         return getItem1(itemId);
     }
 
+    //-----тут нужно убрать вариант без юзера, так как он всегда передаётся--------
     public Item getItem(String user, long itemId) {
-        if (user==null) {
-            return getItem1(itemId);
-        } else {
             return getItem2(user, itemId);
-        }
     }
 
     public Item getItem1(long itemId) {
@@ -67,7 +81,13 @@ public class ItemServiceImpl implements ItemService {
         if (!itemRepository.existsById(itemId)) {
             throw new NotFoundException("Айтема с таким id не существует");
         }
-        return itemRepository.getReferenceById(itemId);
+        Collection<Booking> col = bookingRepository.findAll().stream().filter(i -> i.getItemId()==itemId).filter(i -> i.getItemOwnerId()==Long.parseLong(user)).collect(Collectors.toList());
+        Item resultItem = itemRepository.getReferenceById(itemId);
+        if(Long.parseLong(user)== resultItem.getOwnerId()) {
+            resultItem.setNextBooking(getNextBooking(col));
+            resultItem.setLastBooking(getLastBooking(col));
+        }
+        return resultItem;
     }
 
     //Этот ебанутый метод тоже нужно из стрима переделать в нормальный запрос
@@ -90,6 +110,16 @@ public class ItemServiceImpl implements ItemService {
         String description = item.getDescription().toLowerCase();
         String name = item.getName().toLowerCase();
         return description.contains(checkText) || name.contains(checkText);
+    }
+
+    private Item setInnerBookingsForItem(Item item) {
+        Item resultItem = new Item();
+        resultItem.setId(item.getId());
+        resultItem.setName(item.getName());
+        resultItem.setDescription(item.getDescription());
+        resultItem.setOwnerId(item.getOwnerId());
+        resultItem.setAvailable(item.getAvailable());
+        return resultItem;
     }
 
     private void validateItem(Item item, String ownerId) {
@@ -133,5 +163,38 @@ public class ItemServiceImpl implements ItemService {
             recipient.setAvailable(donor.getAvailable());
         }
         return recipient;
+    }
+
+    private Booking getNextBooking(Collection<Booking> bookings) {
+        Booking bookingg = new Booking();
+        LocalDateTime now = LocalDateTime.now();
+        List<LocalDateTime> allStarts = new ArrayList<>();
+        for(Booking booking: bookings) {
+            allStarts.add(booking.getStart());
+        }
+        Optional<LocalDateTime> next = allStarts.stream()
+                .filter(date -> date.isAfter(now))
+                .min(LocalDateTime::compareTo);
+
+        Optional<Booking> nextBooking = bookings.stream().filter(b -> b.getStart()== next.orElse(null)).findFirst();
+        bookingg =nextBooking.orElse(null);
+        return bookingg;
+    }
+
+    private Booking getLastBooking(Collection<Booking> bookings) {
+        Booking bookingg = new Booking();
+        LocalDateTime now = LocalDateTime.now();
+        List<LocalDateTime> allEnds = new ArrayList<>();
+        for(Booking booking: bookings) {
+            allEnds.add(booking.getEnd());
+        }
+        Optional<LocalDateTime> last = allEnds.stream()
+                .filter(date -> date.isBefore(now))
+                .max(LocalDateTime::compareTo);
+
+        Optional<Booking> lastBooking = bookings.stream().filter(b -> b.getEnd()== last.orElse(null)).findFirst();
+
+        bookingg =lastBooking.orElse(null);
+        return bookingg;
     }
 }
