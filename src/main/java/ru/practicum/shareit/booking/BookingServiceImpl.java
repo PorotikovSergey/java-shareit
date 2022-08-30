@@ -39,12 +39,14 @@ public class BookingServiceImpl implements BookingService {
         if(itemOwnerId==Long.parseLong(bookerId)) {
             throw new NotFoundException("Нельзя бронировать свою же вещь");
         }
-
+        System.out.println(booking+"===="+bookerId);
         validateBooking(booking, bookerId);
         booking.setBookerId(Long.parseLong(bookerId));
         booking.setStatus(BookingStatus.WAITING);
         booking.setItemOwnerId(itemRepository.getReferenceById(booking.getItemId()).getOwnerId());
         bookingRepository.save(booking);
+        System.out.println("итоговый букинг "+booking);
+        System.out.println("все букинги теперь "+bookingRepository.findAll());
         return booking;
     }
 
@@ -71,7 +73,6 @@ public class BookingServiceImpl implements BookingService {
             bookingRepository.save(booking);
             return booking;
         } else {
-            System.out.println("==\n"+itemRepository.findAll()+"\n==");
             throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
         }
     }
@@ -121,9 +122,31 @@ public class BookingServiceImpl implements BookingService {
                 case CURRENT:
                     return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.CURRENT)).collect(Collectors.toList());
                 case WAITING:
-                    return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.WAITING)).collect(Collectors.toList());
+                    Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                    Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
+                    col = new ArrayList<>();
+                    for (Booking booking : col2) {
+                        Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
+                        User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
+                        booking.setItem(item);
+                        booking.setBooker(innerBooker);
+                        col.add(booking);
+                        bookingRepository.save(booking);
+                    }
+                    return col;
                 case REJECTED:
-                    return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.REJECTED)).collect(Collectors.toList());
+                    Collection<Booking> col3 = bookingRepository.findAll().stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                    Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
+                    col3 = new ArrayList<>();
+                    for (Booking booking : col4) {
+                        Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
+                        User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
+                        booking.setItem(item);
+                        booking.setBooker(innerBooker);
+                        col3.add(booking);
+                        bookingRepository.save(booking);
+                    }
+                    return col3;
             }
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
@@ -152,9 +175,33 @@ public class BookingServiceImpl implements BookingService {
                     case CURRENT:
                         return getAll(curUser);
                     case WAITING:
-                        return getAll(curUser);
+                        Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
+                        Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
+                        col = new ArrayList<>();
+                        for (Booking booking : col2) {
+                            Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
+                            User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
+                            booking.setItem(item);
+                            booking.setBooker(innerBooker);
+                            col.add(booking);
+                            bookingRepository.save(booking);
+                        }
+                        return col;
                     case REJECTED:
-                        return getAll(curUser);
+                        System.out.println("owner "+curUser);
+                        System.out.println("\n==="+bookingRepository.findAll());
+                        Collection<Booking> col3 = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
+                        Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
+                        col3 = new ArrayList<>();
+                        for (Booking booking : col4) {
+                            Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
+                            User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
+                            booking.setItem(item);
+                            booking.setBooker(innerBooker);
+                            col3.add(booking);
+                            bookingRepository.save(booking);
+                        }
+                        return col3;
                 }
             } catch (Exception e) {
                 throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
