@@ -114,10 +114,40 @@ public class BookingServiceImpl implements BookingService {
         try {
             BookingState bookingState = BookingState.valueOf(state.substring(6));
             switch (bookingState) {
+                case PAST:
+                    Collection<Booking> allPastBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                    Collection<Booking> pastBookings = new ArrayList<>();
+                    for(Booking booking: allPastBookings) {
+                        LocalDateTime now = LocalDateTime.now();
+                        if(booking.getEnd().isBefore(now)) {
+                            booking.setState(BookingState.PAST);
+                            pastBookings.add(booking);
+                        }
+                    }
+                    return pastBookings;
                 case FUTURE:
-                    return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+ //                   return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                    Collection<Booking> allFutureBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                    Collection<Booking> futureBookings = new ArrayList<>();
+                    for(Booking booking: allFutureBookings) {
+                        LocalDateTime now = LocalDateTime.now();
+                        if(booking.getStart().isAfter(now)) {
+                            booking.setState(BookingState.FUTURE);
+                            futureBookings.add(booking);
+                        }
+                    }
+                    return futureBookings;
                 case CURRENT:
-                    return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).filter(b -> b.getState().equals(BookingState.CURRENT)).collect(Collectors.toList());
+                   Collection<Booking> allBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                   Collection<Booking> curBookings = new ArrayList<>();
+                   for(Booking booking: allBookings) {
+                       LocalDateTime now = LocalDateTime.now();
+                       if(booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
+                           booking.setState(BookingState.CURRENT);
+                           curBookings.add(booking);
+                       }
+                   }
+                   return curBookings;
                 case WAITING:
                     Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
                     Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
@@ -167,10 +197,40 @@ public class BookingServiceImpl implements BookingService {
             try {
                 BookingState bookingState = BookingState.valueOf(state.substring(6));
                 switch (bookingState) {
+                    case PAST:
+                        Collection<Booking> allPastBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
+                        Collection<Booking> pastBookings = new ArrayList<>();
+                        for(Booking booking: allPastBookings) {
+                            LocalDateTime now = LocalDateTime.now();
+                            if(booking.getEnd().isBefore(now)) {
+                                booking.setState(BookingState.PAST);
+                                pastBookings.add(booking);
+                            }
+                        }
+                        return pastBookings;
                     case FUTURE:
-                        return getAll(curUser);
+//                        return getAll(curUser);
+                    Collection<Booking> allFutureBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
+                    Collection<Booking> futureBookings = new ArrayList<>();
+                    for(Booking booking: allFutureBookings) {
+                        LocalDateTime now = LocalDateTime.now();
+                        if(booking.getStart().isAfter(now)) {
+                            booking.setState(BookingState.FUTURE);
+                            futureBookings.add(booking);
+                        }
+                    }
+                    return futureBookings;
                     case CURRENT:
-                        return getAll(curUser);
+                        Collection<Booking> allBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
+                        Collection<Booking> curBookings = new ArrayList<>();
+                        for(Booking booking: allBookings) {
+                            LocalDateTime now = LocalDateTime.now();
+                            if(booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
+                                booking.setState(BookingState.CURRENT);
+                                curBookings.add(booking);
+                            }
+                        }
+                        return curBookings;
                     case WAITING:
                         Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
                         Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());

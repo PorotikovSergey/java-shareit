@@ -92,8 +92,6 @@ public class ItemServiceImpl implements ItemService {
         for(Comment comment: colComm) {
             comment.setAuthorName(userRepository.getReferenceById(comment.getBookerId()).getName());
         }
-        System.out.println("для айтема: "+itemId);
-        System.out.println("все комменты: "+colComm);
         resultItem.setComments(colComm);
         return resultItem;
     }
@@ -131,7 +129,6 @@ public class ItemServiceImpl implements ItemService {
         comment2.setAuthorName(userRepository.getReferenceById(Long.parseLong(bookerId)).getName());
         commentRepository.save(comment2);
         item.getComments().add(comment2);
-        System.out.println("\n\n77777777777777777777777777777777777777\n\n");
         return comment2;
     }
 
