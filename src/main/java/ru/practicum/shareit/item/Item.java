@@ -4,6 +4,8 @@ import lombok.Data;
 import ru.practicum.shareit.booking.Booking;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "items")
@@ -30,4 +32,7 @@ public class Item {
 
     @Transient
     private Booking nextBooking;
+
+    @Transient
+    private List<Comment> comments = new ArrayList<>();
 }

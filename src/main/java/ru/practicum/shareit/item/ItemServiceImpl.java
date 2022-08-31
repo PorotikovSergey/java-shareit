@@ -23,12 +23,14 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, BookingRepository bookingRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, BookingRepository bookingRepository, CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
     }
 
     //вот этот метод переделать на нормальный, что б в запросе, а не через стрим!!!
@@ -38,7 +40,6 @@ public class ItemServiceImpl implements ItemService {
                 .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
                 .collect(Collectors.toList());
         Collection<Booking> col2 = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
-        System.out.println("ВСЕ БРОНИ - "+bookingRepository.findAll());
         for(Item item: col) {
             Collection<Booking> col3 = col2.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
             item.setNextBooking(getNextBooking(col3));
@@ -87,10 +88,16 @@ public class ItemServiceImpl implements ItemService {
             resultItem.setNextBooking(getNextBooking(col));
             resultItem.setLastBooking(getLastBooking(col));
         }
+        List<Comment> colComm = commentRepository.findAll().stream().filter(c -> c.getItemId()==itemId).collect(Collectors.toList());
+        for(Comment comment: colComm) {
+            comment.setAuthorName(userRepository.getReferenceById(comment.getBookerId()).getName());
+        }
+        System.out.println("для айтема: "+itemId);
+        System.out.println("все комменты: "+colComm);
+        resultItem.setComments(colComm);
         return resultItem;
     }
 
-    //Этот ебанутый метод тоже нужно из стрима переделать в нормальный запрос
     public Collection<Item> searchItem(String text, String ownerId) {
         if(text.isBlank()) {
             return new ArrayList<Item>();
@@ -100,6 +107,32 @@ public class ItemServiceImpl implements ItemService {
                         || i.getDescription().toLowerCase().contains(text.toLowerCase()))
                 .filter(Item::getAvailable)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Comment postComment(String bookerId, long itemId, Comment comment) {
+        Item item = getItem1(itemId);
+        Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getItemId()==itemId).collect(Collectors.toList());
+        Booking booking = col.stream().filter(b -> b.getBookerId()==Long.parseLong(bookerId)).findFirst().orElse(null);
+
+        if(booking==null) {
+            throw new NotFoundException("Бронирования на данный айтем не было");
+        }
+        if(booking.getEnd().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("Отзывы возможны только к прошедшим броням");
+        }
+        if(comment.getText().isBlank()) {
+            throw new ValidationException("Текст отзыва не может быть пустым");
+        }
+        Comment comment2 = new Comment();
+        comment2.setText(comment.getText());
+        comment2.setItemId(itemId);
+        comment2.setBookerId(Long.parseLong(bookerId));
+        comment2.setAuthorName(userRepository.getReferenceById(Long.parseLong(bookerId)).getName());
+        commentRepository.save(comment2);
+        item.getComments().add(comment2);
+        System.out.println("\n\n77777777777777777777777777777777777777\n\n");
+        return comment2;
     }
 
     private boolean checkTextInDescriptionAndName(Item item, String text) {

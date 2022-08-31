@@ -13,11 +13,13 @@ public class ItemController {
     private static final String SHARER_ID_HEADER = "X-Sharer-User-Id";
     private final ItemService itemService;
     private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
 
     @Autowired
-    public ItemController(ItemServiceImpl itemService, ItemMapper itemMapper) {
+    public ItemController(ItemServiceImpl itemService, ItemMapper itemMapper, CommentMapper commentMapper) {
         this.itemService = itemService;
         this.itemMapper = itemMapper;
+        this.commentMapper = commentMapper;
     }
 
     @GetMapping
@@ -52,5 +54,10 @@ public class ItemController {
         return itemService.searchItem(text, request.getHeader(SHARER_ID_HEADER)).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
+    }
+    //POST /items/{itemId}/comment .
+    @PostMapping("{itemId}/comment")
+    public CommentDto postComment(HttpServletRequest request, @PathVariable long itemId, @RequestBody Comment comment) {
+        return commentMapper.fromCommentToDto(itemService.postComment(request.getHeader(SHARER_ID_HEADER), itemId, comment));
     }
 }

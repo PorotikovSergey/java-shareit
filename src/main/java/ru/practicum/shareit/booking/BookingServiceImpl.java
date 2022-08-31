@@ -39,14 +39,11 @@ public class BookingServiceImpl implements BookingService {
         if(itemOwnerId==Long.parseLong(bookerId)) {
             throw new NotFoundException("Нельзя бронировать свою же вещь");
         }
-        System.out.println(booking+"===="+bookerId);
         validateBooking(booking, bookerId);
         booking.setBookerId(Long.parseLong(bookerId));
         booking.setStatus(BookingStatus.WAITING);
         booking.setItemOwnerId(itemRepository.getReferenceById(booking.getItemId()).getOwnerId());
         bookingRepository.save(booking);
-        System.out.println("итоговый букинг "+booking);
-        System.out.println("все букинги теперь "+bookingRepository.findAll());
         return booking;
     }
 
@@ -188,8 +185,6 @@ public class BookingServiceImpl implements BookingService {
                         }
                         return col;
                     case REJECTED:
-                        System.out.println("owner "+curUser);
-                        System.out.println("\n==="+bookingRepository.findAll());
                         Collection<Booking> col3 = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
                         Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
                         col3 = new ArrayList<>();
