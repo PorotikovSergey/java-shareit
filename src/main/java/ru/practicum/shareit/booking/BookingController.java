@@ -40,16 +40,9 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingDto> getAll(HttpServletRequest request) {
-//        if (request.getQueryString() == null) {
-//            System.out.println("запрос без реквеста");
-//            return bookingService.getAll(request.getHeader(SHARER_ID_HEADER)).stream()
-//                    .map(bookingMapper::fromBookingToDto)
-//                    .collect(Collectors.toList());
-//        } else {
             return bookingService.getAllByBooker(request.getQueryString(), request.getHeader(SHARER_ID_HEADER)).stream()
                     .map(bookingMapper::fromBookingToDto)
                     .collect(Collectors.toList());
-//        }
     }
 
     @GetMapping("/owner")

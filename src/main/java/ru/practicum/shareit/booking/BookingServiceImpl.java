@@ -102,34 +102,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<Booking> getAll(String ownerOrBooker) {
-        long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
-
-        if (!userRepository.existsById(idOfOwnerOrBooker)) {
-            throw new NotFoundException("Юзера с таким id не существует");
-        }
-
-        for (Booking booking : bookingRepository.findAll()) {
-            result.add(strongBookingMaker(booking));
-        }
-        return result;
-    }
-
-    @Override
     public Collection<Booking> getAllByBooker(String state, String booker) {
+        result.clear();
         if(state==null) {
-            System.out.println("стейт равен нулл");
-            return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+            return getAllBookingsForBooker(booker);
         }
         long idOfBooker = Long.parseLong(booker);
+        Collection<Booking> allBookings = getAllBookingsForBooker(booker);
         try {
             BookingState bookingState = BookingState.valueOf(state.substring(6));
             switch (bookingState) {
                 case PAST:
-                    //Collection<Booking> allPastBookings = getAll(booker).stream().filter(b -> b.getBookerId() == idOfBooker).collect(Collectors.toList());
-                    Collection<Booking> allPastBookings = bookingRepository.findByBookerId(idOfBooker).stream().map(this::strongBookingMaker).collect(Collectors.toList());
                     Collection<Booking> pastBookings = new ArrayList<>();
-                    for(Booking booking: allPastBookings) {
+                    for(Booking booking: allBookings) {
                         LocalDateTime now = LocalDateTime.now();
                         if(booking.getEnd().isBefore(now)) {
                             booking.setState(BookingState.PAST);
@@ -138,9 +123,8 @@ public class BookingServiceImpl implements BookingService {
                     }
                     return pastBookings;
                 case FUTURE:
-                    Collection<Booking> allFutureBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
                     Collection<Booking> futureBookings = new ArrayList<>();
-                    for(Booking booking: allFutureBookings) {
+                    for(Booking booking: allBookings) {
                         LocalDateTime now = LocalDateTime.now();
                         if(booking.getStart().isAfter(now)) {
                             booking.setState(BookingState.FUTURE);
@@ -149,7 +133,6 @@ public class BookingServiceImpl implements BookingService {
                     }
                     return futureBookings;
                 case CURRENT:
-                   Collection<Booking> allBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
                    Collection<Booking> curBookings = new ArrayList<>();
                    for(Booking booking: allBookings) {
                        LocalDateTime now = LocalDateTime.now();
@@ -160,13 +143,12 @@ public class BookingServiceImpl implements BookingService {
                    }
                    return curBookings;
                 case WAITING:
-                    Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
-                    Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
-                    col = new ArrayList<>();
+                    Collection<Booking> col2 = allBookings.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
+                    List<Booking> waitingList = new ArrayList<>();
                     for (Booking booking : col2) {
-                        col.add(strongBookingMaker(booking));
+                        waitingList.add(strongBookingMaker(booking));
                     }
-                    return col;
+                    return waitingList;
                 case REJECTED:
                     Collection<Booking> col3 = bookingRepository.findAll().stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
                     Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
@@ -308,5 +290,31 @@ public class BookingServiceImpl implements BookingService {
         Item item = itemRepository.getReferenceById(booking.getItemId());
         User booker = userRepository.getReferenceById(booking.getBookerId());
         return weakBookingMaker(booking, item, booker);
+    }
+
+    private Collection<Booking> getAllBookingsForBooker(String booker) {
+        long idOfOwnerOrBooker = Long.parseLong(booker);
+
+        if (!userRepository.existsById(idOfOwnerOrBooker)) {
+            throw new NotFoundException("Юзера с таким id не существует");
+        }
+
+        for (Booking booking : bookingRepository.findByBookerId(idOfOwnerOrBooker)) {
+            result.add(strongBookingMaker(booking));
+        }
+        return result;
+    }
+
+    private Collection<Booking> getAll(String owner) {
+        long idOfOwnerOrBooker = Long.parseLong(owner);
+
+        if (!userRepository.existsById(idOfOwnerOrBooker)) {
+            throw new NotFoundException("Юзера с таким id не существует");
+        }
+
+        for (Booking booking : bookingRepository.findAll()) {
+            result.add(strongBookingMaker(booking));
+        }
+        return result;
     }
 }
