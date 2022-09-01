@@ -35,27 +35,35 @@ public class BookingServiceImpl implements BookingService {
         if (!itemRepository.existsById(booking.getItemId())) {
             throw new NotFoundException("Айтема с таким id не существует");
         }
+
         long itemOwnerId = itemRepository.getReferenceById(booking.getItemId()).getOwnerId();
-        if(itemOwnerId==Long.parseLong(bookerId)) {
+        Item item = itemRepository.getReferenceById(booking.getItemId());
+        long itemBookerId = Long.parseLong(bookerId);
+        User booker = userRepository.getReferenceById(itemBookerId);
+
+        if(itemOwnerId==itemBookerId) {
             throw new NotFoundException("Нельзя бронировать свою же вещь");
         }
+
         validateBooking(booking, bookerId);
-        booking.setBookerId(Long.parseLong(bookerId));
+        booking.setBookerId(itemBookerId);
         booking.setStatus(BookingStatus.WAITING);
-        booking.setItemOwnerId(itemRepository.getReferenceById(booking.getItemId()).getOwnerId());
-        bookingRepository.save(booking);
-        return booking;
+        booking.setItemOwnerId(itemOwnerId);
+        return weakBookingMaker(booking, item, booker);
     }
 
     @Override
     public Booking patchBooking(String bookingId, String sharerId, String approved) {
-        if (!bookingRepository.existsById(Long.parseLong(bookingId))) {
+        long idOfBooking = Long.parseLong(bookingId);
+        long idOfOwner = Long.parseLong(sharerId);
+
+        if (!bookingRepository.existsById(idOfBooking)) {
             throw new NotFoundException("Бронирования с таким id не существует");
         }
-        Booking booking = bookingRepository.getReferenceById(Long.parseLong(bookingId));
-        Item item = itemRepository.getReferenceById(booking.getItemId());
-        User booker = userRepository.getReferenceById(booking.getBookerId());
-        if (Long.parseLong(sharerId) != booking.getItemOwnerId()) {
+
+        Booking booking = bookingRepository.getReferenceById(idOfBooking);
+
+        if (idOfOwner != booking.getItemOwnerId()) {
             throw new NotFoundException("Патчить статус вещи может только её владелец");
         }
 
@@ -65,10 +73,7 @@ public class BookingServiceImpl implements BookingService {
             } else if (approved.equals("false")) {
                 booking.setStatus(BookingStatus.REJECTED);
             }
-            booking.setItem(getNewItem(item));
-            booking.setBooker(getNewBooker(booker));
-            bookingRepository.save(booking);
-            return booking;
+            return strongBookingMaker(booking);
         } else {
             throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
         }
@@ -76,19 +81,21 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking getBooking(String ownerOrBooker, String bookingId) {
-        if (!userRepository.existsById(Long.parseLong(ownerOrBooker))) {
+        long idOfBooking =  Long.parseLong(bookingId);
+        long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
+
+        if (!userRepository.existsById(idOfOwnerOrBooker)) {
             throw new NotFoundException("Юзера с таким id не существует");
         }
-        if (!bookingRepository.existsById(Long.parseLong(bookingId))) {
+
+        if (!bookingRepository.existsById(idOfBooking)) {
             throw new NotFoundException("Букинга с таким id не существует");
         }
-        Booking booking = bookingRepository.getReferenceById(Long.parseLong(bookingId));
-        if ((booking.getBookerId() == Long.parseLong(ownerOrBooker)) || (booking.getItemOwnerId() == Long.parseLong(ownerOrBooker))) {
-            Item item = itemRepository.getReferenceById(booking.getItemId());
-            User booker = userRepository.getReferenceById(booking.getBookerId());
-            booking.setItem(getNewItem(item));
-            booking.setBooker(getNewBooker(booker));
-            return booking;
+
+        Booking booking = bookingRepository.getReferenceById(idOfBooking);
+
+        if ((booking.getBookerId() == idOfOwnerOrBooker) || (booking.getItemOwnerId() == idOfOwnerOrBooker)) {
+            return strongBookingMaker(booking);
         } else {
             throw new NotFoundException("Только владелец или арендатор могут просматривать айтем");
         }
@@ -96,26 +103,31 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Collection<Booking> getAll(String ownerOrBooker) {
-        if (!userRepository.existsById(Long.parseLong(ownerOrBooker))) {
+        long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
+
+        if (!userRepository.existsById(idOfOwnerOrBooker)) {
             throw new NotFoundException("Юзера с таким id не существует");
         }
+
         for (Booking booking : bookingRepository.findAll()) {
-            Item item = itemRepository.getReferenceById(booking.getItemId());
-            User booker = userRepository.getReferenceById(booking.getBookerId());
-            booking.setItem(getNewItem(item));
-            booking.setBooker(getNewBooker(booker));
-            result.add(booking);
+            result.add(strongBookingMaker(booking));
         }
         return result;
     }
 
     @Override
     public Collection<Booking> getAllByBooker(String state, String booker) {
+        if(state==null) {
+            System.out.println("стейт равен нулл");
+            return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+        }
+        long idOfBooker = Long.parseLong(booker);
         try {
             BookingState bookingState = BookingState.valueOf(state.substring(6));
             switch (bookingState) {
                 case PAST:
-                    Collection<Booking> allPastBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+                    //Collection<Booking> allPastBookings = getAll(booker).stream().filter(b -> b.getBookerId() == idOfBooker).collect(Collectors.toList());
+                    Collection<Booking> allPastBookings = bookingRepository.findByBookerId(idOfBooker).stream().map(this::strongBookingMaker).collect(Collectors.toList());
                     Collection<Booking> pastBookings = new ArrayList<>();
                     for(Booking booking: allPastBookings) {
                         LocalDateTime now = LocalDateTime.now();
@@ -126,7 +138,6 @@ public class BookingServiceImpl implements BookingService {
                     }
                     return pastBookings;
                 case FUTURE:
- //                   return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
                     Collection<Booking> allFutureBookings = getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
                     Collection<Booking> futureBookings = new ArrayList<>();
                     for(Booking booking: allFutureBookings) {
@@ -153,12 +164,7 @@ public class BookingServiceImpl implements BookingService {
                     Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
                     col = new ArrayList<>();
                     for (Booking booking : col2) {
-                        Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
-                        User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
-                        booking.setItem(item);
-                        booking.setBooker(innerBooker);
-                        col.add(booking);
-                        bookingRepository.save(booking);
+                        col.add(strongBookingMaker(booking));
                     }
                     return col;
                 case REJECTED:
@@ -166,12 +172,7 @@ public class BookingServiceImpl implements BookingService {
                     Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
                     col3 = new ArrayList<>();
                     for (Booking booking : col4) {
-                        Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
-                        User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
-                        booking.setItem(item);
-                        booking.setBooker(innerBooker);
-                        col3.add(booking);
-                        bookingRepository.save(booking);
+                        col3.add(strongBookingMaker(booking));
                     }
                     return col3;
             }
@@ -188,10 +189,7 @@ public class BookingServiceImpl implements BookingService {
         }
         result = getAllBookingByOwnerId(curUser);
         for (Booking booking : result) {
-            Item item = itemRepository.getReferenceById(booking.getItemId());
-            User booker = userRepository.getReferenceById(booking.getBookerId());
-            booking.setItem(getNewItem(item));
-            booking.setBooker(getNewBooker(booker));
+            strongBookingMaker(booking);
         }
         if (state!=null) {
             try {
@@ -209,7 +207,6 @@ public class BookingServiceImpl implements BookingService {
                         }
                         return pastBookings;
                     case FUTURE:
-//                        return getAll(curUser);
                     Collection<Booking> allFutureBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
                     Collection<Booking> futureBookings = new ArrayList<>();
                     for(Booking booking: allFutureBookings) {
@@ -236,12 +233,7 @@ public class BookingServiceImpl implements BookingService {
                         Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
                         col = new ArrayList<>();
                         for (Booking booking : col2) {
-                            Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
-                            User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
-                            booking.setItem(item);
-                            booking.setBooker(innerBooker);
-                            col.add(booking);
-                            bookingRepository.save(booking);
+                            col.add(strongBookingMaker(booking));
                         }
                         return col;
                     case REJECTED:
@@ -249,12 +241,7 @@ public class BookingServiceImpl implements BookingService {
                         Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
                         col3 = new ArrayList<>();
                         for (Booking booking : col4) {
-                            Item item = getNewItem(itemRepository.getReferenceById(booking.getItemId()));
-                            User innerBooker = getNewBooker(userRepository.getReferenceById(booking.getBookerId()));
-                            booking.setItem(item);
-                            booking.setBooker(innerBooker);
-                            col3.add(booking);
-                            bookingRepository.save(booking);
+                            col3.add(strongBookingMaker(booking));
                         }
                         return col3;
                 }
@@ -284,35 +271,15 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private Set<Booking> getAllBookingByOwnerId(String ownerId) {
-        result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
+        private Set<Booking> getAllBookingByOwnerId(String ownerId) {
+        result.clear();
+//        result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
+//        Set<Booking> resultSet = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(ownerId)).collect(Collectors.toSet());
         result.addAll(bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(ownerId)).collect(Collectors.toSet()));
         return result;
     }
 
-    private Set<Booking> getAllBookingsByBookerId(String bookerId) {
-        result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
-        result.addAll(bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(bookerId)).collect(Collectors.toSet()));
-        return result;
-    }
-
-    private Booking getBookingByOwnerAndId(String ownerId, String bookingId) {
-        Booking booking = bookingRepository.getReferenceById(Long.parseLong(bookingId));
-        if (booking.getItemOwnerId() == Long.parseLong(ownerId)) {
-            return booking;
-        }
-        return null;
-    }
-
-    private Booking getBookingByBookerAndId(String bookerId, String bookingId) {
-        Booking booking = bookingRepository.getReferenceById(Long.parseLong(bookingId));
-        if (booking.getItemOwnerId() == Long.parseLong(bookerId)) {
-            return booking;
-        }
-        return null;
-    }
-
-    private Item getNewItem(Item item) {
+    private Item getItemForBooking(Item item) {
         Item newItem = new Item();
         newItem.setId(item.getId());
         newItem.setName(item.getName());
@@ -322,11 +289,24 @@ public class BookingServiceImpl implements BookingService {
         return newItem;
     }
 
-    private User getNewBooker(User booker) {
+    private User getBookerForBooking(User booker) {
         User newBooker = new User();
         newBooker.setId(booker.getId());
         newBooker.setName(booker.getName());
         newBooker.setEmail(booker.getEmail());
         return newBooker;
+    }
+
+    private Booking weakBookingMaker(Booking booking, Item item, User booker) {
+        booking.setItem(getItemForBooking(item));
+        booking.setBooker(getBookerForBooking(booker));
+        bookingRepository.save(booking);
+        return booking;
+    }
+
+    private Booking strongBookingMaker(Booking booking) {
+        Item item = itemRepository.getReferenceById(booking.getItemId());
+        User booker = userRepository.getReferenceById(booking.getBookerId());
+        return weakBookingMaker(booking, item, booker);
     }
 }

@@ -132,26 +132,6 @@ public class ItemServiceImpl implements ItemService {
         return comment2;
     }
 
-    private boolean checkTextInDescriptionAndName(Item item, String text) {
-        if (text.isBlank()) {
-            return false;
-        }
-        String checkText = text.toLowerCase();
-        String description = item.getDescription().toLowerCase();
-        String name = item.getName().toLowerCase();
-        return description.contains(checkText) || name.contains(checkText);
-    }
-
-    private Item setInnerBookingsForItem(Item item) {
-        Item resultItem = new Item();
-        resultItem.setId(item.getId());
-        resultItem.setName(item.getName());
-        resultItem.setDescription(item.getDescription());
-        resultItem.setOwnerId(item.getOwnerId());
-        resultItem.setAvailable(item.getAvailable());
-        return resultItem;
-    }
-
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
