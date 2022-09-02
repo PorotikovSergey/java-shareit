@@ -40,10 +40,16 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public Item postItem(Item item, String ownerId) {
-        item.setOwnerId(Long.parseLong(ownerId));
-        validateItem(item, ownerId);
-        itemRepository.save(item);
-        return item;
+        try {
+            long idOfOwner = Long.parseLong(ownerId);
+            item.setOwnerId(idOfOwner);
+            validateItem(item, ownerId);
+            itemRepository.save(item);
+            return item;
+        } catch (NumberFormatException e) {
+            throw new ValidationException("Неверный айди пользователя");
+        }
+
     }
 
     public void deleteItem(long itemId) {
