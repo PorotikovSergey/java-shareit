@@ -55,7 +55,7 @@ public class ItemController {
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
     }
-    //POST /items/{itemId}/comment .
+
     @PostMapping("{itemId}/comment")
     public CommentDto postComment(HttpServletRequest request, @PathVariable long itemId, @RequestBody Comment comment) {
         return commentMapper.fromCommentToDto(itemService.postComment(request.getHeader(SHARER_ID_HEADER), itemId, comment));
