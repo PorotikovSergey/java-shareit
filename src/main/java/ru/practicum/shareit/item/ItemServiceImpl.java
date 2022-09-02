@@ -26,25 +26,16 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, BookingRepository bookingRepository, CommentRepository commentRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository,
+                           BookingRepository bookingRepository, CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
     }
 
-    //вот этот метод переделать на нормальный, что б в запросе, а не через стрим!!!
     public Collection<Item> getAll(String ownerId) {
-//        Collection<Item> resultCollection = new ArrayList<>();
         List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(Long.parseLong(ownerId));
-//        Collection<Booking> col2 = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
-//        for(Item item: allItemsByOwner) {
-//            Collection<Booking> col3 = col2.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
-//            item.setNextBooking(getNextBooking(col3));
-//            item.setLastBooking(getLastBooking(col3));
-//        }
-//        resultCollection = allItemsByOwner;
-//        return resultCollection;
         return itemsWithStartAndEnd(allItemsByOwner, ownerId);
     }
 
@@ -61,56 +52,54 @@ public class ItemServiceImpl implements ItemService {
 
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
-        itemRepository.save(patchOneItemFromAnother(item, getItem1(itemId)));
-        return getItem1(itemId);
+        itemRepository.save(patchOneItemFromAnother(item, getItemWithOutUser(itemId)));
+        return getItemWithOutUser(itemId);
     }
 
-    //-----тут нужно убрать вариант без юзера, так как он всегда передаётся--------
-    public Item getItem(String user, long itemId) {
-            return getItem2(user, itemId);
-    }
-
-    public Item getItem1(long itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким id не существует");
-        }
+    public Item getItemWithOutUser(long itemId) {
+        checkItem(itemId);
         return itemRepository.getReferenceById(itemId);
     }
 
-    public Item getItem2(String user, long itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким id не существует");
-        }
-        Collection<Booking> col = bookingRepository.findAll().stream().filter(i -> i.getItemId()==itemId).filter(i -> i.getItemOwnerId()==Long.parseLong(user)).collect(Collectors.toList());
+    public Item getItem(String user, long itemId) {
+        long userId = Long.parseLong(user);
+        checkItem(itemId);
+        Collection<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
         Item resultItem = itemRepository.getReferenceById(itemId);
         if(Long.parseLong(user)== resultItem.getOwnerId()) {
-            resultItem.setNextBooking(getNextBooking(col));
-            resultItem.setLastBooking(getLastBooking(col));
+            resultItem.setNextBooking(getNextBooking(bookingsByUser));
+            resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
-        List<Comment> colComm = commentRepository.findAll().stream().filter(c -> c.getItemId()==itemId).collect(Collectors.toList());
-        for(Comment comment: colComm) {
+        List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
+        for(Comment comment: commentsForItem) {
             comment.setAuthorName(userRepository.getReferenceById(comment.getBookerId()).getName());
         }
-        resultItem.setComments(colComm);
+        resultItem.setComments(commentsForItem);
         return resultItem;
     }
 
     public Collection<Item> searchItem(String text, String ownerId) {
         if(text.isBlank()) {
-            return new ArrayList<Item>();
+            return new ArrayList<>();
         }
-        return itemRepository.findAll().stream()
-                .filter(i -> i.getName().toLowerCase().contains(text.toLowerCase())
-                        || i.getDescription().toLowerCase().contains(text.toLowerCase()))
-                .filter(Item::getAvailable)
-                .collect(Collectors.toList());
+        Collection<Item> foundNames = itemRepository
+                .findAllByNameContainingIgnoreCaseAndAvailableIs(text, true);
+        Collection<Item> foundDescriptions = itemRepository
+                .findAllByDescriptionContainingIgnoreCaseAndAvailableIs(text, true);
+        foundNames.removeAll(foundDescriptions);
+        foundNames.addAll(foundDescriptions);
+        return foundNames;
     }
 
     @Override
     public Comment postComment(String bookerId, long itemId, Comment comment) {
-        Item item = getItem1(itemId);
-        Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getItemId()==itemId).collect(Collectors.toList());
-        Booking booking = col.stream().filter(b -> b.getBookerId()==Long.parseLong(bookerId)).findFirst().orElse(null);
+        Item item = getItemWithOutUser(itemId);
+        long idOfBooker = Long.parseLong(bookerId);
+        Collection<Booking> col = bookingRepository.findAllByItemId(itemId);
+        Booking booking = col.stream()
+                .filter(b -> b.getBookerId()==idOfBooker)
+                .findFirst()
+                .orElse(null);
 
         if(booking==null) {
             throw new NotFoundException("Бронирования на данный айтем не было");
@@ -121,16 +110,16 @@ public class ItemServiceImpl implements ItemService {
         if(comment.getText().isBlank()) {
             throw new ValidationException("Текст отзыва не может быть пустым");
         }
-        Comment comment2 = new Comment();
-        comment2.setText(comment.getText());
-        comment2.setItemId(itemId);
-        comment2.setBookerId(Long.parseLong(bookerId));
-        comment2.setAuthorName(userRepository.getReferenceById(Long.parseLong(bookerId)).getName());
-        commentRepository.save(comment2);
-        item.getComments().add(comment2);
-        return comment2;
+        comment.setText(comment.getText());
+        comment.setItemId(itemId);
+        comment.setBookerId(idOfBooker);
+        comment.setAuthorName(userRepository.getReferenceById(idOfBooker).getName());
+        commentRepository.save(comment);
+        item.getComments().add(comment);
+        return comment;
     }
 
+//------------------------------------------------------------------------------------------
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
@@ -149,6 +138,12 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    private void checkItem(long itemId) {
+        if (!itemRepository.existsById(itemId)) {
+            throw new NotFoundException("Айтема с таким id не существует");
+        }
+    }
+
     private void validateItemForPatch(String ownerId, long id) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
@@ -156,7 +151,7 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(Long.parseLong(ownerId))) {
             throw new NotFoundException("С таким Id владельца не существует");
         }
-        if (Long.parseLong(ownerId) != getItem1(id).getOwnerId()) {
+        if (Long.parseLong(ownerId) != getItemWithOutUser(id).getOwnerId()) {
             throw new NotFoundException("Патчить вещь может только её владелец.");
         }
     }
@@ -176,18 +171,19 @@ public class ItemServiceImpl implements ItemService {
 
     private List<Item> itemsWithStartAndEnd (List<Item> list, String ownerId) {
         List<Item> resultItems = new ArrayList<>();
-        Collection<Booking> bookings = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
+        Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(Long.parseLong(ownerId));
         for(Item item: list) {
-            Collection<Booking> col3 = bookings.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
-            item.setNextBooking(getNextBooking(col3));
-            item.setLastBooking(getLastBooking(col3));
+            Collection<Booking> bookingsOfItem = bookings.stream()
+                    .filter(i -> i.getItemId()== item.getId())
+                    .collect(Collectors.toList());
+            item.setNextBooking(getNextBooking(bookingsOfItem));
+            item.setLastBooking(getLastBooking(bookingsOfItem));
             resultItems.add(item);
         }
         return resultItems;
     }
 
     private Booking getNextBooking(Collection<Booking> bookings) {
-        Booking bookingg = new Booking();
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allStarts = new ArrayList<>();
         for(Booking booking: bookings) {
@@ -197,13 +193,10 @@ public class ItemServiceImpl implements ItemService {
                 .filter(date -> date.isAfter(now))
                 .min(LocalDateTime::compareTo);
 
-        Optional<Booking> nextBooking = bookings.stream().filter(b -> b.getStart()== next.orElse(null)).findFirst();
-        bookingg =nextBooking.orElse(null);
-        return bookingg;
+        return bookings.stream().filter(b -> b.getStart() == next.orElse(null)).findFirst().orElse(null);
     }
 
     private Booking getLastBooking(Collection<Booking> bookings) {
-        Booking bookingg = new Booking();
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allEnds = new ArrayList<>();
         for(Booking booking: bookings) {
@@ -213,9 +206,6 @@ public class ItemServiceImpl implements ItemService {
                 .filter(date -> date.isBefore(now))
                 .max(LocalDateTime::compareTo);
 
-        Optional<Booking> lastBooking = bookings.stream().filter(b -> b.getEnd()== last.orElse(null)).findFirst();
-
-        bookingg =lastBooking.orElse(null);
-        return bookingg;
+        return bookings.stream().filter(b -> b.getEnd()== last.orElse(null)).findFirst().orElse(null);
     }
 }

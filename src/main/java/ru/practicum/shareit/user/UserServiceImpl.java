@@ -37,9 +37,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     public void deleteUser(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким id не существует!");
-        }
+        checkUser(userId);
         userRepository.deleteById(userId);
     }
 
@@ -51,10 +49,14 @@ public class UserServiceImpl implements UserService {
     }
 
     public User getUser(long userId) {
+        checkUser(userId);
+        return userRepository.getReferenceById(userId);
+    }
+
+    private void checkUser(long userId) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Юзера с таким id не существует!");
         }
-        return userRepository.getReferenceById(userId);
     }
 
     private void validateUser(User testUser) {
@@ -71,11 +73,6 @@ public class UserServiceImpl implements UserService {
         if (!emailPattern.matcher(testUser.getEmail()).matches()) {
             throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
         }
-//        for (User user : getAll()) {
-//            if (user.getEmail().equals(testUser.getEmail())) {
-//                throw new ConflictException("Юзер с таким email уже существует.");
-//            }
-//        }
     }
 
     private User patchOneUserFromAnother(User donor, User recipient) {
@@ -90,6 +87,7 @@ public class UserServiceImpl implements UserService {
         if (donor.getName() != null) {
             recipient.setName(donor.getName());
         }
+        userRepository.save(recipient);
         return recipient;
     }
 }
