@@ -66,12 +66,12 @@ public class ItemServiceImpl implements ItemService {
         checkItem(itemId);
         Collection<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
         Item resultItem = itemRepository.getReferenceById(itemId);
-        if(Long.parseLong(user)== resultItem.getOwnerId()) {
+        if (Long.parseLong(user) == resultItem.getOwnerId()) {
             resultItem.setNextBooking(getNextBooking(bookingsByUser));
             resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
         List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
-        for(Comment comment: commentsForItem) {
+        for (Comment comment : commentsForItem) {
             comment.setAuthorName(userRepository.getReferenceById(comment.getBookerId()).getName());
         }
         resultItem.setComments(commentsForItem);
@@ -79,7 +79,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public Collection<Item> searchItem(String text, String ownerId) {
-        if(text.isBlank()) {
+        if (text.isBlank()) {
             return new ArrayList<>();
         }
         Collection<Item> foundNames = itemRepository
@@ -97,17 +97,17 @@ public class ItemServiceImpl implements ItemService {
         long idOfBooker = Long.parseLong(bookerId);
         Collection<Booking> col = bookingRepository.findAllByItemId(itemId);
         Booking booking = col.stream()
-                .filter(b -> b.getBookerId()==idOfBooker)
+                .filter(b -> b.getBookerId() == idOfBooker)
                 .findFirst()
                 .orElse(null);
 
-        if(booking==null) {
+        if (booking == null) {
             throw new NotFoundException("Бронирования на данный айтем не было");
         }
-        if(booking.getEnd().isAfter(LocalDateTime.now())) {
+        if (booking.getEnd().isAfter(LocalDateTime.now())) {
             throw new ValidationException("Отзывы возможны только к прошедшим броням");
         }
-        if(comment.getText().isBlank()) {
+        if (comment.getText().isBlank()) {
             throw new ValidationException("Текст отзыва не может быть пустым");
         }
         comment.setText(comment.getText());
@@ -119,7 +119,7 @@ public class ItemServiceImpl implements ItemService {
         return comment;
     }
 
-//------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
@@ -169,12 +169,12 @@ public class ItemServiceImpl implements ItemService {
         return recipient;
     }
 
-    private List<Item> itemsWithStartAndEnd (List<Item> list, String ownerId) {
+    private List<Item> itemsWithStartAndEnd(List<Item> list, String ownerId) {
         List<Item> resultItems = new ArrayList<>();
         Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(Long.parseLong(ownerId));
-        for(Item item: list) {
+        for (Item item : list) {
             Collection<Booking> bookingsOfItem = bookings.stream()
-                    .filter(i -> i.getItemId()== item.getId())
+                    .filter(i -> i.getItemId() == item.getId())
                     .collect(Collectors.toList());
             item.setNextBooking(getNextBooking(bookingsOfItem));
             item.setLastBooking(getLastBooking(bookingsOfItem));
@@ -186,7 +186,7 @@ public class ItemServiceImpl implements ItemService {
     private Booking getNextBooking(Collection<Booking> bookings) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allStarts = new ArrayList<>();
-        for(Booking booking: bookings) {
+        for (Booking booking : bookings) {
             allStarts.add(booking.getStart());
         }
         Optional<LocalDateTime> next = allStarts.stream()
@@ -199,13 +199,13 @@ public class ItemServiceImpl implements ItemService {
     private Booking getLastBooking(Collection<Booking> bookings) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allEnds = new ArrayList<>();
-        for(Booking booking: bookings) {
+        for (Booking booking : bookings) {
             allEnds.add(booking.getEnd());
         }
         Optional<LocalDateTime> last = allEnds.stream()
                 .filter(date -> date.isBefore(now))
                 .max(LocalDateTime::compareTo);
 
-        return bookings.stream().filter(b -> b.getEnd()== last.orElse(null)).findFirst().orElse(null);
+        return bookings.stream().filter(b -> b.getEnd() == last.orElse(null)).findFirst().orElse(null);
     }
 }

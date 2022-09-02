@@ -6,7 +6,6 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Entity
 @Table(name = "bookings")
@@ -44,5 +43,4 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private BookingState state = BookingState.ALL;
-
 }

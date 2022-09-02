@@ -58,6 +58,7 @@ public class ItemStorage {
                 .filter(i -> checkTextInDescriptionAndName(i, text) && i.getAvailable())
                 .collect(Collectors.toList());
     }
+
     private boolean checkTextInDescriptionAndName(Item item, String text) {
         if (text.isBlank()) {
             return false;
