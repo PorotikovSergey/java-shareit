@@ -32,16 +32,13 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking postBooking(Booking booking, String bookerId) {
-        if (!itemRepository.existsById(booking.getItemId())) {
-            throw new NotFoundException("Айтема с таким id не существует");
-        }
-
+        checkItem(booking.getItemId());
         long itemOwnerId = itemRepository.getReferenceById(booking.getItemId()).getOwnerId();
         Item item = itemRepository.getReferenceById(booking.getItemId());
         long itemBookerId = Long.parseLong(bookerId);
         User booker = userRepository.getReferenceById(itemBookerId);
 
-        if(itemOwnerId==itemBookerId) {
+        if (itemOwnerId == itemBookerId) {
             throw new NotFoundException("Нельзя бронировать свою же вещь");
         }
 
@@ -57,9 +54,7 @@ public class BookingServiceImpl implements BookingService {
         long idOfBooking = Long.parseLong(bookingId);
         long idOfOwner = Long.parseLong(sharerId);
 
-        if (!bookingRepository.existsById(idOfBooking)) {
-            throw new NotFoundException("Бронирования с таким id не существует");
-        }
+        checkBooking(idOfBooking);
 
         Booking booking = bookingRepository.getReferenceById(idOfBooking);
 
@@ -67,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Патчить статус вещи может только её владелец");
         }
 
-        if(booking.getStatus()!=BookingStatus.APPROVED) {
+        if (booking.getStatus() != BookingStatus.APPROVED) {
             if (approved.equals("true")) {
                 booking.setStatus(BookingStatus.APPROVED);
             } else if (approved.equals("false")) {
@@ -81,16 +76,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Booking getBooking(String ownerOrBooker, String bookingId) {
-        long idOfBooking =  Long.parseLong(bookingId);
+        long idOfBooking = Long.parseLong(bookingId);
         long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
 
-        if (!userRepository.existsById(idOfOwnerOrBooker)) {
-            throw new NotFoundException("Юзера с таким id не существует");
-        }
+        checkUser(idOfOwnerOrBooker);
 
-        if (!bookingRepository.existsById(idOfBooking)) {
-            throw new NotFoundException("Букинга с таким id не существует");
-        }
+        checkBooking(idOfBooking);
 
         Booking booking = bookingRepository.getReferenceById(idOfBooking);
 
@@ -103,20 +94,23 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Collection<Booking> getAllByBooker(String state, String booker) {
-        result.clear();
-        if(state==null) {
-            return getAllBookingsForBooker(booker);
-        }
-        long idOfBooker = Long.parseLong(booker);
         Collection<Booking> allBookings = getAllBookingsForBooker(booker);
+
+        for (Booking booking : allBookings) {
+            strongBookingMaker(booking);
+        }
+        if (state == null) {
+            return allBookings;
+        }
+
         try {
             BookingState bookingState = BookingState.valueOf(state.substring(6));
             switch (bookingState) {
                 case PAST:
                     Collection<Booking> pastBookings = new ArrayList<>();
-                    for(Booking booking: allBookings) {
+                    for (Booking booking : allBookings) {
                         LocalDateTime now = LocalDateTime.now();
-                        if(booking.getEnd().isBefore(now)) {
+                        if (booking.getEnd().isBefore(now)) {
                             booking.setState(BookingState.PAST);
                             pastBookings.add(booking);
                         }
@@ -124,125 +118,124 @@ public class BookingServiceImpl implements BookingService {
                     return pastBookings;
                 case FUTURE:
                     Collection<Booking> futureBookings = new ArrayList<>();
-                    for(Booking booking: allBookings) {
+                    for (Booking booking : allBookings) {
                         LocalDateTime now = LocalDateTime.now();
-                        if(booking.getStart().isAfter(now)) {
+                        if (booking.getStart().isAfter(now)) {
                             booking.setState(BookingState.FUTURE);
                             futureBookings.add(booking);
                         }
                     }
                     return futureBookings;
                 case CURRENT:
-                   Collection<Booking> curBookings = new ArrayList<>();
-                   for(Booking booking: allBookings) {
-                       LocalDateTime now = LocalDateTime.now();
-                       if(booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
-                           booking.setState(BookingState.CURRENT);
-                           curBookings.add(booking);
-                       }
-                   }
-                   return curBookings;
+                    Collection<Booking> currentBookings = new ArrayList<>();
+                    for (Booking booking : allBookings) {
+                        LocalDateTime now = LocalDateTime.now();
+                        if (booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
+                            booking.setState(BookingState.CURRENT);
+                            currentBookings.add(booking);
+                        }
+                    }
+                    return currentBookings;
                 case WAITING:
-                    Collection<Booking> col2 = allBookings.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
-                    List<Booking> waitingList = new ArrayList<>();
-                    for (Booking booking : col2) {
-                        waitingList.add(strongBookingMaker(booking));
+                    Collection<Booking> allWaitingBookings = allBookings.stream()
+                            .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                            .collect(Collectors.toList());
+                    List<Booking> resultWaitingList = new ArrayList<>();
+                    for (Booking booking : allWaitingBookings) {
+                        resultWaitingList.add(strongBookingMaker(booking));
                     }
-                    return waitingList;
+                    return resultWaitingList;
                 case REJECTED:
-                    Collection<Booking> col3 = bookingRepository.findAll().stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
-                    Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
-                    col3 = new ArrayList<>();
-                    for (Booking booking : col4) {
-                        col3.add(strongBookingMaker(booking));
+                    Collection<Booking> allRejectedBookings = allBookings.stream()
+                            .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                            .collect(Collectors.toList());
+                    List<Booking> resultRejectedBookings = new ArrayList<>();
+                    for (Booking booking : allRejectedBookings) {
+                        resultRejectedBookings.add(strongBookingMaker(booking));
                     }
-                    return col3;
+                    return resultRejectedBookings;
             }
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return getAll(booker).stream().filter(b -> b.getBookerId() == Long.parseLong(booker)).collect(Collectors.toList());
+        return allBookings;
     }
 
     @Override
-    public Collection<Booking> getAllForCurrentUser(String state, String curUser) {
-        if (!userRepository.existsById(Long.parseLong(curUser))) {
-            throw new NotFoundException("Юзера с таким айди нет в нашей базе");
-        }
-        result = getAllBookingByOwnerId(curUser);
-        for (Booking booking : result) {
+    public Collection<Booking> getAllForCurrentUser(String state, String currentUser) {
+        Collection<Booking> allBookings = getAllBookingsByOwnerId(currentUser);
+
+        for (Booking booking : allBookings) {
             strongBookingMaker(booking);
         }
-        if (state!=null) {
-            try {
-                BookingState bookingState = BookingState.valueOf(state.substring(6));
-                switch (bookingState) {
-                    case PAST:
-                        Collection<Booking> allPastBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
-                        Collection<Booking> pastBookings = new ArrayList<>();
-                        for(Booking booking: allPastBookings) {
-                            LocalDateTime now = LocalDateTime.now();
-                            if(booking.getEnd().isBefore(now)) {
-                                booking.setState(BookingState.PAST);
-                                pastBookings.add(booking);
-                            }
-                        }
-                        return pastBookings;
-                    case FUTURE:
-                    Collection<Booking> allFutureBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
-                    Collection<Booking> futureBookings = new ArrayList<>();
-                    for(Booking booking: allFutureBookings) {
+
+        if (state == null) {
+            return allBookings;
+        }
+
+        try {
+            BookingState bookingState = BookingState.valueOf(state.substring(6));
+            switch (bookingState) {
+                case PAST:
+                    Collection<Booking> pastBookings = new ArrayList<>();
+                    for (Booking booking : allBookings) {
                         LocalDateTime now = LocalDateTime.now();
-                        if(booking.getStart().isAfter(now)) {
+                        if (booking.getEnd().isBefore(now)) {
+                            booking.setState(BookingState.PAST);
+                            pastBookings.add(booking);
+                        }
+                    }
+                    return pastBookings;
+                case FUTURE:
+                    Collection<Booking> futureBookings = new ArrayList<>();
+                    for (Booking booking : allBookings) {
+                        LocalDateTime now = LocalDateTime.now();
+                        if (booking.getStart().isAfter(now)) {
                             booking.setState(BookingState.FUTURE);
                             futureBookings.add(booking);
                         }
                     }
                     return futureBookings;
-                    case CURRENT:
-                        Collection<Booking> allBookings = getAll(curUser).stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
-                        Collection<Booking> curBookings = new ArrayList<>();
-                        for(Booking booking: allBookings) {
-                            LocalDateTime now = LocalDateTime.now();
-                            if(booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
-                                booking.setState(BookingState.CURRENT);
-                                curBookings.add(booking);
-                            }
+                case CURRENT:
+                    Collection<Booking> currentBookings = new ArrayList<>();
+                    for (Booking booking : allBookings) {
+                        LocalDateTime now = LocalDateTime.now();
+                        if (booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
+                            booking.setState(BookingState.CURRENT);
+                            currentBookings.add(booking);
                         }
-                        return curBookings;
-                    case WAITING:
-                        Collection<Booking> col = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
-                        Collection<Booking> col2 = col.stream().filter(b -> b.getStatus().equals(BookingStatus.WAITING)).collect(Collectors.toList());
-                        col = new ArrayList<>();
-                        for (Booking booking : col2) {
-                            col.add(strongBookingMaker(booking));
-                        }
-                        return col;
-                    case REJECTED:
-                        Collection<Booking> col3 = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(curUser)).collect(Collectors.toList());
-                        Collection<Booking> col4 = col3.stream().filter(b -> b.getStatus().equals(BookingStatus.REJECTED)).collect(Collectors.toList());
-                        col3 = new ArrayList<>();
-                        for (Booking booking : col4) {
-                            col3.add(strongBookingMaker(booking));
-                        }
-                        return col3;
-                }
-            } catch (Exception e) {
-                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+                    }
+                    return currentBookings;
+                case WAITING:
+                    Collection<Booking> waitingBookings = allBookings.stream()
+                            .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                            .collect(Collectors.toList());
+                    Collection<Booking> resultWaitingBookings = new ArrayList<>();
+                    for (Booking booking : waitingBookings) {
+                        resultWaitingBookings.add(strongBookingMaker(booking));
+                    }
+                    return resultWaitingBookings;
+                case REJECTED:
+                    Collection<Booking> rejectedBookings = allBookings.stream()
+                            .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                            .collect(Collectors.toList());
+                    Collection<Booking> resultRejectedBookings = new ArrayList<>();
+                    for (Booking booking : rejectedBookings) {
+                        resultRejectedBookings.add(strongBookingMaker(booking));
+                    }
+                    return resultRejectedBookings;
             }
+        } catch (Exception e) {
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return result;
+        return allBookings;
     }
 
 //----------------------------всякая вспомогательная фигня--------------------------------------------------------------
 
     private void validateBooking(Booking booking, String bookerId) {
-        if (!userRepository.existsById(Long.parseLong(bookerId))) {
-            throw new NotFoundException("Букера с таким id не существует");
-        }
-        if (!itemRepository.existsById(booking.getItemId())) {
-            throw new NotFoundException("Нет айтема с таким id");
-        }
+        checkUser(Long.parseLong(bookerId));
+        checkItem(booking.getItemId());
         if (!itemRepository.getReferenceById(booking.getItemId()).getAvailable()) {
             throw new ValidationException("Недоступный для бронирования");
         }
@@ -253,11 +246,41 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-        private Set<Booking> getAllBookingByOwnerId(String ownerId) {
+    private void checkUser(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким айди нет в нашей базе");
+        }
+    }
+
+    private void checkItem(long itemId) {
+        if (!itemRepository.existsById(itemId)) {
+            throw new NotFoundException("Айтема с таким айди нет в нашей базе");
+        }
+    }
+
+    private void checkBooking(long bookingId) {
+        if (!bookingRepository.existsById(bookingId)) {
+            throw new NotFoundException("Букинга с таким айди нет в нашей базе");
+        }
+    }
+
+    private Collection<Booking> getAllBookingsForBooker(String booker) {
         result.clear();
-//        result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
-//        Set<Booking> resultSet = bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(ownerId)).collect(Collectors.toSet());
-        result.addAll(bookingRepository.findAll().stream().filter(b -> b.getItemOwnerId() == Long.parseLong(ownerId)).collect(Collectors.toSet()));
+        long idOfBooker = Long.parseLong(booker);
+        if (!userRepository.existsById(idOfBooker)) {
+            throw new NotFoundException("Юзера с таким id не существует");
+        }
+        result.addAll(bookingRepository.findBookingsByBookerId(idOfBooker));
+        return result;
+    }
+
+    private Set<Booking> getAllBookingsByOwnerId(String ownerId) {
+        result.clear();
+        long idOfOwner = Long.parseLong(ownerId);
+        if (!userRepository.existsById(idOfOwner)) {
+            throw new NotFoundException("Юзера с таким id не существует");
+        }
+        result.addAll(bookingRepository.findBookingsByItemOwnerId(idOfOwner));
         return result;
     }
 
@@ -292,29 +315,5 @@ public class BookingServiceImpl implements BookingService {
         return weakBookingMaker(booking, item, booker);
     }
 
-    private Collection<Booking> getAllBookingsForBooker(String booker) {
-        long idOfOwnerOrBooker = Long.parseLong(booker);
 
-        if (!userRepository.existsById(idOfOwnerOrBooker)) {
-            throw new NotFoundException("Юзера с таким id не существует");
-        }
-
-        for (Booking booking : bookingRepository.findByBookerId(idOfOwnerOrBooker)) {
-            result.add(strongBookingMaker(booking));
-        }
-        return result;
-    }
-
-    private Collection<Booking> getAll(String owner) {
-        long idOfOwnerOrBooker = Long.parseLong(owner);
-
-        if (!userRepository.existsById(idOfOwnerOrBooker)) {
-            throw new NotFoundException("Юзера с таким id не существует");
-        }
-
-        for (Booking booking : bookingRepository.findAll()) {
-            result.add(strongBookingMaker(booking));
-        }
-        return result;
-    }
 }

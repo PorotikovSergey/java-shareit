@@ -35,18 +35,17 @@ public class ItemServiceImpl implements ItemService {
 
     //вот этот метод переделать на нормальный, что б в запросе, а не через стрим!!!
     public Collection<Item> getAll(String ownerId) {
-        Collection<Item> resultCollection = new ArrayList<>();
-        Collection<Item> col = itemRepository.findAll().stream()
-                .filter(i -> i.getOwnerId() == Long.parseLong(ownerId))
-                .collect(Collectors.toList());
-        Collection<Booking> col2 = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
-        for(Item item: col) {
-            Collection<Booking> col3 = col2.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
-            item.setNextBooking(getNextBooking(col3));
-            item.setLastBooking(getLastBooking(col3));
-        }
-        resultCollection = col;
-        return resultCollection;
+//        Collection<Item> resultCollection = new ArrayList<>();
+        List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(Long.parseLong(ownerId));
+//        Collection<Booking> col2 = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
+//        for(Item item: allItemsByOwner) {
+//            Collection<Booking> col3 = col2.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
+//            item.setNextBooking(getNextBooking(col3));
+//            item.setLastBooking(getLastBooking(col3));
+//        }
+//        resultCollection = allItemsByOwner;
+//        return resultCollection;
+        return itemsWithStartAndEnd(allItemsByOwner, ownerId);
     }
 
     public Item postItem(Item item, String ownerId) {
@@ -173,6 +172,18 @@ public class ItemServiceImpl implements ItemService {
             recipient.setAvailable(donor.getAvailable());
         }
         return recipient;
+    }
+
+    private List<Item> itemsWithStartAndEnd (List<Item> list, String ownerId) {
+        List<Item> resultItems = new ArrayList<>();
+        Collection<Booking> bookings = bookingRepository.findAll().stream().filter(i -> i.getItemOwnerId()==Long.parseLong(ownerId)).collect(Collectors.toList());
+        for(Item item: list) {
+            Collection<Booking> col3 = bookings.stream().filter(i -> i.getItemId()== item.getId()).collect(Collectors.toList());
+            item.setNextBooking(getNextBooking(col3));
+            item.setLastBooking(getLastBooking(col3));
+            resultItems.add(item);
+        }
+        return resultItems;
     }
 
     private Booking getNextBooking(Collection<Booking> bookings) {
