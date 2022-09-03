@@ -1,4 +1,4 @@
-create type status as enum ('WAITING', 'APPROVED', 'REJECTED', 'CANCELED');
+create type status as enum  ('WAITING', 'APPROVED', 'REJECTED', 'CANCELED');
 create type state as enum ('ALL', 'CURRENT', 'FUTURE', 'WAITING', 'REJECTED');
 
 CREATE TABLE IF NOT EXISTS users (
