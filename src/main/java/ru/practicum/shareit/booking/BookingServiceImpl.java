@@ -49,9 +49,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking patchBooking(String bookingId, String sharerId, String approved) {
-        long idOfBooking = Long.parseLong(bookingId);
-        long idOfOwner = Long.parseLong(sharerId);
+    public Booking patchBooking(String parsedBookingId, String parsedOwnerId, String approved) {
+        long idOfBooking = Long.parseLong(parsedBookingId);
+        long idOfOwner = Long.parseLong(parsedOwnerId);
 
         checkBooking(idOfBooking);
 
@@ -61,16 +61,16 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Патчить статус вещи может только её владелец");
         }
 
-        if (booking.getStatus() != BookingStatus.APPROVED) {
-            if (approved.equals("true")) {
-                booking.setStatus(BookingStatus.APPROVED);
-            } else if (approved.equals("false")) {
-                booking.setStatus(BookingStatus.REJECTED);
-            }
-            return strongBookingMaker(booking);
-        } else {
+        if (booking.getStatus() == BookingStatus.APPROVED) {
             throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
         }
+
+        if (approved.equals("true")) {
+            booking.setStatus(BookingStatus.APPROVED);
+        } else if (approved.equals("false")) {
+            booking.setStatus(BookingStatus.REJECTED);
+        }
+        return strongBookingMaker(booking);
     }
 
     @Override
