@@ -42,7 +42,7 @@ public class ItemServiceImpl implements ItemService {
     public Item postItem(Item item, String ownerId) {
         long idOfOwner = Long.parseLong(ownerId);
         if (!userRepository.existsById(idOfOwner)) {
-            throw new NotFoundException("Неверный айди пользователя");
+            throw new NotFoundException("Неверный айди пользователя " + ownerId);
         }
         item.setOwnerId(idOfOwner);
         validateItem(item, ownerId);
@@ -106,7 +106,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElse(null);
 
         if (booking == null) {
-            throw new NotFoundException("Бронирования на данный айтем не было");
+            throw new NotFoundException("Бронирования на данный айтем с айди " + itemId + " не было");
         }
         if (booking.getEnd().isAfter(LocalDateTime.now())) {
             throw new ValidationException("Отзывы возможны только к прошедшим броням");
@@ -123,13 +123,12 @@ public class ItemServiceImpl implements ItemService {
         return comment;
     }
 
-    //------------------------------------------------------------------------------------------
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
         }
         if (!userRepository.existsById(Long.parseLong(ownerId))) {
-            throw new NotFoundException("С таким Id владельца не существует");
+            throw new NotFoundException("С таким Id " + ownerId + " владельца не существует");
         }
         if (item.getAvailable() == null) {
             throw new ValidationException("Вещь без доступности.");
@@ -144,7 +143,7 @@ public class ItemServiceImpl implements ItemService {
 
     private void checkItem(long itemId) {
         if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким id не существует");
+            throw new NotFoundException("Айтема с таким id " + itemId + " не существует");
         }
     }
 
@@ -153,10 +152,11 @@ public class ItemServiceImpl implements ItemService {
             throw new ServiceException("Отсутствует владелец");
         }
         if (!userRepository.existsById(Long.parseLong(ownerId))) {
-            throw new NotFoundException("С таким Id владельца не существует");
+            throw new NotFoundException("С таким Id " + ownerId + " владельца не существует");
         }
         if (Long.parseLong(ownerId) != getItemWithOutUser(id).getOwnerId()) {
-            throw new NotFoundException("Патчить вещь может только её владелец.");
+            throw new NotFoundException("Патчить вещь может только её владелец с айди "
+                    + getItemWithOutUser(id).getOwnerId());
         }
     }
 

@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     private void checkUser(long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким id не существует!");
+            throw new NotFoundException("Юзера с таким id " + userId + " не существует!");
         }
     }
 
@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
         if (donor.getEmail() != null) {
             for (User user : getAll()) {
                 if (user.getEmail().equals(donor.getEmail())) {
-                    throw new ConflictException("Юзер с таким email уже существует.");
+                    throw new ConflictException("Юзер с таким email " + user.getEmail() + " уже существует.");
                 }
             }
             recipient.setEmail(donor.getEmail());

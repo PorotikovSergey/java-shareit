@@ -38,7 +38,8 @@ public class BookingServiceImpl implements BookingService {
         User booker = userRepository.getReferenceById(itemBookerId);
 
         if (ownerId == itemBookerId) {
-            throw new NotFoundException("Нельзя бронировать свою же вещь");
+            throw new NotFoundException("Нельзя бронировать свою же вещь. " +
+                    "Айди владельца " + ownerId + ". Айди  желающего " + itemBookerId);
         }
 
         validateBooking(booking, bookerId);
@@ -58,7 +59,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.getReferenceById(idOfBooking);
 
         if (idOfOwner != booking.getItemOwnerId()) {
-            throw new NotFoundException("Патчить статус вещи может только её владелец");
+            throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
         }
 
         if (booking.getStatus() == BookingStatus.APPROVED) {
@@ -81,7 +82,10 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.getReferenceById(idOfBooking);
 
         if (!((booking.getBookerId() == idOfOwnerOrBooker) || (booking.getItemOwnerId() == idOfOwnerOrBooker))) {
-            throw new NotFoundException("Только владелец или арендатор могут просматривать айтем");
+            throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. " +
+                    "Айди владельца " + booking.getItemOwnerId() + ". " +
+                    "Айди арендатора " + booking.getBookerId() + ". " +
+                    "Айди желающего " + idOfOwnerOrBooker);
         }
 
         return strongBookingMaker(booking);
@@ -233,7 +237,7 @@ public class BookingServiceImpl implements BookingService {
         checkUser(Long.parseLong(bookerId));
         checkItem(booking.getItemId());
         if (!itemRepository.getReferenceById(booking.getItemId()).getAvailable()) {
-            throw new ValidationException("Недоступный для бронирования");
+            throw new ValidationException("Недоступный для бронирования. Айди вещи " + booking.getItemId());
         }
         if ((booking.getEnd().isBefore(booking.getStart()))
                 || (booking.getEnd().isBefore(LocalDateTime.now()))
@@ -244,19 +248,19 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkUser(long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким айди нет в нашей базе");
+            throw new NotFoundException("Юзера с таким айди " + userId + " нет в нашей базе");
         }
     }
 
     private void checkItem(long itemId) {
         if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким айди нет в нашей базе");
+            throw new NotFoundException("Айтема с таким айди " + itemId + " нет в нашей базе");
         }
     }
 
     private void checkBooking(long bookingId) {
         if (!bookingRepository.existsById(bookingId)) {
-            throw new NotFoundException("Букинга с таким айди нет в нашей базе");
+            throw new NotFoundException("Букинга с таким айди " + bookingId + " нет в нашей базе");
         }
     }
 
@@ -264,7 +268,7 @@ public class BookingServiceImpl implements BookingService {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
         long idOfBooker = Long.parseLong(booker);
         if (!userRepository.existsById(idOfBooker)) {
-            throw new NotFoundException("Юзера с таким id не существует");
+            throw new NotFoundException("Юзера с таким id " + idOfBooker + " не существует");
         }
         result.addAll(bookingRepository.findBookingsByBookerId(idOfBooker));
         return result;
@@ -274,7 +278,7 @@ public class BookingServiceImpl implements BookingService {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
         long idOfOwner = Long.parseLong(ownerId);
         if (!userRepository.existsById(idOfOwner)) {
-            throw new NotFoundException("Юзера с таким id не существует");
+            throw new NotFoundException("Юзера с таким id " + ownerId + " не существует");
         }
         result.addAll(bookingRepository.findBookingsByItemOwnerId(idOfOwner));
         return result;
