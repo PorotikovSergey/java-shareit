@@ -24,7 +24,7 @@ public class Item {
     @Column(name = "available")
     private Boolean available;
 
-    @Column(name = "owner_Id")
+    @Column(name = "owner_id")
     private long ownerId;
 
     @Transient

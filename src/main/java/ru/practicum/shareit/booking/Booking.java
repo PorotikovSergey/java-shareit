@@ -21,13 +21,13 @@ public class Booking {
     @Column(name = "finish")
     private LocalDateTime end;
 
-    @Column(name = "item_Id")
+    @Column(name = "item_id")
     private long itemId;
 
-    @Column(name = "booker_Id")
+    @Column(name = "booker_id")
     private long bookerId;
 
-    @Column(name = "item_Owner_Id")
+    @Column(name = "owner_id")
     private long itemOwnerId;
 
     @Transient

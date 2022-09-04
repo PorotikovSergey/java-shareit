@@ -16,7 +16,7 @@ public class ItemRequest {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "requestorId")
+    @Column(name = "requestor_id")
     private long requestor;
 
     @Column(name = "createDate")
