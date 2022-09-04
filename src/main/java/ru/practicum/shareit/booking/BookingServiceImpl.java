@@ -17,10 +17,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class BookingServiceImpl implements BookingService {
-    BookingRepository bookingRepository;
-    ItemRepository itemRepository;
-    UserRepository userRepository;
-    Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
+    private final BookingRepository bookingRepository;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, ItemRepository itemRepository,
@@ -33,19 +32,19 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking postBooking(Booking booking, String bookerId) {
         checkItem(booking.getItemId());
-        long itemOwnerId = itemRepository.getReferenceById(booking.getItemId()).getOwnerId();
+        long ownerId = itemRepository.getReferenceById(booking.getItemId()).getOwnerId();
         Item item = itemRepository.getReferenceById(booking.getItemId());
         long itemBookerId = Long.parseLong(bookerId);
         User booker = userRepository.getReferenceById(itemBookerId);
 
-        if (itemOwnerId == itemBookerId) {
+        if (ownerId == itemBookerId) {
             throw new NotFoundException("Нельзя бронировать свою же вещь");
         }
 
         validateBooking(booking, bookerId);
         booking.setBookerId(itemBookerId);
         booking.setStatus(BookingStatus.WAITING);
-        booking.setItemOwnerId(itemOwnerId);
+        booking.setItemOwnerId(ownerId);
         return weakBookingMaker(booking, item, booker);
     }
 
@@ -162,8 +161,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<Booking> getAllForCurrentUser(String state, String currentUser) {
-        Collection<Booking> allBookings = getAllBookingsByOwnerId(currentUser);
+    public Collection<Booking> getAllForUser(String state, String user) {
+        Collection<Booking> allBookings = getAllBookingsByOwnerId(user);
 
         for (Booking booking : allBookings) {
             strongBookingMaker(booking);
@@ -265,7 +264,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Collection<Booking> getAllBookingsForBooker(String booker) {
-        result.clear();
+        Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
         long idOfBooker = Long.parseLong(booker);
         if (!userRepository.existsById(idOfBooker)) {
             throw new NotFoundException("Юзера с таким id не существует");
@@ -275,7 +274,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Set<Booking> getAllBookingsByOwnerId(String ownerId) {
-        result.clear();
+        Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
         long idOfOwner = Long.parseLong(ownerId);
         if (!userRepository.existsById(idOfOwner)) {
             throw new NotFoundException("Юзера с таким id не существует");

@@ -47,7 +47,7 @@ public class BookingController {
 
     @GetMapping("/owner")
     public Collection<BookingDto> getForCurrentUser(HttpServletRequest request) {
-        return bookingService.getAllForCurrentUser(request.getQueryString(), request.getHeader(USER_ID_HEADER)).stream()
+        return bookingService.getAllForUser(request.getQueryString(), request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }
