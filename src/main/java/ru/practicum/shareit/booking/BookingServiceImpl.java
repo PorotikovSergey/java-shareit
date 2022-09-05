@@ -50,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking patchBooking(String parsedBookingId, String parsedOwnerId, String approved) {
+    public Booking patchBooking(String parsedBookingId, String parsedOwnerId, boolean approved) {
         long idOfBooking = Long.parseLong(parsedBookingId);
         long idOfOwner = Long.parseLong(parsedOwnerId);
 
@@ -66,7 +66,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
         }
 
-        booking.setStatus(approved.equals("true") ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+        booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         return strongBookingMaker(booking);
     }
 
@@ -159,7 +159,6 @@ public class BookingServiceImpl implements BookingService {
                 }
                 return resultRejectedBookings;
         }
-
         return allBookings;
     }
 
@@ -175,61 +174,64 @@ public class BookingServiceImpl implements BookingService {
             return allBookings;
         }
 
+        BookingState bookingState;
         try {
-            BookingState bookingState = BookingState.valueOf(state.substring(6));
-            switch (bookingState) {
-                case PAST:
-                    Collection<Booking> pastBookings = new ArrayList<>();
-                    for (Booking booking : allBookings) {
-                        LocalDateTime now = LocalDateTime.now();
-                        if (booking.getEnd().isBefore(now)) {
-                            booking.setState(BookingState.PAST);
-                            pastBookings.add(booking);
-                        }
-                    }
-                    return pastBookings;
-                case FUTURE:
-                    Collection<Booking> futureBookings = new ArrayList<>();
-                    for (Booking booking : allBookings) {
-                        LocalDateTime now = LocalDateTime.now();
-                        if (booking.getStart().isAfter(now)) {
-                            booking.setState(BookingState.FUTURE);
-                            futureBookings.add(booking);
-                        }
-                    }
-                    return futureBookings;
-                case CURRENT:
-                    Collection<Booking> currentBookings = new ArrayList<>();
-                    for (Booking booking : allBookings) {
-                        LocalDateTime now = LocalDateTime.now();
-                        if (booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
-                            booking.setState(BookingState.CURRENT);
-                            currentBookings.add(booking);
-                        }
-                    }
-                    return currentBookings;
-                case WAITING:
-                    Collection<Booking> waitingBookings = allBookings.stream()
-                            .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
-                            .collect(Collectors.toList());
-                    Collection<Booking> resultWaitingBookings = new ArrayList<>();
-                    for (Booking booking : waitingBookings) {
-                        resultWaitingBookings.add(strongBookingMaker(booking));
-                    }
-                    return resultWaitingBookings;
-                case REJECTED:
-                    Collection<Booking> rejectedBookings = allBookings.stream()
-                            .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
-                            .collect(Collectors.toList());
-                    Collection<Booking> resultRejectedBookings = new ArrayList<>();
-                    for (Booking booking : rejectedBookings) {
-                        resultRejectedBookings.add(strongBookingMaker(booking));
-                    }
-                    return resultRejectedBookings;
-            }
+            bookingState = BookingState.valueOf(state.substring(6));
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
+
+        switch (bookingState) {
+            case PAST:
+                Collection<Booking> pastBookings = new ArrayList<>();
+                for (Booking booking : allBookings) {
+                    LocalDateTime now = LocalDateTime.now();
+                    if (booking.getEnd().isBefore(now)) {
+                        booking.setState(BookingState.PAST);
+                        pastBookings.add(booking);
+                    }
+                }
+                return pastBookings;
+            case FUTURE:
+                Collection<Booking> futureBookings = new ArrayList<>();
+                for (Booking booking : allBookings) {
+                    LocalDateTime now = LocalDateTime.now();
+                    if (booking.getStart().isAfter(now)) {
+                        booking.setState(BookingState.FUTURE);
+                        futureBookings.add(booking);
+                    }
+                }
+                return futureBookings;
+            case CURRENT:
+                Collection<Booking> currentBookings = new ArrayList<>();
+                for (Booking booking : allBookings) {
+                    LocalDateTime now = LocalDateTime.now();
+                    if (booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
+                        booking.setState(BookingState.CURRENT);
+                        currentBookings.add(booking);
+                    }
+                }
+                return currentBookings;
+            case WAITING:
+                Collection<Booking> waitingBookings = allBookings.stream()
+                        .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                        .collect(Collectors.toList());
+                Collection<Booking> resultWaitingBookings = new ArrayList<>();
+                for (Booking booking : waitingBookings) {
+                    resultWaitingBookings.add(strongBookingMaker(booking));
+                }
+                return resultWaitingBookings;
+            case REJECTED:
+                Collection<Booking> rejectedBookings = allBookings.stream()
+                        .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                        .collect(Collectors.toList());
+                Collection<Booking> resultRejectedBookings = new ArrayList<>();
+                for (Booking booking : rejectedBookings) {
+                    resultRejectedBookings.add(strongBookingMaker(booking));
+                }
+                return resultRejectedBookings;
+        }
+
         return allBookings;
     }
 

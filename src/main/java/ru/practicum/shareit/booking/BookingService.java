@@ -5,7 +5,7 @@ import java.util.Collection;
 public interface BookingService {
     Booking postBooking(Booking booking, String bookerId);
 
-    Booking patchBooking(String bookingId, String sharerId, String approved);
+    Booking patchBooking(String bookingId, String sharerId, boolean approved);
 
     Booking getBooking(String ownerOrBooker, String bookingId);
 

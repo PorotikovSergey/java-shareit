@@ -29,8 +29,9 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public BookingDto patchBooking(HttpServletRequest request, @PathVariable String bookingId,
                                    @RequestParam String approved) {
+
         return bookingMapper.fromBookingToDto(bookingService.patchBooking(bookingId,
-                request.getHeader(USER_ID_HEADER), approved));
+                request.getHeader(USER_ID_HEADER), Boolean.parseBoolean(approved)));
     }
 
     @GetMapping("/{bookingId}")
