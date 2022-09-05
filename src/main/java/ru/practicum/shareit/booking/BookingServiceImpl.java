@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -20,22 +22,24 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final ItemMapper itemMapper;
+    private final UserMapper userMapper;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, ItemRepository itemRepository,
-                              UserRepository userRepository) {
+                              UserRepository userRepository, ItemMapper itemMapper, UserMapper userMapper) {
         this.bookingRepository = bookingRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.itemMapper = itemMapper;
+        this.userMapper = userMapper;
     }
 
     @Override
     public Booking postBooking(Booking booking, String bookerId) {
         checkItem(booking.getItemId());
         long ownerId = itemRepository.getReferenceById(booking.getItemId()).getOwnerId();
-        Item item = itemRepository.getReferenceById(booking.getItemId());
         long itemBookerId = Long.parseLong(bookerId);
-        User booker = userRepository.getReferenceById(itemBookerId);
 
         if (ownerId == itemBookerId) {
             throw new NotFoundException("Нельзя бронировать свою же вещь. " +
@@ -46,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBookerId(itemBookerId);
         booking.setStatus(BookingStatus.WAITING);
         booking.setItemOwnerId(ownerId);
-        return weakBookingMaker(booking, item, booker);
+        return bookingMaker(booking);
     }
 
     @Override
@@ -67,7 +71,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return strongBookingMaker(booking);
+        return bookingMaker(booking);
     }
 
     @Override
@@ -88,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
                     "Айди желающего " + idOfOwnerOrBooker);
         }
 
-        return strongBookingMaker(booking);
+        return bookingMaker(booking);
     }
 
     @Override
@@ -97,7 +101,7 @@ public class BookingServiceImpl implements BookingService {
         Collection<Booking> allBookings = getAllBookingsForBooker(booker);
 
         for (Booking booking : allBookings) {
-            strongBookingMaker(booking);
+            bookingMaker(booking);
         }
         if (state == null) {
             return allBookings;
@@ -146,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
                 List<Booking> resultWaitingList = new ArrayList<>();
                 for (Booking booking : allWaitingBookings) {
-                    resultWaitingList.add(strongBookingMaker(booking));
+                    resultWaitingList.add(bookingMaker(booking));
                 }
                 return resultWaitingList;
             case REJECTED:
@@ -155,7 +159,7 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
                 List<Booking> resultRejectedBookings = new ArrayList<>();
                 for (Booking booking : allRejectedBookings) {
-                    resultRejectedBookings.add(strongBookingMaker(booking));
+                    resultRejectedBookings.add(bookingMaker(booking));
                 }
                 return resultRejectedBookings;
         }
@@ -167,7 +171,7 @@ public class BookingServiceImpl implements BookingService {
         Collection<Booking> allBookings = getAllBookingsByOwnerId(user);
 
         for (Booking booking : allBookings) {
-            strongBookingMaker(booking);
+            bookingMaker(booking);
         }
 
         if (state == null) {
@@ -218,7 +222,7 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
                 Collection<Booking> resultWaitingBookings = new ArrayList<>();
                 for (Booking booking : waitingBookings) {
-                    resultWaitingBookings.add(strongBookingMaker(booking));
+                    resultWaitingBookings.add(bookingMaker(booking));
                 }
                 return resultWaitingBookings;
             case REJECTED:
@@ -227,11 +231,10 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
                 Collection<Booking> resultRejectedBookings = new ArrayList<>();
                 for (Booking booking : rejectedBookings) {
-                    resultRejectedBookings.add(strongBookingMaker(booking));
+                    resultRejectedBookings.add(bookingMaker(booking));
                 }
                 return resultRejectedBookings;
         }
-
         return allBookings;
     }
 
@@ -286,36 +289,12 @@ public class BookingServiceImpl implements BookingService {
         return result;
     }
 
-    private Item getItemForBooking(Item item) {
-        Item newItem = new Item();
-        newItem.setId(item.getId());
-        newItem.setName(item.getName());
-        newItem.setDescription(item.getDescription());
-        newItem.setAvailable(item.getAvailable());
-        newItem.setOwnerId(item.getOwnerId());
-        return newItem;
-    }
-
-    private User getBookerForBooking(User booker) {
-        User newBooker = new User();
-        newBooker.setId(booker.getId());
-        newBooker.setName(booker.getName());
-        newBooker.setEmail(booker.getEmail());
-        return newBooker;
-    }
-
-    private Booking weakBookingMaker(Booking booking, Item item, User booker) {
-        booking.setItem(getItemForBooking(item));
-        booking.setBooker(getBookerForBooking(booker));
+    private Booking bookingMaker(Booking booking) {
+        Item item = itemRepository.getReferenceById(booking.getItemId());
+        User booker = userRepository.getReferenceById(booking.getBookerId());
+        booking.setItem(itemMapper.fromItemToDto(item));
+        booking.setBooker(userMapper.fromUserToDto(booker));
         bookingRepository.save(booking);
         return booking;
     }
-
-    private Booking strongBookingMaker(Booking booking) {
-        Item item = itemRepository.getReferenceById(booking.getItemId());
-        User booker = userRepository.getReferenceById(booking.getBookerId());
-        return weakBookingMaker(booking, item, booker);
-    }
-
-
 }

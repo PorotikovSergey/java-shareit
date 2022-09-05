@@ -1,8 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import lombok.Data;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.item.ItemDto;
+import ru.practicum.shareit.user.UserDto;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -31,10 +31,10 @@ public class Booking {
     private long itemOwnerId;
 
     @Transient
-    private User booker;
+    private UserDto booker;
 
     @Transient
-    private Item item;
+    private ItemDto item;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
