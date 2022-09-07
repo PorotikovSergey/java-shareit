@@ -22,8 +22,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    private final ItemMapper itemMapper;
-    private final UserMapper userMapper;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, ItemRepository itemRepository,
@@ -31,8 +29,6 @@ public class BookingServiceImpl implements BookingService {
         this.bookingRepository = bookingRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
-        this.itemMapper = itemMapper;
-        this.userMapper = userMapper;
     }
 
     @Override
@@ -290,10 +286,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Booking bookingMaker(Booking booking) {
-        Item item = itemRepository.getReferenceById(booking.getItemId());
-        User booker = userRepository.getReferenceById(booking.getBookerId());
-        booking.setItem(itemMapper.fromItemToDto(item));
-        booking.setBooker(userMapper.fromUserToDto(booker));
+        booking.setItem(itemRepository.getReferenceById(booking.getItemId()));
+        booking.setBooker(userRepository.getReferenceById(booking.getBookerId()));
         bookingRepository.save(booking);
         return booking;
     }
