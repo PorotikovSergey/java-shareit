@@ -62,21 +62,21 @@ public class ItemServiceImpl implements ItemService {
 
     public Item getItemWithOutUser(long itemId) {
         checkItem(itemId);
-        return itemRepository.getReferenceById(itemId);
+        return itemRepository.findById(itemId).get();
     }
 
     public Item getItem(String user, long itemId) {
         long userId = Long.parseLong(user);
         checkItem(itemId);
         Collection<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
-        Item resultItem = itemRepository.getReferenceById(itemId);
+        Item resultItem = itemRepository.findById(itemId).get();
         if (Long.parseLong(user) == resultItem.getOwnerId()) {
             resultItem.setNextBooking(getNextBooking(bookingsByUser));
             resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
         List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
         for (Comment comment : commentsForItem) {
-            comment.setAuthorName(userRepository.getReferenceById(comment.getBookerId()).getName());
+            comment.setAuthorName(userRepository.findById(comment.getBookerId()).get().getName());
         }
         resultItem.setComments(commentsForItem);
         return resultItem;
@@ -117,7 +117,7 @@ public class ItemServiceImpl implements ItemService {
         comment.setText(comment.getText());
         comment.setItemId(itemId);
         comment.setBookerId(idOfBooker);
-        comment.setAuthorName(userRepository.getReferenceById(idOfBooker).getName());
+        comment.setAuthorName(userRepository.findById(idOfBooker).get().getName());
         commentRepository.save(comment);
         item.getComments().add(comment);
         return comment;

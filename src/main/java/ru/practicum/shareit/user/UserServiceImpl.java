@@ -44,13 +44,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User patchUser(long userId, User user) {
-        patchOneUserFromAnother(user, userRepository.getReferenceById(userId));
-        return userRepository.getReferenceById(userId);
+        patchOneUserFromAnother(user, userRepository.findById(userId).get());
+        return userRepository.findById(userId).get();
     }
 
     public User getUser(long userId) {
         checkUser(userId);
-        return userRepository.getReferenceById(userId);
+        return userRepository.findById(userId).get();
     }
 
     private void checkUser(long userId) {

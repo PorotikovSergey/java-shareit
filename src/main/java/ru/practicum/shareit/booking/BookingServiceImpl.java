@@ -5,11 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -25,7 +21,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, ItemRepository itemRepository,
-                              UserRepository userRepository, ItemMapper itemMapper, UserMapper userMapper) {
+                              UserRepository userRepository) {
         this.bookingRepository = bookingRepository;
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
@@ -34,7 +30,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking postBooking(Booking booking, String bookerId) {
         checkItem(booking.getItemId());
-        long ownerId = itemRepository.getReferenceById(booking.getItemId()).getOwnerId();
+        long ownerId = itemRepository.findById(booking.getItemId()).get().getOwnerId();
         long itemBookerId = Long.parseLong(bookerId);
 
         if (ownerId == itemBookerId) {
@@ -56,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
 
         checkBooking(idOfBooking);
 
-        Booking booking = bookingRepository.getReferenceById(idOfBooking);
+        Booking booking = bookingRepository.findById(idOfBooking).get();
 
         if (idOfOwner != booking.getItemOwnerId()) {
             throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
@@ -79,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
 
         checkBooking(idOfBooking);
 
-        Booking booking = bookingRepository.getReferenceById(idOfBooking);
+        Booking booking = bookingRepository.findById(idOfBooking).get();
 
         if (!((booking.getBookerId() == idOfOwnerOrBooker) || (booking.getItemOwnerId() == idOfOwnerOrBooker))) {
             throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. " +
@@ -237,7 +233,7 @@ public class BookingServiceImpl implements BookingService {
     private void validateBooking(Booking booking, String bookerId) {
         checkUser(Long.parseLong(bookerId));
         checkItem(booking.getItemId());
-        if (!itemRepository.getReferenceById(booking.getItemId()).getAvailable()) {
+        if (!itemRepository.findById(booking.getItemId()).get().getAvailable()) {
             throw new ValidationException("Недоступный для бронирования. Айди вещи " + booking.getItemId());
         }
         if ((booking.getEnd().isBefore(booking.getStart()))
@@ -286,8 +282,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Booking bookingMaker(Booking booking) {
-        booking.setItem(itemRepository.getReferenceById(booking.getItemId()));
-        booking.setBooker(userRepository.getReferenceById(booking.getBookerId()));
+        booking.setItem(itemRepository.findById(booking.getItemId()).get());
+        booking.setBooker(userRepository.findById(booking.getBookerId()).get());
         bookingRepository.save(booking);
         return booking;
     }
