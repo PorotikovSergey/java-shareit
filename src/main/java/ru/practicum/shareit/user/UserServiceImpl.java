@@ -3,36 +3,91 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.ConflictException;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public Collection<User> getAll() {
-        return userStorage.getAll();
+    @Override
+    public List<User> getAll() {
+        return userRepository.findAll();
     }
 
+    @Transactional
+    @Override
     public User postUser(User user) {
-        return userStorage.addUser(user);
+        validateUser(user);
+        userRepository.save(user);
+        return user;
     }
 
+    @Transactional
     public void deleteUser(long userId) {
-        userStorage.deleteUser(userId);
+        checkUser(userId);
+        userRepository.deleteById(userId);
     }
 
+    @Transactional
+    @Override
     public User patchUser(long userId, User user) {
-        return userStorage.patchUser(userId, user);
+        patchOneUserFromAnother(user, userRepository.findById(userId).get());
+        return userRepository.findById(userId).get();
     }
 
     public User getUser(long userId) {
-        return userStorage.getUser(userId);
+        checkUser(userId);
+        return userRepository.findById(userId).get();
+    }
+
+    private void checkUser(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким id " + userId + " не существует!");
+        }
+    }
+
+    private void validateUser(User testUser) {
+        Pattern emailPattern = Pattern.compile(
+                "\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*\\.\\w{2,4}");
+
+        if (testUser.getId() < 0) {
+            throw new ValidationException("Id юзера не может быть отрицательным. " +
+                    "Вы пытаетесь задать id: " + testUser.getId());
+        }
+        if (testUser.getEmail() == null) {
+            throw new ValidationException("У юзера должен быть email");
+        }
+        if (!emailPattern.matcher(testUser.getEmail()).matches()) {
+            throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
+        }
+    }
+
+    private User patchOneUserFromAnother(User donor, User recipient) {
+        if (donor.getEmail() != null) {
+            for (User user : getAll()) {
+                if (user.getEmail().equals(donor.getEmail())) {
+                    throw new ConflictException("Юзер с таким email " + user.getEmail() + " уже существует.");
+                }
+            }
+            recipient.setEmail(donor.getEmail());
+        }
+        if (donor.getName() != null) {
+            recipient.setName(donor.getName());
+        }
+        userRepository.save(recipient);
+        return recipient;
     }
 }
