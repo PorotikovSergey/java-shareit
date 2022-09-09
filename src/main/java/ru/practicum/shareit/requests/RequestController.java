@@ -31,13 +31,15 @@ public class RequestController {
     }
 
     @GetMapping("/{itemRequestId}")
-    public String getItemRequest(@PathVariable String itemRequestId) {
-        return itemRequestId;
+    public Request getItemRequest(HttpServletRequest requestor, @PathVariable String itemRequestId) {
+        return requestService.getRequest(itemRequestId, requestor.getHeader(USER_ID_HEADER));
     }
 
     @GetMapping("/all")
-    public Collection<Request> getAllPageable(@RequestParam(required = false) String from,
-                                 @RequestParam(required = false) String size) {
-        return requestService.getAllPageable(from, size);
+    public Collection<Request> getAllPageable(HttpServletRequest requestor,
+                                              @RequestParam(required = false) String from,
+                                              @RequestParam(required = false) String size) {
+
+        return requestService.getAllPageable(from, size, requestor.getHeader(USER_ID_HEADER));
     }
 }

@@ -16,4 +16,6 @@ public interface ItemService {
     Collection<Item> searchItem(String text, String ownerId);
 
     Comment postComment(String booker, long itemId, Comment comment);
+
+    Item postItemToRequest(Item item, String itemOwner, long requestId);
 }

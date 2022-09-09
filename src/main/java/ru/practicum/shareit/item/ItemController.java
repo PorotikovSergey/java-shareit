@@ -31,8 +31,14 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto postItem(HttpServletRequest request, @RequestBody Item item) {
-        return itemMapper.fromItemToDto(itemService.postItem(item, request.getHeader(USER_ID_HEADER)));
+    public ItemDto postItem(HttpServletRequest request, @RequestBody ItemDto itemDto) {
+        if (itemDto.getRequestId() == 0) {
+            return itemMapper.fromItemToDto(itemService.postItem(itemMapper.fromDtoToItem(itemDto),
+                    request.getHeader(USER_ID_HEADER)));
+        }
+        System.out.println("\n\n"+itemDto.getRequestId()+"\n\n");
+        return itemMapper.fromItemToDto(itemService.postItemToRequest(itemMapper.fromDtoToItem(itemDto),
+                request.getHeader(USER_ID_HEADER), itemDto.getRequestId()));
     }
 
     @DeleteMapping("/{itemId}")
@@ -41,8 +47,9 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody Item item) {
-        return itemMapper.fromItemToDto(itemService.patchItem(itemId, item, request.getHeader(USER_ID_HEADER)));
+    public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody ItemDto itemDto) {
+        return itemMapper.fromItemToDto(itemService.patchItem(itemId, itemMapper.fromDtoToItem(itemDto),
+                request.getHeader(USER_ID_HEADER)));
     }
 
     @GetMapping("/{itemId}")

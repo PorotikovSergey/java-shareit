@@ -8,5 +8,7 @@ public interface RequestService {
 
     Collection<Request> getAll(String requestor);
 
-    Collection<Request> getAllPageable(String from, String size);
+    Collection<Request> getAllPageable(String from, String size, String requestor);
+
+    Request getRequest(String itemRequestId, String requestor);
 }

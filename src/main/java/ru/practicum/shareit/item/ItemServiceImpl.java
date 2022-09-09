@@ -123,6 +123,14 @@ public class ItemServiceImpl implements ItemService {
         return comment;
     }
 
+    @Override
+    public Item postItemToRequest(Item item, String itemOwner, long requestId) {
+        item.setOwnerId(Long.parseLong(itemOwner));
+        validateItem(item, itemOwner);
+        itemRepository.save(item);
+        return item;
+    }
+
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");

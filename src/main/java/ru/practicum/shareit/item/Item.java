@@ -27,6 +27,9 @@ public class Item {
     @Column(name = "owner_id")
     private long ownerId;
 
+    @Column(name = "request_id")
+    private long requestId;
+
     @Transient
     private Booking lastBooking;
 
