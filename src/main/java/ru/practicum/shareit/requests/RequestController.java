@@ -3,6 +3,7 @@ package ru.practicum.shareit.requests;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,8 +26,8 @@ public class RequestController {
     }
 
     @GetMapping
-    public Collection<Request> getAll() {
-        return new ArrayList<>();
+    public Collection<Request> getAll(HttpServletRequest requestor) {
+        return requestService.getAll(requestor.getHeader(USER_ID_HEADER));
     }
 
     @GetMapping("/{itemRequestId}")
@@ -35,8 +36,8 @@ public class RequestController {
     }
 
     @GetMapping("/all")
-    public String getAllPageable(@RequestParam(required = false) String from,
+    public Collection<Request> getAllPageable(@RequestParam(required = false) String from,
                                  @RequestParam(required = false) String size) {
-        return from +"=="+size;
+        return requestService.getAllPageable(from, size);
     }
 }

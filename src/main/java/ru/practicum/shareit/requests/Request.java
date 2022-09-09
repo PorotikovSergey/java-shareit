@@ -1,9 +1,12 @@
 package ru.practicum.shareit.requests;
 
 import lombok.Data;
+import ru.practicum.shareit.item.Item;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "requests")
@@ -20,5 +23,8 @@ public class Request {
     private long requestor;
 
     @Column(name = "create_date")
-    private LocalDateTime createDate;
+    private Date created;
+
+    @Transient
+    private List<Item> items = new ArrayList<>();
 }
