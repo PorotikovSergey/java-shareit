@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "requests")
 @Data
-public class ItemRequest {
+public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -19,6 +19,6 @@ public class ItemRequest {
     @Column(name = "requestor_id")
     private long requestor;
 
-    @Column(name = "createDate")
+    @Column(name = "create_date")
     private LocalDateTime createDate;
 }
