@@ -36,7 +36,6 @@ public class ItemController {
             return itemMapper.fromItemToDto(itemService.postItem(itemMapper.fromDtoToItem(itemDto),
                     request.getHeader(USER_ID_HEADER)));
         }
-        System.out.println("\n\n"+itemDto.getRequestId()+"\n\n");
         return itemMapper.fromItemToDto(itemService.postItemToRequest(itemMapper.fromDtoToItem(itemDto),
                 request.getHeader(USER_ID_HEADER), itemDto.getRequestId()));
     }

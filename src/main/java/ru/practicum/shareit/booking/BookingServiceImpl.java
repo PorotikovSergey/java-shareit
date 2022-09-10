@@ -2,12 +2,15 @@ package ru.practicum.shareit.booking;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.UserRepository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +21,8 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, ItemRepository itemRepository,
@@ -95,12 +100,13 @@ public class BookingServiceImpl implements BookingService {
         for (Booking booking : allBookings) {
             bookingMaker(booking);
         }
+
         if (state == null) {
             return allBookings;
         }
 
         try {
-            bookingState = BookingState.valueOf(state.substring(6));
+            bookingState = BookingState.valueOf(state);
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
@@ -172,7 +178,7 @@ public class BookingServiceImpl implements BookingService {
 
         BookingState bookingState;
         try {
-            bookingState = BookingState.valueOf(state.substring(6));
+            bookingState = BookingState.valueOf(state);
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
@@ -228,6 +234,54 @@ public class BookingServiceImpl implements BookingService {
                 return resultRejectedBookings;
         }
         return allBookings;
+    }
+
+    @Override
+    public Collection<Booking> getAllForBookerPageable(String first, String size, String booker) {
+        long bookerId = Long.parseLong(booker);
+        if (!userRepository.existsById(bookerId)) {
+            throw new NotFoundException("Юзера с таким айди " + bookerId + " нет");
+        }
+        int firstEl = Integer.parseInt(first);
+        int sizePage = Integer.parseInt(size);
+
+        if ((firstEl < 1) || (sizePage < 1)) {
+            throw new ValidationException("Невалидные значения from и size");
+        }
+
+        List<Booking> allBookings =  new ArrayList<>(getAllBookingsForBooker(booker));
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(allBookings.subList(firstEl, allBookings.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        List<Booking> result = new ArrayList<>();
+        for(Object booking: page.getPageList()) {
+            result.add(bookingMaker((Booking) booking));
+        }
+        return result;
+    }
+
+    @Override
+    public Collection<Booking> getAllForUserPageable(String from, String size, String user) {
+
+        long userId = Long.parseLong(user);
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким айди " + user + " нет");
+        }
+        int firstEl = Integer.parseInt(from);
+        int sizePage = Integer.parseInt(size);
+        if ((firstEl < 1) || (sizePage < 1)) {
+            throw new ValidationException("Невалидные значения from и size");
+        }
+
+        List<Booking> allBookings = new ArrayList<>(getAllBookingsByOwnerId(user));
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(allBookings.subList(firstEl, allBookings.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        List<Booking> result = new ArrayList<>();
+        for(Object booking: page.getPageList()) {
+            result.add(bookingMaker((Booking) booking));
+        }
+        return result;
     }
 
     private void validateBooking(Booking booking, String bookerId) {

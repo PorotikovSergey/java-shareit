@@ -12,4 +12,8 @@ public interface BookingService {
     Collection<Booking> getAllByBooker(String state, String booker);
 
     Collection<Booking> getAllForUser(String state, String user);
+
+    Collection<Booking> getAllForBookerPageable(String from, String size, String booker);
+
+    Collection<Booking> getAllForUserPageable(String from, String size, String user);
 }

@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -40,15 +42,33 @@ public class BookingController {
     }
 
     @GetMapping
-    public Collection<BookingDto> getAll(HttpServletRequest request) {
-        return bookingService.getAllByBooker(request.getQueryString(), request.getHeader(USER_ID_HEADER)).stream()
+    public Collection<BookingDto> getAll(HttpServletRequest request,
+                                         @RequestParam(required = false) String state,
+                                         @RequestParam(required = false) String from,
+                                         @RequestParam(required = false) String size) {
+        if (from != null) {
+            List<BookingDto> result = bookingService.getAllForBookerPageable(from, size, request.getHeader(USER_ID_HEADER)).stream()
+                    .map(bookingMapper::fromBookingToDto)
+                    .collect(Collectors.toList());
+            return result;
+        }
+        return bookingService.getAllByBooker(state, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/owner")
-    public Collection<BookingDto> getForCurrentUser(HttpServletRequest request) {
-        return bookingService.getAllForUser(request.getQueryString(), request.getHeader(USER_ID_HEADER)).stream()
+    public Collection<BookingDto> getForCurrentUser(HttpServletRequest request,
+                                                    @RequestParam(required = false) String state,
+                                                    @RequestParam(required = false) String from,
+                                                    @RequestParam(required = false) String size) {
+        if (from != null) {
+            List<BookingDto> result = bookingService.getAllForUserPageable(from, size, request.getHeader(USER_ID_HEADER)).stream()
+                    .map(bookingMapper::fromBookingToDto)
+                    .collect(Collectors.toList());
+            return result;
+        }
+        return bookingService.getAllForUser(state, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }
