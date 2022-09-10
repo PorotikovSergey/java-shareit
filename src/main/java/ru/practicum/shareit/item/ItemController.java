@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> getAll(HttpServletRequest request) {
+    public Collection<ItemDto> getAll(HttpServletRequest request,
+                                      @RequestParam(required = false) String from,
+                                      @RequestParam(required = false) String size) {
+        if (from != null) {
+            return new ArrayList<>();
+        }
         return itemService.getAll(request.getHeader(USER_ID_HEADER)).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
@@ -57,7 +63,12 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> searchItem(HttpServletRequest request, @RequestParam String text) {
+    public Collection<ItemDto> searchItem(HttpServletRequest request, @RequestParam String text,
+                                          @RequestParam(required = false) String from,
+                                          @RequestParam(required = false) String size) {
+        if (from != null) {
+            return new ArrayList<>();
+        }
         return itemService.searchItem(text, request.getHeader(USER_ID_HEADER)).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
