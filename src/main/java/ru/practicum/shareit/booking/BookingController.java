@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,9 +41,9 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getAll(HttpServletRequest request,
-                                         @RequestParam(required = false) String state,
-                                         @RequestParam(required = false) String from,
-                                         @RequestParam(required = false) String size) {
+                                   @RequestParam(required = false) String state,
+                                   @RequestParam(required = false) String from,
+                                   @RequestParam(required = false) String size) {
         return bookingService.getAllForBooker(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
@@ -53,9 +51,9 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDto> getForCurrentUser(HttpServletRequest request,
-                                                    @RequestParam(required = false) String state,
-                                                    @RequestParam(required = false) String from,
-                                                    @RequestParam(required = false) String size) {
+                                              @RequestParam(required = false) String state,
+                                              @RequestParam(required = false) String from,
+                                              @RequestParam(required = false) String size) {
         return bookingService.getAllForOwner(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());

@@ -137,7 +137,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> getPageableList(List<Booking> bookings, int firstEl, int sizePage) {
-        PagedListHolder<Booking> page = new PagedListHolder(bookings.subList(firstEl, bookings.size()));
+        PagedListHolder<Booking> page = new PagedListHolder<>(bookings.subList(firstEl, bookings.size()));
         page.setPageSize(sizePage);
         page.setPage(0);
         List<Booking> result = new ArrayList<>();
@@ -168,13 +168,13 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkItem(long itemId) {
         if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким айди " + itemId + " нет в нашей базе");
+            throw new NotFoundException("Айтема с таким айди " + itemId + " отсутствует");
         }
     }
 
     private void checkBooking(long bookingId) {
         if (!bookingRepository.existsById(bookingId)) {
-            throw new NotFoundException("Букинга с таким айди " + bookingId + " нет в нашей базе");
+            throw new NotFoundException("Букинга с таким айди " + bookingId + " нет");
         }
     }
 

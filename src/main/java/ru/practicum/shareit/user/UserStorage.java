@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @Repository
 public class UserStorage {
-    private final Map<Long, User> users = new HashMap();
+    private final Map<Long, User> users = new HashMap<>();
 
     public Collection<User> getAll() {
         return users.values();

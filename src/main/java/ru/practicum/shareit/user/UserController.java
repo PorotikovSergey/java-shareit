@@ -3,7 +3,7 @@ package ru.practicum.shareit.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -19,13 +19,13 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<UserDto> getAll() {
+    public List<UserDto> getAll() {
         return userService.getAll().stream().map(userMapper::fromUserToDto).collect(Collectors.toList());
     }
 
     @PostMapping
-    public UserDto postUser(@RequestBody User user) {
-        return userMapper.fromUserToDto(userService.postUser(user));
+    public UserDto postUser(@RequestBody UserDto userDto) {
+        return userMapper.fromUserToDto(userService.postUser(userMapper.fromDtoToUser(userDto)));
     }
 
     @DeleteMapping("/{userId}")
@@ -34,8 +34,8 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto patchUser(@PathVariable long userId, @RequestBody User user) {
-        return userMapper.fromUserToDto(userService.patchUser(userId, user));
+    public UserDto patchUser(@PathVariable long userId, @RequestBody UserDto userDto) {
+        return userMapper.fromUserToDto(userService.patchUser(userId, userMapper.fromDtoToUser(userDto)));
     }
 
     @GetMapping("/{userId}")

@@ -42,8 +42,8 @@ public class RequestController {
 
     @GetMapping("/all")
     public List<RequestDto> getAllPageable(HttpServletRequest requestor,
-                                              @RequestParam(required = false) String from,
-                                              @RequestParam(required = false) String size) {
+                                           @RequestParam(required = false) String from,
+                                           @RequestParam(required = false) String size) {
 
         return requestService.getAllPageable(from, size, requestor.getHeader(USER_ID_HEADER)).stream()
                 .map(requestMapper::fromRequestToDto)

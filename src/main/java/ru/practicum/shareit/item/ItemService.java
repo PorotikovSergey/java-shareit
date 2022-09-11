@@ -18,8 +18,4 @@ public interface ItemService {
     Comment postComment(String booker, long itemId, Comment comment);
 
     Item postItemToRequest(Item item, String itemOwner, long requestId);
-//
-//    Collection<Item> getAllPageable(String owner, String from, String size);
-//
-//    Collection<Item> searchItemPageable(String text, String owner, String from, String size);
 }

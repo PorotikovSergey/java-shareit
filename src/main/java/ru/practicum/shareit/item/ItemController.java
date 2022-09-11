@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,7 @@ public class ItemController {
     public ItemDto patchItem(HttpServletRequest request,
                              @PathVariable long itemId,
                              @RequestBody ItemDto itemDto) {
-        
+
         return itemMapper.fromItemToDto(itemService.patchItem(itemId, itemMapper.fromDtoToItem(itemDto),
                 request.getHeader(USER_ID_HEADER)));
     }

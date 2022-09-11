@@ -148,7 +148,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private List<Item> getPageable(List<Item> items, int firstEl, int sizePage, long userId) {
-        PagedListHolder page = new PagedListHolder(new ArrayList<>(items.subList(firstEl, items.size())));
+        PagedListHolder<Item> page = new PagedListHolder<>(new ArrayList<>(items.subList(firstEl, items.size())));
         page.setPageSize(sizePage);
         page.setPage(0);
         return itemsWithStartAndEnd(page.getPageList(), userId);
