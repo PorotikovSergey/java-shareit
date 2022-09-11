@@ -30,12 +30,8 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public Request postRequest(Request request, String requestor) {
         long requestorId = Long.parseLong(requestor);
-        if (!userRepository.existsById(requestorId)) {
-           throw new NotFoundException("Юзера с таким айди "+requestorId+" нет");
-        }
-        if ((request.getDescription()==null) || (request.getDescription().isBlank())) {
-            throw new ValidationException("Описание должно быть!");
-        }
+        checkUser(requestorId);
+        checkDescription(request);
         request.setRequestor(requestorId);
         request.setCreated(new Date());
         requestRepository.save(request);
@@ -43,26 +39,24 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Collection<Request> getAll(String requestor) {
+    public List<Request> getAll(String requestor) {
         long requestorId = Long.parseLong(requestor);
-        if (!userRepository.existsById(requestorId)) {
-            throw new NotFoundException("Юзера с таким айди "+requestorId+" нет");
-        }
+        checkUser(requestorId);
+
         Set<Request> allRequests = new TreeSet<>((o1, o2) -> (o2.getCreated().compareTo(o1.getCreated())));
         List<Request> requestList = requestRepository.findRequestsByRequestor(requestorId);
         for(Request request: requestList) {
             request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
         }
         allRequests.addAll(requestList);
-        return allRequests;
+        return new ArrayList<>(allRequests);
     }
 
     @Override
-    public Collection<Request> getAllPageable(String from, String size, String requestor) {
+    public List<Request> getAllPageable(String from, String size, String requestor) {
         long requestorId = Long.parseLong(requestor);
-        if (!userRepository.existsById(requestorId)) {
-            throw new NotFoundException("Юзера с таким айди "+requestorId+" нет");
-        }
+        checkUser(requestorId);
+
         if ((from==null)||(size==null)) {
             return new ArrayList<>();
         }
@@ -78,17 +72,32 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public Request getRequest(String itemRequestId, String requestor) {
-
         long itemRequest = Long.parseLong(itemRequestId);
-        if(!requestRepository.existsById(itemRequest)) {
-            throw new NotFoundException("Реквеста с айди "+itemRequest+" нет");
-        }
+        checkRequest(itemRequest);
+
         long requestorId = Long.parseLong(requestor);
-        if (!userRepository.existsById(requestorId)) {
-            throw new NotFoundException("Юзера с таким айди "+requestorId+" нет");
-        }
+        checkUser(requestorId);
+
         Request request = requestRepository.findAll().stream().filter(r -> r.getId()==itemRequest).findFirst().get();
         request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
         return request;
+    }
+
+    private void checkUser (long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким айди "+userId+" нет");
+        }
+    }
+
+    private void checkRequest (long requestId) {
+        if(!requestRepository.existsById(requestId)) {
+            throw new NotFoundException("Реквеста с айди "+requestId+" нет");
+        }
+    }
+
+    private void checkDescription(Request request) {
+        if ((request.getDescription()==null) || (request.getDescription().isBlank())) {
+            throw new ValidationException("Описание должно быть!");
+        }
     }
 }

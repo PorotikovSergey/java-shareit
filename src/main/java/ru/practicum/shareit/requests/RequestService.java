@@ -1,14 +1,13 @@
 package ru.practicum.shareit.requests;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
+import java.util.List;
 
 public interface RequestService {
     Request postRequest(Request request, String requestor);
 
-    Collection<Request> getAll(String requestor);
+    List<Request> getAll(String requestor);
 
-    Collection<Request> getAllPageable(String from, String size, String requestor);
+    List<Request> getAllPageable(String from, String size, String requestor);
 
     Request getRequest(String itemRequestId, String requestor);
 }

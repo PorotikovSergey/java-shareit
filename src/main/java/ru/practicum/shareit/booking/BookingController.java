@@ -24,8 +24,8 @@ public class BookingController {
     }
 
     @PostMapping
-    public BookingDto postBooking(HttpServletRequest request, @RequestBody Booking booking) {
-        return bookingMapper.fromBookingToDto(bookingService.postBooking(booking, request.getHeader(USER_ID_HEADER)));
+    public BookingDto postBooking(HttpServletRequest request, @RequestBody BookingDto bookingDto) {
+        return bookingMapper.fromBookingToDto(bookingService.postBooking(bookingMapper.fromDtoToBooking(bookingDto), request.getHeader(USER_ID_HEADER)));
     }
 
     @PatchMapping("/{bookingId}")
@@ -42,21 +42,21 @@ public class BookingController {
     }
 
     @GetMapping
-    public Collection<BookingDto> getAll(HttpServletRequest request,
+    public List<BookingDto> getAll(HttpServletRequest request,
                                          @RequestParam(required = false) String state,
                                          @RequestParam(required = false) String from,
                                          @RequestParam(required = false) String size) {
-        return bookingService.getAllByBooker(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
+        return bookingService.getAllForBooker(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/owner")
-    public Collection<BookingDto> getForCurrentUser(HttpServletRequest request,
+    public List<BookingDto> getForCurrentUser(HttpServletRequest request,
                                                     @RequestParam(required = false) String state,
                                                     @RequestParam(required = false) String from,
                                                     @RequestParam(required = false) String size) {
-        return bookingService.getAllForUser(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
+        return bookingService.getAllForOwner(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }

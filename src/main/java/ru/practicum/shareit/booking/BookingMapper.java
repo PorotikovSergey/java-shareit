@@ -28,16 +28,9 @@ public class BookingMapper {
 
     public Booking fromDtoToBooking(BookingDto bookingDto) {
         Booking booking = new Booking();
-        booking.setId(bookingDto.getId());
         booking.setStart(bookingDto.getStart());
         booking.setEnd(bookingDto.getEnd());
-        booking.setBookerId(bookingDto.getBookerId());
-        booking.setBooker(userMapper.fromDtoToUser(bookingDto.getBooker()));
-        booking.setItemOwnerId(bookingDto.getItemOwnerId());
         booking.setItemId(bookingDto.getItemId());
-        booking.setItem(itemMapper.fromDtoToItem(bookingDto.getItem()));
-        booking.setStatus(bookingDto.getStatus());
-        booking.setState(bookingDto.getState());
         return booking;
     }
 }

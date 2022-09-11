@@ -34,10 +34,7 @@ public class BookingServiceImpl implements BookingService {
         long ownerId = itemRepository.findById(booking.getItemId()).get().getOwnerId();
         long itemBookerId = Long.parseLong(bookerId);
 
-        if (ownerId == itemBookerId) {
-            throw new NotFoundException("Нельзя бронировать свою же вещь. " +
-                    "Айди владельца " + ownerId + ". Айди  желающего " + itemBookerId);
-        }
+        checkAccessForBookingOwnItem(ownerId, itemBookerId);
 
         validateBooking(booking, bookerId);
         booking.setBookerId(itemBookerId);
@@ -54,14 +51,7 @@ public class BookingServiceImpl implements BookingService {
         checkBooking(idOfBooking);
 
         Booking booking = bookingRepository.findById(idOfBooking).get();
-
-        if (idOfOwner != booking.getItemOwnerId()) {
-            throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
-        }
-
-        if (booking.getStatus() == BookingStatus.APPROVED) {
-            throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
-        }
+        checkAccessForPatchBooking(idOfOwner, booking);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         return bookingMaker(booking);
@@ -71,88 +61,79 @@ public class BookingServiceImpl implements BookingService {
     public Booking getBooking(String ownerOrBooker, String bookingId) {
         long idOfBooking = Long.parseLong(bookingId);
         long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
-
         checkUser(idOfOwnerOrBooker);
-
         checkBooking(idOfBooking);
 
         Booking booking = bookingRepository.findById(idOfBooking).get();
+        checkAccessForGetBooking(booking, idOfOwnerOrBooker);
 
+        return bookingMaker(booking);
+    }
+
+    @Override
+    public List<Booking> getAllForBooker(String state, String first, String size, String booker) {
+        return checkUserAndStateAndPageAndReturnResultList(getAllBookingsForBooker(booker), state, first, size, booker);
+    }
+
+    @Override
+    public List<Booking> getAllForOwner(String state, String first, String size, String owner) {
+        return checkUserAndStateAndPageAndReturnResultList(getAllBookingsByOwner(owner), state, first, size, owner);
+    }
+
+//------------------------------private-----------------------------------------------------------------
+
+    private void checkAccessForGetBooking(Booking booking, long idOfOwnerOrBooker) {
         if (!((booking.getBookerId() == idOfOwnerOrBooker) || (booking.getItemOwnerId() == idOfOwnerOrBooker))) {
             throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. " +
                     "Айди владельца " + booking.getItemOwnerId() + ". " +
                     "Айди арендатора " + booking.getBookerId() + ". " +
                     "Айди желающего " + idOfOwnerOrBooker);
         }
-
-        return bookingMaker(booking);
     }
 
-    @Override
-    public Collection<Booking> getAllByBooker(String state, String first, String size, String booker) {
-        long bookerId = Long.parseLong(booker);
+    private void checkAccessForPatchBooking(long idOfOwner, Booking booking) {
+        if (idOfOwner != booking.getItemOwnerId()) {
+            throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
+        }
+
+        if (booking.getStatus() == BookingStatus.APPROVED) {
+            throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
+        }
+    }
+
+    private void checkAccessForBookingOwnItem(long ownerId, long itemBookerId) {
+        if (ownerId == itemBookerId) {
+            throw new NotFoundException("Нельзя бронировать свою же вещь. " +
+                    "Айди владельца " + ownerId + ". Айди  желающего " + itemBookerId);
+        }
+    }
+
+    private List<Booking> checkUserAndStateAndPageAndReturnResultList(List<Booking> bookings, String state,
+                                                                      String first, String size, String user) {
+        long bookerId = Long.parseLong(user);
         checkUser(bookerId);
 
-        BookingState bookingState;
-        Collection<Booking> allBookings = getAllBookingsForBooker(booker);
-
-        for (Booking booking : allBookings) {
-            bookingMaker(booking);
-        }
-
         if ((state == null) && (first == null)) {
-            return allBookings;
+            return bookings;
         }
 
-        if((state == null) && (first!=null)) {
+        if (first != null) {
             int firstEl = Integer.parseInt(first);
             int sizePage = Integer.parseInt(size);
             if ((firstEl < 1) || (sizePage < 1)) {
                 throw new ValidationException("Невалидные значения from и size");
             }
-            return getPageableList(new ArrayList<>(allBookings), firstEl, sizePage);
+            return getPageableList(new ArrayList<>(bookings), firstEl, sizePage);
         }
-
-        try {
-            bookingState = BookingState.valueOf(state);
-        } catch (Exception e) {
-            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
-        }
-
-        return setStateForCollection(allBookings, bookingState);
+        return getRightStateList(bookings, getStateOfString(state));
     }
 
-    @Override
-    public Collection<Booking> getAllForUser(String state,  String first, String size, String user) {
-        long userId = Long.parseLong(user);
-        checkUser(userId);
-
-        BookingState bookingState;
-        Collection<Booking> allBookings = getAllBookingsByOwnerId(user);
-        for (Booking booking : allBookings) {
-            bookingMaker(booking);
-        }
-
-        if ((state == null) && (first == null)) {
-            return allBookings;
-        }
-
-        if((state == null) && (first!=null)) {
-            int firstEl = Integer.parseInt(first);
-            int sizePage = Integer.parseInt(size);
-            if ((firstEl < 1) || (sizePage < 1)) {
-                throw new ValidationException("Невалидные значения from и size");
-            }
-            return getPageableList(new ArrayList<>(allBookings), firstEl, sizePage);
-        }
-
+    private BookingState getStateOfString(String state) {
         try {
-            bookingState = BookingState.valueOf(state);
+            return BookingState.valueOf(state);
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-
-        return setStateForCollection(allBookings, bookingState);
     }
 
     private List<Booking> getPageableList(List<Booking> bookings, int firstEl, int sizePage) {
@@ -160,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
         page.setPageSize(sizePage);
         page.setPage(0);
         List<Booking> result = new ArrayList<>();
-        for(Booking booking: page.getPageList()) {
+        for (Booking booking : page.getPageList()) {
             result.add(bookingMaker(booking));
         }
         return result;
@@ -197,27 +178,29 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private Collection<Booking> getAllBookingsForBooker(String booker) {
+    private List<Booking> getAllBookingsForBooker(String booker) {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
         long idOfBooker = Long.parseLong(booker);
         if (!userRepository.existsById(idOfBooker)) {
             throw new NotFoundException("Юзера с таким id " + idOfBooker + " не существует");
         }
         result.addAll(bookingRepository.findBookingsByBookerId(idOfBooker));
-        return result;
+        result.forEach(this::bookingMaker);
+        return new ArrayList<>(result);
     }
 
-    private Set<Booking> getAllBookingsByOwnerId(String ownerId) {
+    private List<Booking> getAllBookingsByOwner(String owner) {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
-        long idOfOwner = Long.parseLong(ownerId);
+        long idOfOwner = Long.parseLong(owner);
         if (!userRepository.existsById(idOfOwner)) {
-            throw new NotFoundException("Юзера с таким id " + ownerId + " не существует");
+            throw new NotFoundException("Юзера с таким id " + owner + " не существует");
         }
         result.addAll(bookingRepository.findBookingsByItemOwnerId(idOfOwner));
-        return result;
+        result.forEach(this::bookingMaker);
+        return new ArrayList<>(result);
     }
 
-    private Collection<Booking> setStateForCollection(Collection<Booking> before, BookingState state) {
+    private List<Booking> getRightStateList(List<Booking> before, BookingState state) {
         List<Booking> result = new ArrayList<>();
         switch (state) {
             case PAST:
