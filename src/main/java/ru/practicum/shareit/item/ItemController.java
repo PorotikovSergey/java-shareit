@@ -28,12 +28,8 @@ public class ItemController {
     public Collection<ItemDto> getAll(HttpServletRequest request,
                                       @RequestParam(required = false) String from,
                                       @RequestParam(required = false) String size) {
-        if (from != null) {
-            return itemService.getAllPageable(request.getHeader(USER_ID_HEADER), from, size).stream()
-                    .map(itemMapper::fromItemToDto)
-                    .collect(Collectors.toList());
-        }
-        return itemService.getAll(request.getHeader(USER_ID_HEADER)).stream()
+
+        return itemService.getAll(request.getHeader(USER_ID_HEADER), from, size).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
     }
@@ -54,7 +50,10 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto patchItem(HttpServletRequest request, @PathVariable long itemId, @RequestBody ItemDto itemDto) {
+    public ItemDto patchItem(HttpServletRequest request,
+                             @PathVariable long itemId,
+                             @RequestBody ItemDto itemDto) {
+        
         return itemMapper.fromItemToDto(itemService.patchItem(itemId, itemMapper.fromDtoToItem(itemDto),
                 request.getHeader(USER_ID_HEADER)));
     }
@@ -65,21 +64,22 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> searchItem(HttpServletRequest request, @RequestParam String text,
+    public Collection<ItemDto> searchItem(HttpServletRequest request,
+                                          @RequestParam String text,
                                           @RequestParam(required = false) String from,
                                           @RequestParam(required = false) String size) {
-        if (from != null) {
-            return itemService.searchItemPageable(text, request.getHeader(USER_ID_HEADER), from, size).stream()
-                    .map(itemMapper::fromItemToDto)
-                    .collect(Collectors.toList());
-        }
-        return itemService.searchItem(text, request.getHeader(USER_ID_HEADER)).stream()
+
+        return itemService.searchItem(text, request.getHeader(USER_ID_HEADER), from, size).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
     }
 
     @PostMapping("{itemId}/comment")
-    public CommentDto postComment(HttpServletRequest request, @PathVariable long itemId, @RequestBody Comment comment) {
-        return commentMapper.fromCommentToDto(itemService.postComment(request.getHeader(USER_ID_HEADER), itemId, comment));
+    public CommentDto postComment(HttpServletRequest request,
+                                  @PathVariable long itemId,
+                                  @RequestBody CommentDto commentDto) {
+
+        return commentMapper.fromCommentToDto(itemService.postComment(request.getHeader(USER_ID_HEADER),
+                itemId, commentMapper.fromDtoToComment(commentDto)));
     }
 }

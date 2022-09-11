@@ -35,57 +35,44 @@ public class ItemServiceImpl implements ItemService {
         this.commentRepository = commentRepository;
     }
 
-    public Collection<Item> getAll(String ownerId) {
-        List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(Long.parseLong(ownerId));
-        return itemsWithStartAndEnd(allItemsByOwner, ownerId);
+    @Override
+    public List<Item> getAll(String owner, String from, String size) {
+        long ownerId = Long.parseLong(owner);
+        List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(ownerId);
+        List<Item> allItems = itemsWithStartAndEnd(allItemsByOwner, ownerId);
+
+        if (from != null) {
+            int firstEl = Integer.parseInt(from);
+            int sizePage = Integer.parseInt(size);
+            return getPageable(allItems, firstEl, sizePage, ownerId);
+        }
+        return allItems;
     }
 
     @Override
-    public Collection<Item> getAllPageable(String owner, String from, String size) {
-
-        long userId = Long.parseLong(owner);
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким айди " + owner + " нет");
-        }
-        int firstEl = Integer.parseInt(from);
-        int sizePage = Integer.parseInt(size);
-        if ((firstEl < 1) || (sizePage < 1)) {
-            throw new ValidationException("Невалидные значения from и size");
-        }
-
-        List<Item> allItems = (List<Item>) getAll(owner);
-        PagedListHolder page = new PagedListHolder(new ArrayList<>(allItems.subList(firstEl, allItems.size())));
-        page.setPageSize(sizePage);
-        page.setPage(0);
-        return itemsWithStartAndEnd(page.getPageList(), owner);
-    }
-
     public Item postItem(Item item, String ownerId) {
         long idOfOwner = Long.parseLong(ownerId);
-        if (!userRepository.existsById(idOfOwner)) {
-            throw new NotFoundException("Неверный айди пользователя " + ownerId);
-        }
+        checkUserId(idOfOwner);
+
         item.setOwnerId(idOfOwner);
         validateItem(item, ownerId);
         itemRepository.save(item);
         return item;
     }
 
+    @Override
     public void deleteItem(long itemId) {
         itemRepository.deleteById(itemId);
     }
 
+    @Override
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
         itemRepository.save(patchOneItemFromAnother(item, getItemWithOutUser(itemId)));
         return getItemWithOutUser(itemId);
     }
 
-    public Item getItemWithOutUser(long itemId) {
-        checkItem(itemId);
-        return itemRepository.findById(itemId).get();
-    }
-
+    @Override
     public Item getItem(String user, long itemId) {
         long userId = Long.parseLong(user);
         checkItem(itemId);
@@ -103,57 +90,38 @@ public class ItemServiceImpl implements ItemService {
         return resultItem;
     }
 
-    public Collection<Item> searchItem(String text, String ownerId) {
+    @Override
+    public List<Item> searchItem(String text, String owner, String from, String size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        Collection<Item> foundNames = itemRepository
+        List<Item> foundNames = itemRepository
                 .findAllByNameContainingIgnoreCaseAndAvailableIs(text, true);
-        Collection<Item> foundDescriptions = itemRepository
+        List<Item> foundDescriptions = itemRepository
                 .findAllByDescriptionContainingIgnoreCaseAndAvailableIs(text, true);
         foundNames.removeAll(foundDescriptions);
         foundNames.addAll(foundDescriptions);
+        if (from != null) {
+            int firstEl = Integer.parseInt(from);
+            int sizePage = Integer.parseInt(size);
+            long ownerId = Long.parseLong(owner);
+            return getPageable(foundNames, firstEl, sizePage, ownerId);
+        }
         return foundNames;
-    }
-
-    @Override
-    public Collection<Item> searchItemPageable(String text, String owner, String from, String size) {
-        long userId = Long.parseLong(owner);
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким айди " + owner + " нет");
-        }
-        int firstEl = Integer.parseInt(from);
-        int sizePage = Integer.parseInt(size);
-        if ((firstEl < 1) || (sizePage < 1)) {
-            throw new ValidationException("Невалидные значения from и size");
-        }
-
-        List<Item> allItems = (List<Item>) searchItem(text, owner);
-        PagedListHolder page = new PagedListHolder(new ArrayList<>(allItems.subList(firstEl, allItems.size())));
-        page.setPageSize(sizePage);
-        page.setPage(0);
-        return itemsWithStartAndEnd(page.getPageList(), owner);
     }
 
     @Override
     public Comment postComment(String bookerId, long itemId, Comment comment) {
         Item item = getItemWithOutUser(itemId);
         long idOfBooker = Long.parseLong(bookerId);
-        Collection<Booking> col = bookingRepository.findAllByItemId(itemId);
-        Booking booking = col.stream()
+
+        Booking booking = bookingRepository.findAllByItemId(itemId).stream()
                 .filter(b -> b.getBookerId() == idOfBooker)
                 .findFirst()
                 .orElse(null);
 
-        if (booking == null) {
-            throw new NotFoundException("Бронирования на данный айтем с айди " + itemId + " не было");
-        }
-        if (booking.getEnd().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Отзывы возможны только к прошедшим броням");
-        }
-        if (comment.getText().isBlank()) {
-            throw new ValidationException("Текст отзыва не может быть пустым");
-        }
+        checkCommentBeforePosting(booking, comment);
+
         comment.setText(comment.getText());
         comment.setItemId(itemId);
         comment.setBookerId(idOfBooker);
@@ -170,6 +138,39 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.save(item);
         return item;
     }
+
+//-----------------------------private------------------------------------------------------------
+
+    private void checkUserId(long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким айди " + userId + " нет");
+        }
+    }
+
+    private List<Item> getPageable(List<Item> items, int firstEl, int sizePage, long userId) {
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(items.subList(firstEl, items.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        return itemsWithStartAndEnd(page.getPageList(), userId);
+    }
+
+    private Item getItemWithOutUser(long itemId) {
+        checkItem(itemId);
+        return itemRepository.findById(itemId).get();
+    }
+
+    private void checkCommentBeforePosting(Booking booking, Comment comment) {
+        if (booking == null) {
+            throw new NotFoundException("Бронирования на данный айтем не было");
+        }
+        if (booking.getEnd().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("Отзывы возможны только к прошедшим броням");
+        }
+        if (comment.getText().isBlank()) {
+            throw new ValidationException("Текст отзыва не может быть пустым");
+        }
+    }
+
 
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
@@ -221,9 +222,9 @@ public class ItemServiceImpl implements ItemService {
         return recipient;
     }
 
-    private List<Item> itemsWithStartAndEnd(List<Item> list, String ownerId) {
+    private List<Item> itemsWithStartAndEnd(List<Item> list, long userId) {
         List<Item> resultItems = new ArrayList<>();
-        Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(Long.parseLong(ownerId));
+        Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(userId);
         for (Item item : list) {
             Collection<Booking> bookingsOfItem = bookings.stream()
                     .filter(i -> i.getItemId() == item.getId())

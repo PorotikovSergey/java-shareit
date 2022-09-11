@@ -3,7 +3,7 @@ package ru.practicum.shareit.item;
 import java.util.Collection;
 
 public interface ItemService {
-    Collection<Item> getAll(String owner);
+    Collection<Item> getAll(String owner, String from, String size);
 
     Item postItem(Item item, String owner);
 
@@ -13,13 +13,13 @@ public interface ItemService {
 
     Item getItem(String user, long itemId);
 
-    Collection<Item> searchItem(String text, String owner);
+    Collection<Item> searchItem(String text, String owner, String from, String size);
 
     Comment postComment(String booker, long itemId, Comment comment);
 
     Item postItemToRequest(Item item, String itemOwner, long requestId);
-
-    Collection<Item> getAllPageable(String owner, String from, String size);
-
-    Collection<Item> searchItemPageable(String text, String owner, String from, String size);
+//
+//    Collection<Item> getAllPageable(String owner, String from, String size);
+//
+//    Collection<Item> searchItemPageable(String text, String owner, String from, String size);
 }
