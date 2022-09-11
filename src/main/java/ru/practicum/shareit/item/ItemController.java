@@ -29,7 +29,9 @@ public class ItemController {
                                       @RequestParam(required = false) String from,
                                       @RequestParam(required = false) String size) {
         if (from != null) {
-            return new ArrayList<>();
+            return itemService.getAllPageable(request.getHeader(USER_ID_HEADER), from, size).stream()
+                    .map(itemMapper::fromItemToDto)
+                    .collect(Collectors.toList());
         }
         return itemService.getAll(request.getHeader(USER_ID_HEADER)).stream()
                 .map(itemMapper::fromItemToDto)
@@ -67,7 +69,9 @@ public class ItemController {
                                           @RequestParam(required = false) String from,
                                           @RequestParam(required = false) String size) {
         if (from != null) {
-            return new ArrayList<>();
+            return itemService.searchItemPageable(text, request.getHeader(USER_ID_HEADER), from, size).stream()
+                    .map(itemMapper::fromItemToDto)
+                    .collect(Collectors.toList());
         }
         return itemService.searchItem(text, request.getHeader(USER_ID_HEADER)).stream()
                 .map(itemMapper::fromItemToDto)

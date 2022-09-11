@@ -9,11 +9,7 @@ public interface BookingService {
 
     Booking getBooking(String ownerOrBooker, String bookingId);
 
-    Collection<Booking> getAllByBooker(String state, String booker);
+    Collection<Booking> getAllByBooker(String state, String first, String size, String booker);
 
-    Collection<Booking> getAllForUser(String state, String user);
-
-    Collection<Booking> getAllForBookerPageable(String from, String size, String booker);
-
-    Collection<Booking> getAllForUserPageable(String from, String size, String user);
+    Collection<Booking> getAllForUser(String state, String first, String size, String user);
 }

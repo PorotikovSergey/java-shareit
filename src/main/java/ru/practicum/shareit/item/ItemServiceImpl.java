@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -37,6 +38,26 @@ public class ItemServiceImpl implements ItemService {
     public Collection<Item> getAll(String ownerId) {
         List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(Long.parseLong(ownerId));
         return itemsWithStartAndEnd(allItemsByOwner, ownerId);
+    }
+
+    @Override
+    public Collection<Item> getAllPageable(String owner, String from, String size) {
+
+        long userId = Long.parseLong(owner);
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким айди " + owner + " нет");
+        }
+        int firstEl = Integer.parseInt(from);
+        int sizePage = Integer.parseInt(size);
+        if ((firstEl < 1) || (sizePage < 1)) {
+            throw new ValidationException("Невалидные значения from и size");
+        }
+
+        List<Item> allItems = (List<Item>) getAll(owner);
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(allItems.subList(firstEl, allItems.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        return itemsWithStartAndEnd(page.getPageList(), owner);
     }
 
     public Item postItem(Item item, String ownerId) {
@@ -93,6 +114,25 @@ public class ItemServiceImpl implements ItemService {
         foundNames.removeAll(foundDescriptions);
         foundNames.addAll(foundDescriptions);
         return foundNames;
+    }
+
+    @Override
+    public Collection<Item> searchItemPageable(String text, String owner, String from, String size) {
+        long userId = Long.parseLong(owner);
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Юзера с таким айди " + owner + " нет");
+        }
+        int firstEl = Integer.parseInt(from);
+        int sizePage = Integer.parseInt(size);
+        if ((firstEl < 1) || (sizePage < 1)) {
+            throw new ValidationException("Невалидные значения from и size");
+        }
+
+        List<Item> allItems = (List<Item>) searchItem(text, owner);
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(allItems.subList(firstEl, allItems.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        return itemsWithStartAndEnd(page.getPageList(), owner);
     }
 
     @Override

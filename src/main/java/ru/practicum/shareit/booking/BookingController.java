@@ -46,13 +46,7 @@ public class BookingController {
                                          @RequestParam(required = false) String state,
                                          @RequestParam(required = false) String from,
                                          @RequestParam(required = false) String size) {
-        if (from != null) {
-            List<BookingDto> result = bookingService.getAllForBookerPageable(from, size, request.getHeader(USER_ID_HEADER)).stream()
-                    .map(bookingMapper::fromBookingToDto)
-                    .collect(Collectors.toList());
-            return result;
-        }
-        return bookingService.getAllByBooker(state, request.getHeader(USER_ID_HEADER)).stream()
+        return bookingService.getAllByBooker(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }
@@ -62,13 +56,7 @@ public class BookingController {
                                                     @RequestParam(required = false) String state,
                                                     @RequestParam(required = false) String from,
                                                     @RequestParam(required = false) String size) {
-        if (from != null) {
-            List<BookingDto> result = bookingService.getAllForUserPageable(from, size, request.getHeader(USER_ID_HEADER)).stream()
-                    .map(bookingMapper::fromBookingToDto)
-                    .collect(Collectors.toList());
-            return result;
-        }
-        return bookingService.getAllForUser(state, request.getHeader(USER_ID_HEADER)).stream()
+        return bookingService.getAllForUser(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(bookingMapper::fromBookingToDto)
                 .collect(Collectors.toList());
     }

@@ -9,8 +9,6 @@ import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.user.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,8 +19,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, ItemRepository itemRepository,
@@ -93,7 +89,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<Booking> getAllByBooker(String state, String booker) {
+    public Collection<Booking> getAllByBooker(String state, String first, String size, String booker) {
+        long bookerId = Long.parseLong(booker);
+        checkUser(bookerId);
+
         BookingState bookingState;
         Collection<Booking> allBookings = getAllBookingsForBooker(booker);
 
@@ -101,8 +100,17 @@ public class BookingServiceImpl implements BookingService {
             bookingMaker(booking);
         }
 
-        if (state == null) {
+        if ((state == null) && (first == null)) {
             return allBookings;
+        }
+
+        if((state == null) && (first!=null)) {
+            int firstEl = Integer.parseInt(first);
+            int sizePage = Integer.parseInt(size);
+            if ((firstEl < 1) || (sizePage < 1)) {
+                throw new ValidationException("Невалидные значения from и size");
+            }
+            return getPageableList(new ArrayList<>(allBookings), firstEl, sizePage);
         }
 
         try {
@@ -165,24 +173,35 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<Booking> getAllForUser(String state, String user) {
-        Collection<Booking> allBookings = getAllBookingsByOwnerId(user);
+    public Collection<Booking> getAllForUser(String state,  String first, String size, String user) {
+        long userId = Long.parseLong(user);
+        checkUser(userId);
 
+        BookingState bookingState;
+        Collection<Booking> allBookings = getAllBookingsByOwnerId(user);
         for (Booking booking : allBookings) {
             bookingMaker(booking);
         }
 
-        if (state == null) {
+        if ((state == null) && (first == null)) {
             return allBookings;
         }
 
-        BookingState bookingState;
+        if((state == null) && (first!=null)) {
+            int firstEl = Integer.parseInt(first);
+            int sizePage = Integer.parseInt(size);
+            if ((firstEl < 1) || (sizePage < 1)) {
+                throw new ValidationException("Невалидные значения from и size");
+            }
+            return getPageableList(new ArrayList<>(allBookings), firstEl, sizePage);
+        }
+
         try {
             bookingState = BookingState.valueOf(state);
         } catch (Exception e) {
             throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-
+        
         switch (bookingState) {
             case PAST:
                 Collection<Booking> pastBookings = new ArrayList<>();
@@ -236,33 +255,8 @@ public class BookingServiceImpl implements BookingService {
         return allBookings;
     }
 
-    @Override
-    public Collection<Booking> getAllForBookerPageable(String first, String size, String booker) {
-        long bookerId = Long.parseLong(booker);
-        if (!userRepository.existsById(bookerId)) {
-            throw new NotFoundException("Юзера с таким айди " + bookerId + " нет");
-        }
-        int firstEl = Integer.parseInt(first);
-        int sizePage = Integer.parseInt(size);
 
-        if ((firstEl < 1) || (sizePage < 1)) {
-            throw new ValidationException("Невалидные значения from и size");
-        }
-
-        List<Booking> allBookings =  new ArrayList<>(getAllBookingsForBooker(booker));
-        PagedListHolder page = new PagedListHolder(new ArrayList<>(allBookings.subList(firstEl, allBookings.size())));
-        page.setPageSize(sizePage);
-        page.setPage(0);
-        List<Booking> result = new ArrayList<>();
-        for(Object booking: page.getPageList()) {
-            result.add(bookingMaker((Booking) booking));
-        }
-        return result;
-    }
-
-    @Override
-    public Collection<Booking> getAllForUserPageable(String from, String size, String user) {
-
+    private Collection<Booking> getAllForUserPageable(String from, String size, String user) {
         long userId = Long.parseLong(user);
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Юзера с таким айди " + user + " нет");
@@ -274,7 +268,20 @@ public class BookingServiceImpl implements BookingService {
         }
 
         List<Booking> allBookings = new ArrayList<>(getAllBookingsByOwnerId(user));
-        PagedListHolder page = new PagedListHolder(new ArrayList<>(allBookings.subList(firstEl, allBookings.size())));
+//        PagedListHolder page = new PagedListHolder(new ArrayList<>(allBookings.subList(firstEl, allBookings.size())));
+//        page.setPageSize(sizePage);
+//        page.setPage(0);
+//        List<Booking> result = new ArrayList<>();
+//        for(Object booking: page.getPageList()) {
+//            result.add(bookingMaker((Booking) booking));
+//        }
+//        return result;
+        return getPageableList(allBookings, firstEl, sizePage);
+    }
+
+    private List<Booking> getPageableList(List<Booking> bookingssss, int firstEl, int sizePage) {
+        List<Booking> bookings = new ArrayList<>(bookingssss);
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(bookings.subList(firstEl, bookings.size())));
         page.setPageSize(sizePage);
         page.setPage(0);
         List<Booking> result = new ArrayList<>();
@@ -314,6 +321,30 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Букинга с таким айди " + bookingId + " нет в нашей базе");
         }
     }
+
+    private Collection<Booking> getAllForBookerPageable(String first, String size, String booker) {
+        long bookerId = Long.parseLong(booker);
+        if (!userRepository.existsById(bookerId)) {
+            throw new NotFoundException("Юзера с таким айди " + bookerId + " нет");
+        }
+        int firstEl = Integer.parseInt(first);
+        int sizePage = Integer.parseInt(size);
+
+        if ((firstEl < 1) || (sizePage < 1)) {
+            throw new ValidationException("Невалидные значения from и size");
+        }
+
+        List<Booking> allBookings =  new ArrayList<>(getAllBookingsForBooker(booker));
+        PagedListHolder page = new PagedListHolder(new ArrayList<>(allBookings.subList(firstEl, allBookings.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        List<Booking> result = new ArrayList<>();
+        for(Object booking: page.getPageList()) {
+            result.add(bookingMaker((Booking) booking));
+        }
+        return result;
+    }
+
 
     private Collection<Booking> getAllBookingsForBooker(String booker) {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
