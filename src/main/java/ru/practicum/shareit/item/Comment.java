@@ -1,12 +1,16 @@
 package ru.practicum.shareit.item;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "comments")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,4 +27,11 @@ public class Comment {
 
     @Column(name = "text")
     private String text;
+
+    public Comment(long id, long itemId, long bookerId, String text) {
+        this.id = id;
+        this.itemId = itemId;
+        this.bookerId = bookerId;
+        this.text = text;
+    }
 }

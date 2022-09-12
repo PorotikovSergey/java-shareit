@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
@@ -10,6 +12,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bookings")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,4 +47,11 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private BookingState state = BookingState.ALL;
+
+    public Booking(long id, long itemId, long itemOwnerId, long bookerId) {
+        this.id = id;
+        this.itemId = itemId;
+        this.itemOwnerId = itemOwnerId;
+        this.bookerId = bookerId;
+    }
 }
