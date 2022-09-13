@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 
@@ -16,22 +17,17 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "item_id")
-    private long itemId;
+    @ManyToOne
+    @JoinColumn(name = "item_id", referencedColumnName = "id")
+    private Item item;
 
-    @Column(name = "booker_id")
-    private long bookerId;
+    @ManyToOne
+    @JoinColumn(name = "booker_id", referencedColumnName = "id")
+    private User booker;
 
     @Transient
     private String authorName;
 
     @Column(name = "text")
     private String text;
-
-    public Comment(long id, long itemId, long bookerId, String text) {
-        this.id = id;
-        this.itemId = itemId;
-        this.bookerId = bookerId;
-        this.text = text;
-    }
 }

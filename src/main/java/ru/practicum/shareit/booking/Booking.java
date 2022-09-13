@@ -25,33 +25,24 @@ public class Booking {
     @Column(name = "finish")
     private LocalDateTime end;
 
-    @Column(name = "item_id")
-    private long itemId;
-
-    @Column(name = "booker_id")
-    private long bookerId;
-
-    @Column(name = "owner_id")
-    private long itemOwnerId;
-
-    @Transient
+    @ManyToOne
+    @JoinColumn(name = "booker_id", referencedColumnName = "id")
     private User booker;
 
-    @Transient
+    @ManyToOne
+    @JoinColumn(name = "item_id", referencedColumnName = "id")
     private Item item;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    private User itemOwner;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private BookingStatus status;
+    private BookingStatus status = BookingStatus.WAITING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private BookingState state = BookingState.ALL;
 
-    public Booking(long id, long itemId, long itemOwnerId, long bookerId) {
-        this.id = id;
-        this.itemId = itemId;
-        this.itemOwnerId = itemOwnerId;
-        this.bookerId = bookerId;
-    }
 }

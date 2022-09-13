@@ -3,8 +3,13 @@ package ru.practicum.shareit.user;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.item.Comment;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.requests.Request;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -21,4 +26,19 @@ public class User {
 
     @Column(name = "email")
     private String email;
+
+    @OneToMany(mappedBy = "owner")
+    private List<Item> items;
+
+    @OneToMany(mappedBy = "requestor")
+    private List<Request> requests;
+
+    @OneToMany(mappedBy = "itemOwner")
+    private List<Booking> rents;
+
+    @OneToMany(mappedBy = "booker")
+    private List<Booking> bookings;
+
+    @OneToMany(mappedBy = "booker")
+    private List<Comment> comments;
 }

@@ -6,7 +6,9 @@ import org.springframework.beans.support.PagedListHolder;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -29,18 +31,17 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking postBooking(Booking booking, String bookerId) {
-        checkItem(booking.getItemId());
-        long ownerId = itemRepository.findById(booking.getItemId()).get().getOwnerId();
-        long itemBookerId = Long.parseLong(bookerId);
-
-        checkAccessForBookingOwnItem(ownerId, itemBookerId);
-
-        validateBooking(booking, bookerId);
-        booking.setBookerId(itemBookerId);
+    public Booking postBooking(Booking booking, String bookerid, long itemId) {
+        long bookerId = Long.parseLong(bookerid);
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
+        User booker = userRepository.findById(bookerId).get();
+        validateBooking(booking, bookerid, itemId);
         booking.setStatus(BookingStatus.WAITING);
-        booking.setItemOwnerId(ownerId);
-        return bookingMaker(booking);
+        booking.setItem(item);
+        booking.setBooker(booker);
+        booking.setItemOwner(item.getOwner());
+        bookingRepository.save(booking);
+        return booking;
     }
 
     @Override
@@ -54,7 +55,8 @@ public class BookingServiceImpl implements BookingService {
         checkAccessForPatchBooking(idOfOwner, booking);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
-        return bookingMaker(booking);
+        bookingRepository.save(booking);
+        return booking;
     }
 
     @Override
@@ -67,32 +69,34 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(idOfBooking).get();
         checkAccessForGetBooking(booking, idOfOwnerOrBooker);
 
-        return bookingMaker(booking);
+        return booking;
     }
 
     @Override
     public List<Booking> getAllForBooker(String state, String first, String size, String booker) {
-        return checkUserAndStateAndPageAndReturnResultList(getAllBookingsForBooker(booker), state, first, size, booker);
+        List<Booking> list = getAllBookingsForBooker(booker);
+        return checkUserAndStateAndPageAndReturnResultList(list, state, first, size, booker);
     }
 
     @Override
     public List<Booking> getAllForOwner(String state, String first, String size, String owner) {
-        return checkUserAndStateAndPageAndReturnResultList(getAllBookingsByOwner(owner), state, first, size, owner);
+        List<Booking> list = getAllBookingsByOwner(owner);
+        return checkUserAndStateAndPageAndReturnResultList(list, state, first, size, owner);
     }
 
 //------------------------------private-----------------------------------------------------------------
 
     private void checkAccessForGetBooking(Booking booking, long idOfOwnerOrBooker) {
-        if (!((booking.getBookerId() == idOfOwnerOrBooker) || (booking.getItemOwnerId() == idOfOwnerOrBooker))) {
+        if (!((booking.getBooker().getId() == idOfOwnerOrBooker) || (booking.getItemOwner().getId() == idOfOwnerOrBooker))) {
             throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. " +
-                    "Айди владельца " + booking.getItemOwnerId() + ". " +
-                    "Айди арендатора " + booking.getBookerId() + ". " +
+                    "Айди владельца " + booking.getItemOwner().getId() + ". " +
+                    "Айди арендатора " + booking.getBooker().getId() + ". " +
                     "Айди желающего " + idOfOwnerOrBooker);
         }
     }
 
     private void checkAccessForPatchBooking(long idOfOwner, Booking booking) {
-        if (idOfOwner != booking.getItemOwnerId()) {
+        if (idOfOwner != booking.getItemOwner().getId()) {
             throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
         }
 
@@ -101,22 +105,20 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void checkAccessForBookingOwnItem(long ownerId, long itemBookerId) {
-        if (ownerId == itemBookerId) {
-            throw new NotFoundException("Нельзя бронировать свою же вещь. " +
-                    "Айди владельца " + ownerId + ". Айди  желающего " + itemBookerId);
-        }
-    }
+//    private void checkAccessForBookingOwnItem(long ownerId, long itemBookerId) {
+//        if (ownerId == itemBookerId) {
+//            throw new NotFoundException("Нельзя бронировать свою же вещь. " +
+//                    "Айди владельца " + ownerId + ". Айди  желающего " + itemBookerId);
+//        }
+//    }
 
     private List<Booking> checkUserAndStateAndPageAndReturnResultList(List<Booking> bookings, String state,
                                                                       String first, String size, String user) {
         long bookerId = Long.parseLong(user);
         checkUser(bookerId);
-
         if ((state == null) && (first == null)) {
             return bookings;
         }
-
         if (first != null) {
             int firstEl = Integer.parseInt(first);
             int sizePage = Integer.parseInt(size);
@@ -147,11 +149,17 @@ public class BookingServiceImpl implements BookingService {
         return result;
     }
 
-    private void validateBooking(Booking booking, String bookerId) {
+    private void validateBooking(Booking booking, String bookerId, long itemId) {
         checkUser(Long.parseLong(bookerId));
-        checkItem(booking.getItemId());
-        if (!itemRepository.findById(booking.getItemId()).get().getAvailable()) {
-            throw new ValidationException("Недоступный для бронирования. Айди вещи " + booking.getItemId());
+        if (!itemRepository.existsById(itemId)) {
+            throw new NotFoundException("Вещи с таким айди " + itemId + "не существует");
+        }
+        if (!itemRepository.findById(itemId).get().getAvailable()) {
+            throw new ValidationException("Недоступный для бронирования. Айди вещи " + itemId);
+        }
+
+        if(Long.parseLong(bookerId) == itemRepository.findById(itemId).get().getId()) {
+            throw new NotFoundException("Нельзя арендовать свою вещь у себя же самого");
         }
         if ((booking.getEnd().isBefore(booking.getStart()))
                 || (booking.getEnd().isBefore(LocalDateTime.now()))
@@ -185,7 +193,6 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Юзера с таким id " + idOfBooker + " не существует");
         }
         result.addAll(bookingRepository.findBookingsByBookerId(idOfBooker));
-        result.forEach(this::bookingMaker);
         return new ArrayList<>(result);
     }
 
@@ -196,7 +203,6 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Юзера с таким id " + owner + " не существует");
         }
         result.addAll(bookingRepository.findBookingsByItemOwnerId(idOfOwner));
-        result.forEach(this::bookingMaker);
         return new ArrayList<>(result);
     }
 
@@ -253,9 +259,9 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Booking bookingMaker(Booking booking) {
-        booking.setItem(itemRepository.findById(booking.getItemId()).get());
-        booking.setBooker(userRepository.findById(booking.getBookerId()).get());
-        bookingRepository.save(booking);
+//        booking.setItem(itemRepository.findById(booking.getItem().getId()).get());
+//        booking.setBooker(userRepository.findById(booking.getItem().getId()).get());
+//        bookingRepository.save(booking);
         return booking;
     }
 }

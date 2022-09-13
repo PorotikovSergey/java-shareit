@@ -32,7 +32,7 @@ public class RequestServiceImpl implements RequestService {
         long requestorId = Long.parseLong(requestor);
         checkUser(requestorId);
         checkDescription(request);
-        request.setRequestor(requestorId);
+//        request.setRequestor(requestorId);
         request.setCreated(new Date());
         requestRepository.save(request);
         return request;
@@ -45,9 +45,9 @@ public class RequestServiceImpl implements RequestService {
 
         Set<Request> allRequests = new TreeSet<>((o1, o2) -> (o2.getCreated().compareTo(o1.getCreated())));
         List<Request> requestList = requestRepository.findRequestsByRequestor(requestorId);
-        for (Request request : requestList) {
-            request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
-        }
+//        for (Request request : requestList) {
+//            request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
+//        }
         allRequests.addAll(requestList);
         return new ArrayList<>(allRequests);
     }
@@ -64,10 +64,10 @@ public class RequestServiceImpl implements RequestService {
         int sizePage = Integer.parseInt(size);
         Page<Request> page = requestRepository.findAll(PageRequest.of(fromPage, sizePage));
         List<Request> result = page.toList();
-        for (Request request : result) {
-            request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
-        }
-        return result.stream().filter(r -> r.getRequestor() != requestorId).collect(Collectors.toList());
+//        for (Request request : result) {
+//            request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
+//        }
+        return result /*.stream().filter(r -> r.getRequestor() != requestorId).collect(Collectors.toList())*/;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class RequestServiceImpl implements RequestService {
         checkUser(requestorId);
 
         Request request = requestRepository.findAll().stream().filter(r -> r.getId() == itemRequest).findFirst().get();
-        request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
+//        request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
         return request;
     }
 

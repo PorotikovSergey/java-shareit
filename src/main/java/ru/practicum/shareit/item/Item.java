@@ -4,9 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.requests.Request;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,18 +29,23 @@ public class Item {
     @Column(name = "available")
     private Boolean available;
 
-    @Column(name = "owner_id")
-    private long ownerId;
-
     @Column(name = "request_id")
     private long requestId;
+
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    private User owner;
+
+    @OneToMany(mappedBy = "item")
+    List<Comment> comments;
+
+//    @OneToMany(mappedBy = "item")
+//    List<Request> requests;
 
     @Transient
     private Booking lastBooking;
 
     @Transient
     private Booking nextBooking;
-
-    @Transient
-    private List<Comment> comments = new ArrayList<>();
 }

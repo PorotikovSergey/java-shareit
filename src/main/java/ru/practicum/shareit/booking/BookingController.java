@@ -23,7 +23,8 @@ public class BookingController {
 
     @PostMapping
     public BookingDto postBooking(HttpServletRequest request, @RequestBody BookingDto bookingDto) {
-        return bookingMapper.fromBookingToDto(bookingService.postBooking(bookingMapper.fromDtoToBooking(bookingDto), request.getHeader(USER_ID_HEADER)));
+        return bookingMapper.fromBookingToDto(bookingService.postBooking(bookingMapper.fromDtoToBooking(bookingDto),
+                request.getHeader(USER_ID_HEADER), bookingDto.getItemId()));
     }
 
     @PatchMapping("/{bookingId}")

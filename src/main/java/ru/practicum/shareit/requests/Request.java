@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -23,12 +24,14 @@ public class Request {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "requestor_id")
-    private long requestor;
-
     @Column(name = "create_date")
     private Date created;
 
-    @Transient
-    private List<Item> items = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "requestor_id", referencedColumnName = "id")
+    private User requestor;
+
+//    @ManyToOne
+//    @JoinColumn(name = "item_id", referencedColumnName = "id")
+//    private Item item;
 }

@@ -52,9 +52,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item postItem(Item item, String ownerId) {
         long idOfOwner = Long.parseLong(ownerId);
-        checkUserId(idOfOwner);
-
-        item.setOwnerId(idOfOwner);
+        item.setOwner(userRepository.findById(idOfOwner).get());
         validateItem(item, ownerId);
         itemRepository.save(item);
         return item;
@@ -68,25 +66,36 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
-        itemRepository.save(patchOneItemFromAnother(item, getItemWithOutUser(itemId)));
-        return getItemWithOutUser(itemId);
+        Item forPatch = getItemWithOutUser(itemId);
+        itemRepository.save(patchOneItemFromAnother(item, forPatch));
+        itemRepository.save(forPatch);
+        return forPatch;
     }
 
     @Override
     public Item getItem(String user, long itemId) {
+        System.out.println("зашли в гет айтем со значениями: юзер айди-"+user+" , айтем айди"+itemId);
         long userId = Long.parseLong(user);
         checkItem(itemId);
-        Collection<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
+        System.out.println("проверили айтем по айди");
+        List<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
+        System.out.println("получили все букинги по этому юзеру");
         Item resultItem = itemRepository.findById(itemId).get();
-        if (Long.parseLong(user) == resultItem.getOwnerId()) {
+        System.out.println("получили айтем по этому айтем айди");
+        if (Long.parseLong(user) == resultItem.getOwner().getId()) {
             resultItem.setNextBooking(getNextBooking(bookingsByUser));
             resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
+        System.out.println("установили время до и после");
         List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
+        System.out.println("собрали все комменты ");
         for (Comment comment : commentsForItem) {
-            comment.setAuthorName(userRepository.findById(comment.getBookerId()).get().getName());
+            comment.setAuthorName(userRepository.findById(comment.getBooker().getId()).get().getName());
         }
+        System.out.println("установили всем комментам имена авторов");
         resultItem.setComments(commentsForItem);
+        System.out.println("установили айтему в лист все комменты");
+        System.out.println("возвращаем итоговый айтем ");
         return resultItem;
     }
 
@@ -116,15 +125,13 @@ public class ItemServiceImpl implements ItemService {
         long idOfBooker = Long.parseLong(bookerId);
 
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
-                .filter(b -> b.getBookerId() == idOfBooker)
+                .filter(b -> b.getBooker().getId() == idOfBooker)
                 .findFirst()
                 .orElse(null);
 
         checkCommentBeforePosting(booking, comment);
 
         comment.setText(comment.getText());
-        comment.setItemId(itemId);
-        comment.setBookerId(idOfBooker);
         comment.setAuthorName(userRepository.findById(idOfBooker).get().getName());
         commentRepository.save(comment);
         item.getComments().add(comment);
@@ -133,7 +140,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item postItemToRequest(Item item, String itemOwner, long requestId) {
-        item.setOwnerId(Long.parseLong(itemOwner));
         validateItem(item, itemOwner);
         itemRepository.save(item);
         return item;
@@ -141,11 +147,11 @@ public class ItemServiceImpl implements ItemService {
 
 //-----------------------------private------------------------------------------------------------
 
-    private void checkUserId(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким айди " + userId + " нет");
-        }
-    }
+//    private void checkUserId(long userId) {
+//        if (!userRepository.existsById(userId)) {
+//            throw new NotFoundException("Юзера с таким айди " + userId + " нет");
+//        }
+//    }
 
     private List<Item> getPageable(List<Item> items, int firstEl, int sizePage, long userId) {
         PagedListHolder<Item> page = new PagedListHolder<>(new ArrayList<>(items.subList(firstEl, items.size())));
@@ -176,9 +182,6 @@ public class ItemServiceImpl implements ItemService {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
         }
-        if (!userRepository.existsById(Long.parseLong(ownerId))) {
-            throw new NotFoundException("С таким Id " + ownerId + " владельца не существует");
-        }
         if (item.getAvailable() == null) {
             throw new ValidationException("Вещь без доступности.");
         }
@@ -200,12 +203,9 @@ public class ItemServiceImpl implements ItemService {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
         }
-        if (!userRepository.existsById(Long.parseLong(ownerId))) {
-            throw new NotFoundException("С таким Id " + ownerId + " владельца не существует");
-        }
-        if (Long.parseLong(ownerId) != getItemWithOutUser(id).getOwnerId()) {
+        if (Long.parseLong(ownerId) != getItemWithOutUser(id).getOwner().getId()) {
             throw new NotFoundException("Патчить вещь может только её владелец с айди "
-                    + getItemWithOutUser(id).getOwnerId());
+                    + getItemWithOutUser(id).getOwner().getId());
         }
     }
 
@@ -219,6 +219,7 @@ public class ItemServiceImpl implements ItemService {
         if (donor.getAvailable() != null) {
             recipient.setAvailable(donor.getAvailable());
         }
+        itemRepository.save(recipient);
         return recipient;
     }
 
@@ -227,7 +228,7 @@ public class ItemServiceImpl implements ItemService {
         Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(userId);
         for (Item item : list) {
             Collection<Booking> bookingsOfItem = bookings.stream()
-                    .filter(i -> i.getItemId() == item.getId())
+                    .filter(i -> i.getItem().getId() == item.getId())
                     .collect(Collectors.toList());
             item.setNextBooking(getNextBooking(bookingsOfItem));
             item.setLastBooking(getLastBooking(bookingsOfItem));
