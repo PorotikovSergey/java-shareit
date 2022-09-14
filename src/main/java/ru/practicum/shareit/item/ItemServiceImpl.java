@@ -67,35 +67,23 @@ public class ItemServiceImpl implements ItemService {
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
         Item forPatch = getItemWithOutUser(itemId);
-        itemRepository.save(patchOneItemFromAnother(item, forPatch));
+        patchOneItemFromAnother(item, forPatch);
         itemRepository.save(forPatch);
         return forPatch;
     }
 
     @Override
     public Item getItem(String user, long itemId) {
-        System.out.println("зашли в гет айтем со значениями: юзер айди-"+user+" , айтем айди"+itemId);
         long userId = Long.parseLong(user);
         checkItem(itemId);
-        System.out.println("проверили айтем по айди");
         List<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
-        System.out.println("получили все букинги по этому юзеру");
         Item resultItem = itemRepository.findById(itemId).get();
-        System.out.println("получили айтем по этому айтем айди");
         if (Long.parseLong(user) == resultItem.getOwner().getId()) {
             resultItem.setNextBooking(getNextBooking(bookingsByUser));
             resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
-        System.out.println("установили время до и после");
         List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
-        System.out.println("собрали все комменты ");
-        for (Comment comment : commentsForItem) {
-            comment.setAuthorName(userRepository.findById(comment.getBooker().getId()).get().getName());
-        }
-        System.out.println("установили всем комментам имена авторов");
         resultItem.setComments(commentsForItem);
-        System.out.println("установили айтему в лист все комменты");
-        System.out.println("возвращаем итоговый айтем ");
         return resultItem;
     }
 
@@ -130,11 +118,9 @@ public class ItemServiceImpl implements ItemService {
                 .orElse(null);
 
         checkCommentBeforePosting(booking, comment);
-
-        comment.setText(comment.getText());
+        comment.setItem(item);
         comment.setAuthorName(userRepository.findById(idOfBooker).get().getName());
         commentRepository.save(comment);
-        item.getComments().add(comment);
         return comment;
     }
 
@@ -180,7 +166,7 @@ public class ItemServiceImpl implements ItemService {
 
     private void validateItem(Item item, String ownerId) {
         if (ownerId == null) {
-            throw new ServiceException("Отсутствует владелец");
+            throw new ServiceException("Отсутствует айди владельца");
         }
         if (item.getAvailable() == null) {
             throw new ValidationException("Вещь без доступности.");
@@ -219,7 +205,6 @@ public class ItemServiceImpl implements ItemService {
         if (donor.getAvailable() != null) {
             recipient.setAvailable(donor.getAvailable());
         }
-        itemRepository.save(recipient);
         return recipient;
     }
 

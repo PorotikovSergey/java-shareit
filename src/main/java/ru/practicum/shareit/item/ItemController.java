@@ -27,7 +27,6 @@ public class ItemController {
     public Collection<ItemDto> getAll(HttpServletRequest request,
                                       @RequestParam(required = false) String from,
                                       @RequestParam(required = false) String size) {
-
         return itemService.getAll(request.getHeader(USER_ID_HEADER), from, size).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());
@@ -52,7 +51,6 @@ public class ItemController {
     public ItemDto patchItem(HttpServletRequest request,
                              @PathVariable long itemId,
                              @RequestBody ItemDto itemDto) {
-
         return itemMapper.fromItemToDto(itemService.patchItem(itemId, itemMapper.fromDtoToItem(itemDto),
                 request.getHeader(USER_ID_HEADER)));
     }
@@ -67,7 +65,6 @@ public class ItemController {
                                           @RequestParam String text,
                                           @RequestParam(required = false) String from,
                                           @RequestParam(required = false) String size) {
-
         return itemService.searchItem(text, request.getHeader(USER_ID_HEADER), from, size).stream()
                 .map(itemMapper::fromItemToDto)
                 .collect(Collectors.toList());

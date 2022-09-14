@@ -1,8 +1,6 @@
 package ru.practicum.shareit.requests;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
@@ -13,7 +11,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "requests")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Request {

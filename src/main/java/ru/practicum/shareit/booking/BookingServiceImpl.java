@@ -39,7 +39,6 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.WAITING);
         booking.setItem(item);
         booking.setBooker(booker);
-        booking.setItemOwner(item.getOwner());
         bookingRepository.save(booking);
         return booking;
     }
@@ -87,16 +86,16 @@ public class BookingServiceImpl implements BookingService {
 //------------------------------private-----------------------------------------------------------------
 
     private void checkAccessForGetBooking(Booking booking, long idOfOwnerOrBooker) {
-        if (!((booking.getBooker().getId() == idOfOwnerOrBooker) || (booking.getItemOwner().getId() == idOfOwnerOrBooker))) {
+        if (!((booking.getBooker().getId() == idOfOwnerOrBooker) || (booking.getItem().getOwner().getId() == idOfOwnerOrBooker))) {
             throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. " +
-                    "Айди владельца " + booking.getItemOwner().getId() + ". " +
+                    //"Айди владельца " + booking.getItemOwner().getId() + ". " +
                     "Айди арендатора " + booking.getBooker().getId() + ". " +
                     "Айди желающего " + idOfOwnerOrBooker);
         }
     }
 
     private void checkAccessForPatchBooking(long idOfOwner, Booking booking) {
-        if (idOfOwner != booking.getItemOwner().getId()) {
+        if (idOfOwner != booking.getItem().getOwner().getId()) {
             throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
         }
 

@@ -1,8 +1,7 @@
 package ru.practicum.shareit.item;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.requests.Request;
 import ru.practicum.shareit.user.User;
@@ -12,7 +11,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "items")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Item {
@@ -35,17 +35,31 @@ public class Item {
 
     @ManyToOne
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JsonIgnore
     private User owner;
 
+    @Transient
     @OneToMany(mappedBy = "item")
     List<Comment> comments;
 
 //    @OneToMany(mappedBy = "item")
 //    List<Request> requests;
 
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                '}';
+    }
+
     @Transient
+    @JsonIgnore
     private Booking lastBooking;
 
     @Transient
+    @JsonIgnore
     private Booking nextBooking;
 }
