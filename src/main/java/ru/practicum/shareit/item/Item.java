@@ -45,16 +45,6 @@ public class Item {
 //    @OneToMany(mappedBy = "item")
 //    List<Request> requests;
 
-    @Override
-    public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", available=" + available +
-                '}';
-    }
-
     @Transient
     @JsonIgnore
     private Booking lastBooking;
@@ -62,4 +52,19 @@ public class Item {
     @Transient
     @JsonIgnore
     private Booking nextBooking;
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                ", requestId=" + requestId +
+                ", owner=" + owner +
+                ", comments=" + comments +
+                ", lastBooking=" + lastBooking +
+                ", nextBooking=" + nextBooking +
+                '}';
+    }
 }

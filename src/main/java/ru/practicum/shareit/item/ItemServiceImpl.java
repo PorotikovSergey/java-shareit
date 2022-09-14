@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ServiceException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -127,6 +128,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item postItemToRequest(Item item, String itemOwner, long requestId) {
         validateItem(item, itemOwner);
+        User owner = userRepository.findById(Long.parseLong(itemOwner)).get();
+        item.setOwner(owner);
+        item.setRequestId(requestId);
         itemRepository.save(item);
         return item;
     }

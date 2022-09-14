@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long>, PagingAndSortingRepository<Request, Long> {
-    List<Request> findRequestsByRequestor(long id);
+    List<Request> findRequestsByRequestorId(long id);
 
 }

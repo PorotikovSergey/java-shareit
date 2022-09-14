@@ -1,5 +1,6 @@
 package ru.practicum.shareit.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
@@ -28,8 +29,11 @@ public class Request {
 
     @ManyToOne
     @JoinColumn(name = "requestor_id", referencedColumnName = "id")
+    @JsonIgnore
     private User requestor;
 
+    @Transient
+    private List<Item> items = new ArrayList<>();
 //    @ManyToOne
 //    @JoinColumn(name = "item_id", referencedColumnName = "id")
 //    private Item item;

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,6 @@ public class RequestController {
     public List<RequestDto> getAllPageable(HttpServletRequest requestor,
                                            @RequestParam(required = false) String from,
                                            @RequestParam(required = false) String size) {
-
         return requestService.getAllPageable(from, size, requestor.getHeader(USER_ID_HEADER)).stream()
                 .map(requestMapper::fromRequestToDto)
                 .collect(Collectors.toList());
