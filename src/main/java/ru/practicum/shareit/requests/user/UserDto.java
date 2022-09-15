@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.requests.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,9 +1,8 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.requests.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.item.Comment;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.requests.Request;
 

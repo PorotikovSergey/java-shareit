@@ -7,9 +7,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.function.ServerRequest;
+import ru.practicum.shareit.requests.user.User;
+import ru.practicum.shareit.requests.user.UserController;
+import ru.practicum.shareit.requests.user.UserMapper;
+import ru.practicum.shareit.requests.user.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
 

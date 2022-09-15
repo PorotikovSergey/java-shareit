@@ -3,7 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.Data;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.requests.user.UserMapper;
 
 @Service
 @Data
