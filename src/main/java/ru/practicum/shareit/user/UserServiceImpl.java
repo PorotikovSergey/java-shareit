@@ -31,32 +31,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public User postUser(User user) {
         validateUser(user);
-        userRepository.save(user);
-        return user;
+        return userRepository.save(user);
     }
 
     @Transactional
     public void deleteUser(long userId) {
-        checkUser(userId);
         userRepository.deleteById(userId);
     }
 
     @Transactional
     @Override
     public User patchUser(long userId, User user) {
-        patchOneUserFromAnother(user, userRepository.findById(userId).get());
-        return userRepository.findById(userId).get();
+        return patchOneUserFromAnother(user, userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого юзера нет")));
     }
 
     public User getUser(long userId) {
-        checkUser(userId);
-        return userRepository.findById(userId).get();
-    }
-
-    private void checkUser(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким id " + userId + " не существует!");
-        }
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Такого юзера нет"));
     }
 
     private void validateUser(User testUser) {

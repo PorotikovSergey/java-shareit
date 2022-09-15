@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingDto;
-import ru.practicum.shareit.booking.BookingMapper;
 
 import java.util.ArrayList;
 import java.util.List;

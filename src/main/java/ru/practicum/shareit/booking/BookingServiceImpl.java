@@ -34,7 +34,7 @@ public class BookingServiceImpl implements BookingService {
     public Booking postBooking(Booking booking, String bookerid, long itemId) {
         long bookerId = Long.parseLong(bookerid);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
-        User booker = userRepository.findById(bookerId).get();
+        User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("Такого юзера нет"));
         validateBooking(booking, bookerid, itemId);
         booking.setStatus(BookingStatus.WAITING);
         booking.setItem(item);
@@ -48,9 +48,8 @@ public class BookingServiceImpl implements BookingService {
         long idOfBooking = Long.parseLong(parsedBookingId);
         long idOfOwner = Long.parseLong(parsedOwnerId);
 
-        checkBooking(idOfBooking);
-
-        Booking booking = bookingRepository.findById(idOfBooking).get();
+        Booking booking = bookingRepository.findById(idOfBooking)
+                .orElseThrow(() -> new NotFoundException("Такого букинга нет"));
         checkAccessForPatchBooking(idOfOwner, booking);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
@@ -62,10 +61,9 @@ public class BookingServiceImpl implements BookingService {
     public Booking getBooking(String ownerOrBooker, String bookingId) {
         long idOfBooking = Long.parseLong(bookingId);
         long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
-        checkUser(idOfOwnerOrBooker);
-        checkBooking(idOfBooking);
 
-        Booking booking = bookingRepository.findById(idOfBooking).get();
+        Booking booking = bookingRepository.findById(idOfBooking)
+                .orElseThrow(() -> new NotFoundException("Такого букинга нет"));
         checkAccessForGetBooking(booking, idOfOwnerOrBooker);
 
         return booking;
@@ -74,23 +72,20 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<Booking> getAllForBooker(String state, String first, String size, String booker) {
         List<Booking> list = getAllBookingsForBooker(booker);
-        return checkUserAndStateAndPageAndReturnResultList(list, state, first, size, booker);
+        return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
 
     @Override
     public List<Booking> getAllForOwner(String state, String first, String size, String owner) {
         List<Booking> list = getAllBookingsByOwner(owner);
-        return checkUserAndStateAndPageAndReturnResultList(list, state, first, size, owner);
+        return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
 
 //------------------------------private-----------------------------------------------------------------
 
     private void checkAccessForGetBooking(Booking booking, long idOfOwnerOrBooker) {
         if (!((booking.getBooker().getId() == idOfOwnerOrBooker) || (booking.getItem().getOwner().getId() == idOfOwnerOrBooker))) {
-            throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. " +
-                    //"Айди владельца " + booking.getItemOwner().getId() + ". " +
-                    "Айди арендатора " + booking.getBooker().getId() + ". " +
-                    "Айди желающего " + idOfOwnerOrBooker);
+            throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. ");
         }
     }
 
@@ -104,17 +99,8 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-//    private void checkAccessForBookingOwnItem(long ownerId, long itemBookerId) {
-//        if (ownerId == itemBookerId) {
-//            throw new NotFoundException("Нельзя бронировать свою же вещь. " +
-//                    "Айди владельца " + ownerId + ". Айди  желающего " + itemBookerId);
-//        }
-//    }
-
-    private List<Booking> checkUserAndStateAndPageAndReturnResultList(List<Booking> bookings, String state,
-                                                                      String first, String size, String user) {
-        long bookerId = Long.parseLong(user);
-        checkUser(bookerId);
+    private List<Booking> checkStateAndPageAndReturnResultList(List<Booking> bookings, String state,
+                                                                      String first, String size) {
         if ((state == null) && (first == null)) {
             return bookings;
         }
@@ -141,47 +127,25 @@ public class BookingServiceImpl implements BookingService {
         PagedListHolder<Booking> page = new PagedListHolder<>(bookings.subList(firstEl, bookings.size()));
         page.setPageSize(sizePage);
         page.setPage(0);
-        List<Booking> result = new ArrayList<>();
-        for (Booking booking : page.getPageList()) {
-            result.add(bookingMaker(booking));
-        }
-        return result;
+        return page.getPageList();
     }
 
     private void validateBooking(Booking booking, String bookerId, long itemId) {
-        checkUser(Long.parseLong(bookerId));
-        if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Вещи с таким айди " + itemId + "не существует");
-        }
-        if (!itemRepository.findById(itemId).get().getAvailable()) {
+        if (!itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Такого айтема нет"))
+                .getAvailable()) {
             throw new ValidationException("Недоступный для бронирования. Айди вещи " + itemId);
         }
 
-        if(Long.parseLong(bookerId) == itemRepository.findById(itemId).get().getId()) {
+        if (Long.parseLong(bookerId) == itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Такого айтема нет"))
+                .getId()) {
             throw new NotFoundException("Нельзя арендовать свою вещь у себя же самого");
         }
         if ((booking.getEnd().isBefore(booking.getStart()))
                 || (booking.getEnd().isBefore(LocalDateTime.now()))
                 || (booking.getStart().isBefore(LocalDateTime.now()))) {
             throw new ValidationException("Время аренды не может быть в прошлом");
-        }
-    }
-
-    private void checkUser(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Юзера с таким айди " + userId + " нет в нашей базе");
-        }
-    }
-
-    private void checkItem(long itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким айди " + itemId + " отсутствует");
-        }
-    }
-
-    private void checkBooking(long bookingId) {
-        if (!bookingRepository.existsById(bookingId)) {
-            throw new NotFoundException("Букинга с таким айди " + bookingId + " нет");
         }
     }
 
@@ -236,31 +200,18 @@ public class BookingServiceImpl implements BookingService {
                 }
                 break;
             case WAITING:
-                Collection<Booking> waitingBookings = before.stream()
+                result = before.stream()
                         .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
                         .collect(Collectors.toList());
-                for (Booking booking : waitingBookings) {
-                    result.add(bookingMaker(booking));
-                }
                 break;
             case REJECTED:
-                Collection<Booking> rejectedBookings = before.stream()
+                result = before.stream()
                         .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
                         .collect(Collectors.toList());
-                for (Booking booking : rejectedBookings) {
-                    result.add(bookingMaker(booking));
-                }
                 break;
             default:
                 result = new ArrayList<>(before);
         }
         return result;
-    }
-
-    private Booking bookingMaker(Booking booking) {
-//        booking.setItem(itemRepository.findById(booking.getItem().getId()).get());
-//        booking.setBooker(userRepository.findById(booking.getItem().getId()).get());
-//        bookingRepository.save(booking);
-        return booking;
     }
 }

@@ -27,16 +27,10 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "booker_id", referencedColumnName = "id")
     private User booker;
-//    @Column(name = "booker_id")
-//    private long bookerId;
 
     @ManyToOne
     @JoinColumn(name = "item_id", referencedColumnName = "id")
     private Item item;
-
-//    @ManyToOne
-//    @JoinColumn(name = "owner_id", referencedColumnName = "id")
-//    private User itemOwner;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

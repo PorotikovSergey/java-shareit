@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 
@@ -17,15 +16,10 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JsonIgnore
     @JoinColumn(name = "item_id", referencedColumnName = "id")
     private Item item;
-
-//    @ManyToOne
-//    @JoinColumn(name = "booker_id", referencedColumnName = "id")
-//    private User booker;
-
 
     @Column(name = "author_name")
     private String authorName;

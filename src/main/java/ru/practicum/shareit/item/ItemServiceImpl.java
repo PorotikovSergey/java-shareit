@@ -53,7 +53,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item postItem(Item item, String ownerId) {
         long idOfOwner = Long.parseLong(ownerId);
-        item.setOwner(userRepository.findById(idOfOwner).get());
+        item.setOwner(userRepository.findById(idOfOwner).orElseThrow(() -> new NotFoundException("Такого юзера нет")));
         validateItem(item, ownerId);
         itemRepository.save(item);
         return item;
@@ -67,7 +67,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
-        Item forPatch = getItemWithOutUser(itemId);
+        Item forPatch = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         patchOneItemFromAnother(item, forPatch);
         itemRepository.save(forPatch);
         return forPatch;
@@ -76,15 +76,13 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item getItem(String user, long itemId) {
         long userId = Long.parseLong(user);
-        checkItem(itemId);
         List<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
-        Item resultItem = itemRepository.findById(itemId).get();
+        Item resultItem = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         if (Long.parseLong(user) == resultItem.getOwner().getId()) {
             resultItem.setNextBooking(getNextBooking(bookingsByUser));
             resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
-        List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
-        resultItem.setComments(commentsForItem);
+        resultItem.setComments(commentRepository.findAllByItemId(itemId));
         return resultItem;
     }
 
@@ -110,7 +108,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Comment postComment(String bookerId, long itemId, Comment comment) {
-        Item item = getItemWithOutUser(itemId);
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         long idOfBooker = Long.parseLong(bookerId);
 
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
@@ -120,7 +118,9 @@ public class ItemServiceImpl implements ItemService {
 
         checkCommentBeforePosting(booking, comment);
         comment.setItem(item);
-        comment.setAuthorName(userRepository.findById(idOfBooker).get().getName());
+        comment.setAuthorName(userRepository.findById(idOfBooker)
+                .orElseThrow(() -> new NotFoundException("Такого юзера нет"))
+                .getName());
         commentRepository.save(comment);
         return comment;
     }
@@ -128,7 +128,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item postItemToRequest(Item item, String itemOwner, long requestId) {
         validateItem(item, itemOwner);
-        User owner = userRepository.findById(Long.parseLong(itemOwner)).get();
+        User owner = userRepository.findById(Long.parseLong(itemOwner))
+                .orElseThrow(() -> new NotFoundException("Такого юзера нет"));
         item.setOwner(owner);
         item.setRequestId(requestId);
         itemRepository.save(item);
@@ -137,22 +138,11 @@ public class ItemServiceImpl implements ItemService {
 
 //-----------------------------private------------------------------------------------------------
 
-//    private void checkUserId(long userId) {
-//        if (!userRepository.existsById(userId)) {
-//            throw new NotFoundException("Юзера с таким айди " + userId + " нет");
-//        }
-//    }
-
     private List<Item> getPageable(List<Item> items, int firstEl, int sizePage, long userId) {
         PagedListHolder<Item> page = new PagedListHolder<>(new ArrayList<>(items.subList(firstEl, items.size())));
         page.setPageSize(sizePage);
         page.setPage(0);
         return itemsWithStartAndEnd(page.getPageList(), userId);
-    }
-
-    private Item getItemWithOutUser(long itemId) {
-        checkItem(itemId);
-        return itemRepository.findById(itemId).get();
     }
 
     private void checkCommentBeforePosting(Booking booking, Comment comment) {
@@ -183,19 +173,14 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private void checkItem(long itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким id " + itemId + " не существует");
-        }
-    }
-
     private void validateItemForPatch(String ownerId, long id) {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
         }
-        if (Long.parseLong(ownerId) != getItemWithOutUser(id).getOwner().getId()) {
+        Item item = itemRepository.findById(id).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
+        if (Long.parseLong(ownerId) != item.getOwner().getId()) {
             throw new NotFoundException("Патчить вещь может только её владелец с айди "
-                    + getItemWithOutUser(id).getOwner().getId());
+                    + item.getOwner().getId());
         }
     }
 
@@ -214,7 +199,7 @@ public class ItemServiceImpl implements ItemService {
 
     private List<Item> itemsWithStartAndEnd(List<Item> list, long userId) {
         List<Item> resultItems = new ArrayList<>();
-        Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(userId);
+        List<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(userId);
         for (Item item : list) {
             Collection<Booking> bookingsOfItem = bookings.stream()
                     .filter(i -> i.getItem().getId() == item.getId())

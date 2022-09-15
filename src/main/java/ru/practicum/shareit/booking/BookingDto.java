@@ -1,11 +1,8 @@
 package ru.practicum.shareit.booking;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemDto;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserDto;
 
 import java.time.LocalDateTime;
 

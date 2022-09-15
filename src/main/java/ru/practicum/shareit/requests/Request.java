@@ -34,7 +34,4 @@ public class Request {
 
     @Transient
     private List<Item> items = new ArrayList<>();
-//    @ManyToOne
-//    @JoinColumn(name = "item_id", referencedColumnName = "id")
-//    private Item item;
 }

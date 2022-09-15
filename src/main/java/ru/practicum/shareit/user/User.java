@@ -33,13 +33,7 @@ public class User {
     @OneToMany(mappedBy = "requestor")
     private List<Request> requests;
 
-//    @OneToMany(mappedBy = "itemOwner")
-//    private List<Booking> rents;
-
     @OneToMany(mappedBy = "booker")
     @JsonIgnore
     private List<Booking> bookings;
-
-//    @OneToMany(mappedBy = "booker")
-//    private List<Comment> comments;
 }
