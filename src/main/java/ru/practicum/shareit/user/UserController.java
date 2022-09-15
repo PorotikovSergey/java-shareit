@@ -1,4 +1,4 @@
-package ru.practicum.shareit.requests.user;
+package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

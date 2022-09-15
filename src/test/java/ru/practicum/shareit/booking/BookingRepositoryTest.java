@@ -23,14 +23,14 @@ class BookingRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        bookingOne = new Booking(1L, 1L, 1L, 3L);
-        bookingRepository.save(bookingOne);
-        bookingTwo = new Booking(2L, 2L, 1L, 3L);
-        bookingRepository.save(bookingTwo);
-        bookingThree = new Booking(3L, 3L, 3L, 1L);
-        bookingRepository.save(bookingThree);
-        bookingFour = new Booking(4L, 4L, 3L, 1L);
-        bookingRepository.save(bookingFour);
+//        bookingOne = new Booking(1L, 1L, 1L, 3L);
+//        bookingRepository.save(bookingOne);
+//        bookingTwo = new Booking(2L, 2L, 1L, 3L);
+//        bookingRepository.save(bookingTwo);
+//        bookingThree = new Booking(3L, 3L, 3L, 1L);
+//        bookingRepository.save(bookingThree);
+//        bookingFour = new Booking(4L, 4L, 3L, 1L);
+//        bookingRepository.save(bookingFour);
     }
 
     @Test

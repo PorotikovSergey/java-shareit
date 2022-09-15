@@ -9,8 +9,8 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ServiceException;
 import ru.practicum.shareit.exceptions.ValidationException;
-import ru.practicum.shareit.requests.user.User;
-import ru.practicum.shareit.requests.user.UserRepository;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

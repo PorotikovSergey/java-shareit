@@ -3,7 +3,7 @@ package ru.practicum.shareit.requests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.requests.user.User;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.util.ArrayList;

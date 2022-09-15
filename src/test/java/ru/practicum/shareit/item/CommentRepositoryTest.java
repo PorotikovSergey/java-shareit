@@ -22,9 +22,9 @@ class CommentRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        commentOne = new Comment(1L, 1L, 2L, "Коммент");
-        commentTwo = new Comment(2L, 2L, 1L, "Комментарий");
-        commentThree = new Comment(3L, 2L, 3L, "Суперкомментарий");
+//        commentOne = new Comment(1L, 1L, 2L, "Коммент");
+//        commentTwo = new Comment(2L, 2L, 1L, "Комментарий");
+//        commentThree = new Comment(3L, 2L, 3L, "Суперкомментарий");
 
         commentRepository.save(commentOne);
         commentRepository.save(commentTwo);

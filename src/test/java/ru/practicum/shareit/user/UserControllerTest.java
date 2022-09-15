@@ -3,15 +3,11 @@ package ru.practicum.shareit.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.requests.user.User;
-import ru.practicum.shareit.requests.user.UserController;
-import ru.practicum.shareit.requests.user.UserMapper;
-import ru.practicum.shareit.requests.user.UserServiceImpl;
+import ru.practicum.shareit.requests.user.*;
 
 import java.nio.charset.StandardCharsets;
 
@@ -22,24 +18,27 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UserController.class)
-@AutoConfigureMockMvc
+@WebMvcTest(controllers = UserController.class)
+//@AutoConfigureMockMvc
 class UserControllerTest {
     @Autowired
     ObjectMapper mapper;
+    //    @MockBean
+//    UserMapper userMapper;
     @MockBean
-    UserMapper userMapper;
-    @MockBean
-    UserServiceImpl userService;
+    UserService userService;
 
     @Autowired
     MockMvc mockMvc;
 
-    private User user = new User(1L, "Bob", "bob@gmail.com");
+    private User user = new User(
+            1L,
+            "Bob",
+            "bob@mail.ru");
 
     @Test
     void postUser() throws Exception {
-        when(userService.postUser(user))
+        when(userService.postUser(any()))
                 .thenReturn(user);
 
         mockMvc.perform(post("/users")

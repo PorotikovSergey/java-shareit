@@ -1,4 +1,4 @@
-package ru.practicum.shareit.requests.user;
+package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
@@ -35,4 +35,10 @@ public class User {
     @OneToMany(mappedBy = "booker")
     @JsonIgnore
     private List<Booking> bookings;
+
+    public User(long id, String name, String email) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
 }
