@@ -40,4 +40,11 @@ public class Booking {
     @Column(name = "state")
     private BookingState state = BookingState.ALL;
 
+    public Booking(long id, LocalDateTime start, LocalDateTime end, User booker, Item item) {
+        this.id = id;
+        this.start = start;
+        this.end = end;
+        this.booker = booker;
+        this.item = item;
+    }
 }

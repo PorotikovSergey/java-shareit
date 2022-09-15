@@ -1,47 +1,74 @@
 package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.requests.user.*;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = UserController.class)
-//@AutoConfigureMockMvc
-class UserControllerTest {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+class UserControllerTestWithContext {
+
     @Autowired
     ObjectMapper mapper;
-    //    @MockBean
-//    UserMapper userMapper;
+
     @MockBean
-    UserService userService;
+    UserServiceImpl userService;
+    @MockBean
+    UserMapper userMapper;
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mvc;
 
-    private User user = new User(
-            1L,
-            "Bob",
-            "bob@mail.ru");
+    User user;
+    UserDto userDto;
+
+    @BeforeEach
+    void setUp() {
+        user = new User(
+                1L,
+                "John",
+                "john.doe@mail.com"
+        );
+
+        userDto = new UserDto(
+                1L,
+                "John",
+                "john.doe@mail.com"
+        );
+    }
 
     @Test
-    void postUser() throws Exception {
+    void saveNewUser() throws Exception {
+
+        when(userMapper.fromUserToDto(any()))
+                .thenReturn(userDto);
         when(userService.postUser(any()))
                 .thenReturn(user);
 
-        mockMvc.perform(post("/users")
+        mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(user))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -50,35 +77,10 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(user.getName())))
                 .andExpect(jsonPath("$.email", is(user.getEmail())));
-//
-//        verify(userService, times(1)).postUser(user);
+    }
+
+    @AfterEach
+    void afterEach() {
+
     }
 }
-
-//    void getAll() throws Exception {
-//        assertEquals(1, 1);
-//        when(userService.getAll()).thenReturn(Collections.emptyList());
-//
-//        mockMvc.perform(get("/users"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json("[]"));
-//
-//        verify(userService, times(1)).getAll();
-
-
-//    @Test
-//    void postUser() {
-//    }
-//
-//    @Test
-//    void deleteUser() {
-//    }
-//
-//    @Test
-//    void patchUser() {
-//    }
-//
-//    @Test
-//    void getUser() {
-//    }
-//}

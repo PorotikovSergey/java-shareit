@@ -6,6 +6,7 @@ import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,4 +35,13 @@ public class Request {
 
     @Transient
     private List<Item> items = new ArrayList<>();
+
+//    public Request(long id, String description, Date created, User requestor, List<Item> items) {
+//        this.id = id;
+//        this.description = description;
+//        this.created = created;
+//        this.requestor = requestor;
+//        this.items = items;
+//    }
+
 }
