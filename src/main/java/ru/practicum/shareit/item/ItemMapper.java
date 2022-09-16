@@ -39,6 +39,7 @@ public class ItemMapper {
         item.setAvailable(itemDto.getAvailable());
         return item;
     }
+
     private BookingDto fromBookingToDto(Booking booking) {
         if(booking==null) {
             return null;

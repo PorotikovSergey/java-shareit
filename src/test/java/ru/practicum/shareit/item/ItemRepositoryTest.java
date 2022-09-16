@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -15,7 +14,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ItemRepositoryTest {
     @Autowired
     UserRepository userRepository;
@@ -35,8 +34,6 @@ class ItemRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        itemRepository.deleteAll();
-        userRepository.deleteAll();
         userOne = new User(1L, "Bob", "bob@mail.ru");
         userRepository.save(userOne);
 
@@ -54,69 +51,58 @@ class ItemRepositoryTest {
         userRepository.save(userThree);
         itemThree = new Item(3L, "item-3", "description-3", true, 3L, userThree,
                 null, null, null);
+        itemThree.setAvailable(true);
+        itemThree.setRequestId(1);
         itemRepository.save(itemThree);
 
         userFour = new User(4L, "Lida", "lida@yandex.ru");
         userRepository.save(userFour);
-        itemFour = new Item(4L, "item-4", "description-3", false, 4L, userFour,
+        itemFour = new Item(4L, "item-4", "description-4", false, 4L, userFour,
                 null, null, null);
         itemRepository.save(itemFour);
     }
 
     @Test
     void findAllByNameContainingIgnoreCaseAndAvailableIs() {
-        assertEquals(1, 1);
         List<Item> list = itemRepository.findAllByNameContainingIgnoreCaseAndAvailableIs("-2", true);
         assertNotNull(list);
         assertEquals(1, list.size());
         assertEquals("item-2", list.get(0).getName());
 
-        List<Item> list2 = itemRepository.findAllByNameContainingIgnoreCaseAndAvailableIs("-4", true);
-        assertEquals(0, list2.size());
-
-        itemRepository.deleteAll();
-        userRepository.deleteAll();
+        List<Item> list2 = itemRepository.findAllByNameContainingIgnoreCaseAndAvailableIs("3", true);
+        assertEquals(1, list2.size());
+        assertEquals("item-3", list2.get(0).getName());
+        assertTrue(list.get(0).getAvailable());
     }
 
-//    @Test
-//    void findAllByOwnerId() {
-//
-//        assertEquals(1, 1);
-//        List<Item> list = itemRepository.findAllByOwnerId(1L);
-//        assertNotNull(list);
-//        assertEquals(1, list.size());
-//        assertEquals("item-1", list.get(0).getName());
-//    }
-//
-//    @Test
-//    void findAllByOwnerId2() {
-//        List<Item> list1 = itemRepository.findAllByOwnerId(1L);
-//        assertNotNull(list1);
-//        assertEquals(1, list1.size());
-//        assertEquals("item-1", list1.get(0).getName());
-//
-//    }
-//
-//    @Test
-//    void findAllByDescriptionContainingIgnoreCaseAndAvailableIs() {
-//        List<Item> list = itemRepository.findAllByDescriptionContainingIgnoreCaseAndAvailableIs("ion",
-//                true);
-//        assertNotNull(list);
-//        assertEquals(3, list.size());
-//
-//        List<Item> list2 = itemRepository.findAllByDescriptionContainingIgnoreCaseAndAvailableIs("ion",
-//                false);
-//        assertEquals(1, list2.size());
-//    }
-//
-//    @Test
-//    void findAllByRequestId() {
-//        List<Item> list = itemRepository.findAllByRequestId(99);
-//        assertNotNull(list);
-//        assertEquals(1, list.size());
-//        assertEquals("item-2", list.get(0).getName());
-//    }
-//
+    @Test
+    void findAllByOwnerId() {
+        List<Item> list = itemRepository.findAllByOwnerId(1L);
+        assertNotNull(list);
+        assertEquals(1, list.size());
+        assertEquals("item-1", list.get(0).getName());
+        assertEquals("description-1", list.get(0).getDescription());
+    }
+
+    @Test
+    void findAllByDescriptionContainingIgnoreCaseAndAvailableIs() {
+        List<Item> list = itemRepository.findAllByDescriptionContainingIgnoreCaseAndAvailableIs("ion",
+                true);
+        assertNotNull(list);
+        assertEquals(3, list.size());
+
+        List<Item> list2 = itemRepository.findAllByDescriptionContainingIgnoreCaseAndAvailableIs("ion",
+                false);
+        assertEquals(1, list2.size());
+    }
+
+    @Test
+    void findAllByRequestIdNotExist() {
+        List<Item> list = itemRepository.findAllByRequestId(99);
+        assertNotNull(list);
+        assertEquals(0, list.size());
+    }
+
     @AfterEach
     void afterEach() {
         itemRepository.deleteAll();

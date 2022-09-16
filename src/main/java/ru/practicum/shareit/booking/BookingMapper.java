@@ -8,8 +8,8 @@ import ru.practicum.shareit.user.UserMapper;
 @Service
 @Data
 public class BookingMapper {
-    private final ItemMapper itemMapper;
-    private final UserMapper userMapper;
+//    private final ItemMapper itemMapper;
+//    private final UserMapper userMapper;
 
     public BookingDto fromBookingToDto(Booking booking) {
         BookingDto bookingDto = new BookingDto();
