@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = UserController.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class UserControllerTest {
 
     @Autowired
@@ -107,8 +107,7 @@ class UserControllerTest {
         when(userService.getAll())
                 .thenReturn(list);
 
-        mvc.perform(get("/users")
-                        )
+        mvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(1)))
@@ -127,8 +126,7 @@ class UserControllerTest {
     void deleteUser() throws Exception {
         doNothing().when(userService).deleteUser(user.getId());
 
-        mvc.perform(delete("/users/1")
-                )
+        mvc.perform(delete("/users/1"))
                 .andExpect(status().isOk());
 
         verify(userService, times(1)).deleteUser(1);
@@ -164,11 +162,7 @@ class UserControllerTest {
         when(userService.getUser(anyLong()))
                 .thenReturn(user2);
 
-        mvc.perform(get("/users/2")
-                        .content(mapper.writeValueAsString(user2))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+        mvc.perform(get("/users/2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(user2.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(user2.getName())))
