@@ -91,6 +91,7 @@ class ItemServiceImplTest {
 
         comment = new Comment(99L, item3, "Mikha", "text of comment");
     }
+
     @Test
     void getAll() {
         Mockito

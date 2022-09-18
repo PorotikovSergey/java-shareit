@@ -65,7 +65,6 @@ class BookingRepositoryTest {
         itemRepository.save(itemThree);
 
         LocalDateTime start = LocalDateTime.now();
-        Thread.sleep(10);
         LocalDateTime end = LocalDateTime.now();
 
         bookingOne = new Booking(1L, start, end, userOne, itemOne);

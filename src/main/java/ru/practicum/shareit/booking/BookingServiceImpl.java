@@ -81,7 +81,6 @@ public class BookingServiceImpl implements BookingService {
         return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
 
-//------------------------------private-----------------------------------------------------------------
 
     private void checkAccessForGetBooking(Booking booking, long idOfOwnerOrBooker) {
         if (!((booking.getBooker().getId() == idOfOwnerOrBooker) || (booking.getItem().getOwner().getId() == idOfOwnerOrBooker))) {
@@ -149,7 +148,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private List<Booking> getAllBookingsForBooker(String booker) {
+    public List<Booking> getAllBookingsForBooker(String booker) {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
         long idOfBooker = Long.parseLong(booker);
         if (!userRepository.existsById(idOfBooker)) {

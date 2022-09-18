@@ -56,7 +56,7 @@ public class ItemMapper {
         return bookingDto;
     }
 
-    public CommentDto fromCommentToDto(Comment comment) {
+    private CommentDto fromCommentToDto(Comment comment) {
         CommentDto commentDto = new CommentDto();
         commentDto.setId(comment.getId());
         commentDto.setText(comment.getText());

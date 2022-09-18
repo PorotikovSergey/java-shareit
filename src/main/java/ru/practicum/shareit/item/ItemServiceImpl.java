@@ -110,7 +110,6 @@ public class ItemServiceImpl implements ItemService {
     public Comment postComment(String bookerId, long itemId, Comment comment) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         long idOfBooker = Long.parseLong(bookerId);
-        List<Booking> br = bookingRepository.findAllByItemId(itemId);
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
                 .filter(b -> b.getBooker().getId() == idOfBooker)
                 .findFirst()
