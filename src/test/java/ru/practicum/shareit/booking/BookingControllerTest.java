@@ -1,18 +1,15 @@
 package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.cglib.core.internal.LoadingCache;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.user.User;
 
 import java.nio.charset.StandardCharsets;
@@ -23,7 +20,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -147,7 +143,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void getBooking() throws Exception{
+    void getBooking() throws Exception {
         when(bookingMapper.fromBookingToDto(booking2))
                 .thenReturn(bookingDto);
         when(bookingService.getBooking(any(), anyString()))

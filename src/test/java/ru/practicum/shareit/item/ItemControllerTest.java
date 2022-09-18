@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,14 +14,12 @@ import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.user.*;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -119,14 +116,14 @@ class ItemControllerTest {
     void getAll() throws Exception {
         when(itemMapper.fromItemToDto(any()))
                 .thenReturn(itemDto);
-        when(bookingMapper.fromBookingToDto(any())).
-                thenReturn(null);
+        when(bookingMapper.fromBookingToDto(any()))
+                .thenReturn(null);
         when(commentMapper.fromCommentToDto(any()))
                 .thenReturn(null);
         when(itemService.getAll(any(), any(), any()))
                 .thenReturn(list);
 
-        mvc.perform(get("/items") )
+        mvc.perform(get("/items"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(11)))
@@ -155,7 +152,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void patchItem() throws Exception{
+    void patchItem() throws Exception {
         when(itemMapper.fromItemToDto(any()))
                 .thenReturn(itemDto);
         when(itemService.patchItem(anyLong(), any(Item.class), anyString()))
@@ -179,7 +176,7 @@ class ItemControllerTest {
     }
 
     @Test
-    void getItem() throws Exception{
+    void getItem() throws Exception {
         when(itemMapper.fromItemToDto(item))
                 .thenReturn(itemDto);
         when(itemService.getItem(any(), anyLong()))
@@ -199,8 +196,8 @@ class ItemControllerTest {
     void searchItem() throws Exception {
         when(itemMapper.fromItemToDto(any()))
                 .thenReturn(itemDto);
-        when(bookingMapper.fromBookingToDto(any())).
-                thenReturn(null);
+        when(bookingMapper.fromBookingToDto(any()))
+                .thenReturn(null);
         when(commentMapper.fromCommentToDto(any()))
                 .thenReturn(null);
         when(itemService.searchItem(anyString(), any(), any(), any()))

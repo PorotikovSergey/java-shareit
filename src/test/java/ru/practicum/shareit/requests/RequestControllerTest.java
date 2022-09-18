@@ -1,7 +1,6 @@
 package ru.practicum.shareit.requests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.bytebuddy.agent.builder.AgentBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +9,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.shareit.booking.BookingMapper;
-import ru.practicum.shareit.item.CommentMapper;
-import ru.practicum.shareit.item.ItemController;
-import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.ItemServiceImpl;
 import ru.practicum.shareit.user.User;
 
 import java.nio.charset.StandardCharsets;
@@ -79,7 +73,7 @@ class RequestControllerTest {
 
 
     @Test
-    void postItemRequest() throws Exception{
+    void postItemRequest() throws Exception {
         when(requestMapper.fromRequestToDto(any()))
                 .thenReturn(requestDto);
         when(requestService.postRequest(request, "22"))

@@ -11,18 +11,13 @@ import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -114,12 +109,12 @@ class RequestServiceImplTest {
     void getAll() {
         Mockito
                 .when(requestRepository.findAll()).thenReturn(list);
-        Mockito.
-                when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user1));
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user1));
         Mockito
                 .when(requestRepository.findRequestsByRequestorId(anyLong())).thenReturn(list);
-        Mockito.
-                when(itemRepository.findAllByRequestId(anyLong())).thenReturn(itemList);
+        Mockito
+                .when(itemRepository.findAllByRequestId(anyLong())).thenReturn(itemList);
 
         List<Request> testList = requestService.getAll("1");
         assertNotNull(testList);

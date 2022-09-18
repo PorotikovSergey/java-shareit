@@ -20,7 +20,7 @@ public class ItemMapper {
         itemDto.setLastBooking(fromBookingToDto(item.getLastBooking()));
         itemDto.setNextBooking(fromBookingToDto(item.getNextBooking()));
         List<Comment> commentsBefore = item.getComments();
-        if(commentsBefore!=null) {
+        if (commentsBefore != null) {
             List<CommentDto> commentsAfter = new ArrayList<>();
             for (Comment comment : item.getComments()) {
                 commentsAfter.add(fromCommentToDto(comment));
@@ -41,7 +41,7 @@ public class ItemMapper {
     }
 
     private BookingDto fromBookingToDto(Booking booking) {
-        if(booking==null) {
+        if (booking == null) {
             return null;
         }
         BookingDto bookingDto = new BookingDto();

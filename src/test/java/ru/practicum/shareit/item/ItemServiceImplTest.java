@@ -10,10 +10,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
-import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
-import ru.practicum.shareit.user.UserServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -96,8 +94,8 @@ class ItemServiceImplTest {
     void getAll() {
         Mockito
                 .when(itemRepository.findAll()).thenReturn(list);
-        Mockito.
-                when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(list);
+        Mockito
+                .when(itemRepository.findAllByOwnerId(anyLong())).thenReturn(list);
 
         List<Item> testList = itemService.getAll("1", "0", "30");
         assertNotNull(testList);
