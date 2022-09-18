@@ -27,8 +27,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 class UserServiceImplTest {
     @Mock
     UserRepository userRepository;
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.LENIENT);
 
     UserServiceImpl userService;
 

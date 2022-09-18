@@ -21,18 +21,4 @@ public class BookingDto {
     private Item item;
     private BookingStatus status;
     private BookingState state;
-
-    @Override
-    public String toString() {
-        return "BookingDto{" +
-                "id=" + id +
-                ", start=" + start +
-                ", end=" + end +
-                ", itemId=" + itemId +
-                ", bookerId=" + bookerId +
-                ", item=" + item +
-                ", status=" + status +
-                ", state=" + state +
-                '}';
-    }
 }

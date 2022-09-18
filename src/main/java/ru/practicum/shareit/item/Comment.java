@@ -26,14 +26,4 @@ public class Comment {
 
     @Column(name = "text")
     private String text;
-
-    @Override
-    public String toString() {
-        return "Comment{" +
-                "id=" + id +
-                ", item=" + item +
-                ", authorName='" + authorName + '\'' +
-                ", text='" + text + '\'' +
-                '}';
-    }
 }

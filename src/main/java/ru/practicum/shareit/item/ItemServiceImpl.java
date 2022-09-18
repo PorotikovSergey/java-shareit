@@ -110,7 +110,7 @@ public class ItemServiceImpl implements ItemService {
     public Comment postComment(String bookerId, long itemId, Comment comment) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         long idOfBooker = Long.parseLong(bookerId);
-
+        List<Booking> br = bookingRepository.findAllByItemId(itemId);
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
                 .filter(b -> b.getBooker().getId() == idOfBooker)
                 .findFirst()
@@ -145,7 +145,7 @@ public class ItemServiceImpl implements ItemService {
         return itemsWithStartAndEnd(page.getPageList(), userId);
     }
 
-    private void checkCommentBeforePosting(Booking booking, Comment comment) {
+    public void checkCommentBeforePosting(Booking booking, Comment comment) {
         if (booking == null) {
             throw new NotFoundException("Бронирования на данный айтем не было");
         }
@@ -211,7 +211,7 @@ public class ItemServiceImpl implements ItemService {
         return resultItems;
     }
 
-    private Booking getNextBooking(Collection<Booking> bookings) {
+    public Booking getNextBooking(Collection<Booking> bookings) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allStarts = new ArrayList<>();
         for (Booking booking : bookings) {
@@ -224,7 +224,7 @@ public class ItemServiceImpl implements ItemService {
         return bookings.stream().filter(b -> b.getStart() == next.orElse(null)).findFirst().orElse(null);
     }
 
-    private Booking getLastBooking(Collection<Booking> bookings) {
+    public Booking getLastBooking(Collection<Booking> bookings) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allEnds = new ArrayList<>();
         for (Booking booking : bookings) {

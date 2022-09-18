@@ -48,19 +48,4 @@ public class Item {
     @Transient
     @JsonIgnore
     private Booking nextBooking;
-
-    @Override
-    public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", available=" + available +
-                ", requestId=" + requestId +
-                ", owner=" + owner +
-                ", comments=" + comments +
-                ", lastBooking=" + lastBooking +
-                ", nextBooking=" + nextBooking +
-                '}';
-    }
 }
