@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +11,9 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ServiceException;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
@@ -49,12 +53,14 @@ class ItemServiceImplTest {
 
     Booking booking1;
     Booking booking2;
+    Booking futureBooking;
 
     Comment comment;
 
     List<Item> list = new ArrayList<>();
     List<Item> list2 = new ArrayList<>();
     List<Booking> bookings = new ArrayList<>();
+    List<Booking> futureBookings = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
@@ -78,6 +84,8 @@ class ItemServiceImplTest {
         booking1 = new Booking(100L, date, date, user1, null);
         booking2 = new Booking(200L, date, date, user2, null);
 
+        futureBooking = new Booking(300L, date.plusDays(1000), date.plusDays(1000), user1, item1);
+
         list.add(item1);
         list.add(item2);
         list.add(item3);
@@ -86,6 +94,8 @@ class ItemServiceImplTest {
 
         bookings.add(booking1);
         bookings.add(booking2);
+
+        futureBookings.add(futureBooking);
 
         comment = new Comment(99L, item3, "Mikha", "text of comment");
     }
@@ -125,6 +135,19 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void postItemNullUser() {
+        Mockito
+                .when(itemRepository.save(item2)).thenReturn(item2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ServiceException exception = Assertions.assertThrows(
+                ServiceException.class,
+                () -> itemService.postItem(item2, null));
+        Assertions.assertEquals("Отсутствует владелец", exception.getMessage());
+    }
+
+    @Test
     void deleteItem() {
         Mockito
                 .doNothing().when(itemRepository).deleteById(anyLong());
@@ -144,6 +167,19 @@ class ItemServiceImplTest {
         assertEquals(1L, testItem.getId());
         assertEquals("item-1", testItem.getName());
         assertTrue(testItem.getAvailable());
+    }
+
+    @Test
+    void patchItemNullOwner() {
+        Mockito
+                .when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
+        Mockito
+                .when(itemRepository.save(item1)).thenReturn(item1);
+
+        final ServiceException exception = Assertions.assertThrows(
+                ServiceException.class,
+                () -> itemService.patchItem(1L, item1, null));
+        Assertions.assertEquals("Отсутствует владелец", exception.getMessage());
     }
 
     @Test
@@ -183,6 +219,40 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void postCommentWrongTime() {
+        Mockito
+                .when(commentRepository.save(any())).thenReturn(comment);
+        Mockito
+                .when(bookingRepository.findAllByItemId(anyLong())).thenReturn(futureBookings);
+        Mockito
+                .when(itemRepository.findById(any())).thenReturn(Optional.of(item1));
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user1));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postComment("1", 1, comment));
+        Assertions.assertEquals("Отзывы возможны только к прошедшим броням", exception.getMessage());
+    }
+
+    @Test
+    void postCommentNoItem() {
+        Mockito
+                .when(commentRepository.save(any())).thenReturn(comment);
+        Mockito
+                .when(bookingRepository.findAllByItemId(anyLong())).thenReturn(Collections.emptyList());
+        Mockito
+                .when(itemRepository.findById(any())).thenReturn(Optional.of(item1));
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user1));
+
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
+                () -> itemService.postComment("1", 3, comment));
+        Assertions.assertEquals("Бронирования на данный айтем не было", exception.getMessage());
+    }
+
+    @Test
     void postComment() {
         Mockito
                 .when(commentRepository.save(any())).thenReturn(comment);
@@ -219,5 +289,87 @@ class ItemServiceImplTest {
         assertEquals(0, testItem.getComments().size());
         assertNull(testItem.getLastBooking());
         assertNull(testItem.getNextBooking());
+    }
+
+
+    @Test
+    void postCommentWithOutItem() {
+        Mockito
+                .when(userRepository.findById(100L)).thenThrow(new NotFoundException("Такого айтема нет"));
+
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
+                () -> userRepository.findById(100L));
+        Assertions.assertEquals("Такого айтема нет", exception.getMessage());
+    }
+
+    @Test
+    void postItemNullAvailable() {
+        item2.setAvailable(null);
+        Mockito
+                .when(itemRepository.save(item2)).thenReturn(item2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postItem(item2, "2"));
+        Assertions.assertEquals("Вещь без доступности.", exception.getMessage());
+    }
+
+    @Test
+    void postItemNullName() {
+        item2.setName(null);
+        Mockito
+                .when(itemRepository.save(item2)).thenReturn(item2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postItem(item2, "2"));
+        Assertions.assertEquals("Вещь с пустым именем.", exception.getMessage());
+    }
+
+    @Test
+    void postItemBlankName() {
+        item2.setName("");
+        Mockito
+                .when(itemRepository.save(item2)).thenReturn(item2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postItem(item2, "2"));
+        Assertions.assertEquals("Вещь с пустым именем.", exception.getMessage());
+    }
+
+    @Test
+    void postItemNullDescription() {
+        item2.setDescription(null);
+        Mockito
+                .when(itemRepository.save(item2)).thenReturn(item2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postItem(item2, "2"));
+        Assertions.assertEquals("Вещь с пустым описанием", exception.getMessage());
+    }
+
+    @Test
+    void postItemBlankDescription() {
+        item2.setDescription("");
+        Mockito
+                .when(itemRepository.save(item2)).thenReturn(item2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postItem(item2, "2"));
+        Assertions.assertEquals("Вещь с пустым описанием", exception.getMessage());
     }
 }

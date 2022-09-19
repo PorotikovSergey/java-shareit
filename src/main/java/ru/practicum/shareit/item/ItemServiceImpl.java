@@ -110,6 +110,7 @@ public class ItemServiceImpl implements ItemService {
     public Comment postComment(String bookerId, long itemId, Comment comment) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         long idOfBooker = Long.parseLong(bookerId);
+        List<Booking> temp = bookingRepository.findAllByItemId(itemId);
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
                 .filter(b -> b.getBooker().getId() == idOfBooker)
                 .findFirst()
@@ -134,8 +135,6 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.save(item);
         return item;
     }
-
-//-----------------------------private------------------------------------------------------------
 
     private List<Item> getPageable(List<Item> items, int firstEl, int sizePage, long userId) {
         PagedListHolder<Item> page = new PagedListHolder<>(new ArrayList<>(items.subList(firstEl, items.size())));

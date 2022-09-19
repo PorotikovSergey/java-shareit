@@ -84,7 +84,7 @@ public class BookingServiceImpl implements BookingService {
 
     private void checkAccessForGetBooking(Booking booking, long idOfOwnerOrBooker) {
         if (!((booking.getBooker().getId() == idOfOwnerOrBooker) || (booking.getItem().getOwner().getId() == idOfOwnerOrBooker))) {
-            throw new NotFoundException("Только владелец или арендатор могут просматривать айтем. ");
+            throw new NotFoundException("Только владелец или арендатор могут просматривать айтем");
         }
     }
 

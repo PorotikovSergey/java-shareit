@@ -1,5 +1,6 @@
 package ru.practicum.shareit.requests;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -152,5 +155,35 @@ class RequestServiceImplTest {
         assertEquals("description-2", testRequest.getDescription());
         assertEquals(request2.getCreated(), testRequest.getCreated());
         assertEquals(user1, testRequest.getRequestor());
+    }
+
+    @Test
+    void getRequestWrongUser() {
+
+        Mockito
+                .when(requestRepository.findById(anyLong())).thenReturn(Optional.of(request2));
+        Mockito
+                .when(itemRepository.findAllByRequestId(anyLong())).thenReturn(itemList);
+        Mockito
+                .when(userRepository.existsById(anyLong())).thenReturn(false);
+
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
+                () -> requestService.getRequest("1", "1"));
+        Assertions.assertEquals("Юзера с таким айди 1 нет", exception.getMessage());
+    }
+
+    @Test
+    void postRequestWrongDescription() {
+        request2.setDescription(null);
+        Mockito
+                .when(requestRepository.save(any())).thenReturn(request2);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> requestService.postRequest(request2, "2"));
+        Assertions.assertEquals("Описание должно быть!", exception.getMessage());
     }
 }

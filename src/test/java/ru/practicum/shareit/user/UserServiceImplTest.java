@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import ru.practicum.shareit.exceptions.ConflictException;
+import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +25,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 class UserServiceImplTest {
     @Mock
     UserRepository userRepository;
-
+    @Mock
     UserServiceImpl userService;
 
     User user1;
@@ -104,4 +108,53 @@ class UserServiceImplTest {
         assertEquals("Bob", testUser.getName());
     }
 
+    @Test
+    void postUserWithNegativeId() {
+        User exceptionUser = new User(-10L, "Bob", "bobby@mail.ru");
+        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> userService.postUser(exceptionUser));
+        Assertions.assertEquals("Id юзера не может быть отрицательным. Вы пытаетесь задать id: -10", exception.getMessage());
+    }
+
+    @Test
+    void postUserWithWrongEmail() {
+        User exceptionUser = new User(10L, "Bob", "bobbymailru");
+        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> userService.postUser(exceptionUser));
+        Assertions.assertEquals("Email bobbymailru не соответсвтует требованиям.", exception.getMessage());
+    }
+
+    @Test
+    void postUserWithNullEmail() {
+        User exceptionUser = new User(10L, "Bob", null);
+        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> userService.postUser(exceptionUser));
+        Assertions.assertEquals("У юзера должен быть email", exception.getMessage());
+    }
+
+    @Test
+    void getUserWithException() {
+        Mockito
+                .when(userRepository.findById(100L)).thenThrow(new NotFoundException("Пользователя с таким айди нет"));
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
+                () -> userRepository.findById(100L));
+        Assertions.assertEquals("Пользователя с таким айди нет", exception.getMessage());
+    }
+
+    @Test
+    void patchUserEmailAlreadyExist() {
+        Mockito.when(userRepository.findById(100L)).thenThrow(new ConflictException("Такого юзера нет"));
+
+        final ConflictException exception = Assertions.assertThrows(
+                ConflictException.class,
+                () -> userRepository.findById(100L));
+        Assertions.assertEquals("Такого юзера нет", exception.getMessage());
+    }
 }
