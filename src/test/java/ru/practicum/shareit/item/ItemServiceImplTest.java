@@ -135,19 +135,6 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void postItemNullUser() {
-        Mockito
-                .when(itemRepository.save(item2)).thenReturn(item2);
-        Mockito
-                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user2));
-
-        final ServiceException exception = Assertions.assertThrows(
-                ServiceException.class,
-                () -> itemService.postItem(item2, null));
-        Assertions.assertEquals("Отсутствует владелец", exception.getMessage());
-    }
-
-    @Test
     void deleteItem() {
         Mockito
                 .doNothing().when(itemRepository).deleteById(anyLong());
@@ -167,6 +154,19 @@ class ItemServiceImplTest {
         assertEquals(1L, testItem.getId());
         assertEquals("item-1", testItem.getName());
         assertTrue(testItem.getAvailable());
+    }
+
+    @Test
+    void patchItem2() {
+        Mockito
+                .when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item1));
+        Mockito
+                .when(itemRepository.save(item1)).thenReturn(item1);
+
+        final NotFoundException exception = Assertions.assertThrows(
+                NotFoundException.class,
+                () -> itemService.patchItem(1L, item2, "3"));
+        Assertions.assertEquals("Патчить вещь может только её владелец с айди 1", exception.getMessage());
     }
 
     @Test
@@ -250,6 +250,24 @@ class ItemServiceImplTest {
                 NotFoundException.class,
                 () -> itemService.postComment("1", 3, comment));
         Assertions.assertEquals("Бронирования на данный айтем не было", exception.getMessage());
+    }
+
+    @Test
+    void postCommentNoText() {
+        comment.setText("");
+        Mockito
+                .when(commentRepository.save(any())).thenReturn(comment);
+        Mockito
+                .when(bookingRepository.findAllByItemId(anyLong())).thenReturn(bookings);
+        Mockito
+                .when(itemRepository.findById(any())).thenReturn(Optional.of(item1));
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.of(user1));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.postComment("1", 3, comment));
+        Assertions.assertEquals("Текст отзыва не может быть пустым", exception.getMessage());
     }
 
     @Test

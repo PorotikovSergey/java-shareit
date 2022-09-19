@@ -126,6 +126,22 @@ class RequestServiceImplTest {
     }
 
     @Test
+    void getAllEmpty() {
+        Mockito
+                .when(requestRepository.findAll()).thenReturn(list);
+        Mockito
+                .when(userRepository.findById(anyLong())).thenReturn(Optional.ofNullable(user1));
+        Mockito
+                .when(requestRepository.findRequestsByRequestorId(anyLong())).thenReturn(Collections.emptyList());
+        Mockito
+                .when(itemRepository.findAllByRequestId(anyLong())).thenReturn(itemList);
+
+        List<Request> testList = requestService.getAll("1");
+        assertNotNull(testList);
+        assertEquals(0, testList.size());
+    }
+
+    @Test
     void getAllPageable() {
         Pageable pageable = PageRequest.of(1, 10);
         Mockito
@@ -136,6 +152,21 @@ class RequestServiceImplTest {
                 .when(userRepository.findById(any())).thenReturn(Optional.of(user1));
 
         List<Request> resultList = requestService.getAllPageable("1", "10", "1");
+        assertNotNull(resultList);
+        assertEquals(0, resultList.size());
+    }
+
+    @Test
+    void getAllPageableNullFromSize() {
+        Pageable pageable = PageRequest.of(1, 10);
+        Mockito
+                .when(requestRepository.findAll(pageable)).thenReturn(Page.empty());
+        Mockito
+                .when(itemRepository.findAllByRequestId(anyLong())).thenReturn(itemList);
+        Mockito
+                .when(userRepository.findById(any())).thenReturn(Optional.of(user1));
+
+        List<Request> resultList = requestService.getAllPageable(null, null, "1");
         assertNotNull(resultList);
         assertEquals(0, resultList.size());
     }

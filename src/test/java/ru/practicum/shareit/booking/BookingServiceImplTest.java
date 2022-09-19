@@ -86,8 +86,8 @@ class BookingServiceImplTest {
         item3 = new Item(3L, "item-3", "description-3", true,
                 12, null, Collections.emptyList(), booking1, next);
 
-        booking1 = new Booking(1L, start.plusDays(100), end.plusDays(101), user1, item1);
-        booking2 = new Booking(2L, start, end, user2, item2);
+        booking1 = new Booking(1L, start.plusDays(1000), end.plusDays(1000), user1, item1);
+        booking2 = new Booking(2L, start.minusDays(1000), end.minusDays(1000), user2, item2);
 
         itemList.add(item1);
         itemList.add(item2);
@@ -141,7 +141,7 @@ class BookingServiceImplTest {
         Booking testBooking = bookingService.patchBooking("1", "1", true);
         assertNotNull(testBooking);
         assertEquals(1L, testBooking.getId());
-        assertEquals(2022, testBooking.getStart().getYear());
+        assertEquals(2025, testBooking.getStart().getYear());
         assertEquals(user1, testBooking.getBooker());
         assertEquals(item1, testBooking.getItem());
     }
@@ -154,7 +154,7 @@ class BookingServiceImplTest {
         Booking testBooking = bookingService.getBooking("2", "2");
         assertNotNull(testBooking);
         assertEquals(2L, testBooking.getId());
-        assertEquals(2022, testBooking.getStart().getYear());
+        assertEquals(2019, testBooking.getStart().getYear());
         assertEquals(user2, testBooking.getBooker());
         assertEquals(item2, testBooking.getItem());
     }
@@ -170,6 +170,64 @@ class BookingServiceImplTest {
 
 
         List<Booking> testList = bookingService.getAllForBooker("All", "1", "2", "1");
+        assertNotNull(testList);
+    }
+
+    @Test
+    void getAllForBookerSetPast() {
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(1)).thenReturn(list);
+        Mockito
+                .when(userRepository.existsById(anyLong())).thenReturn(true);
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(anyLong())).thenReturn(list);
+
+
+        List<Booking> testList = bookingService.getAllForBooker("PAST", null, "2", "1");
+        assertNotNull(testList);
+    }
+
+    @Test
+    void getAllForBookerSetFuture() {
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(1)).thenReturn(list);
+        Mockito
+                .when(userRepository.existsById(anyLong())).thenReturn(true);
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(anyLong())).thenReturn(list);
+
+
+        List<Booking> testList = bookingService.getAllForBooker("FUTURE", null, "2", "1");
+        assertNotNull(testList);
+    }
+
+    @Test
+    void getAllForBookerSetCurrent() {
+        List<Booking> currentList = new ArrayList<>();
+        currentList.add(new Booking(3L, start.minusDays(1000), end.plusDays(1000), user2, item2));
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(1)).thenReturn(currentList);
+        Mockito
+                .when(userRepository.existsById(anyLong())).thenReturn(true);
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(anyLong())).thenReturn(currentList);
+
+
+        List<Booking> testList = bookingService.getAllForBooker("CURRENT", null, "2", "1");
+        assertNotNull(testList);
+    }
+
+    @Test
+    void getAllForBookerNullStateFirst() {
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(1)).thenReturn(list);
+        Mockito
+                .when(userRepository.existsById(anyLong())).thenReturn(true);
+        Mockito
+                .when(bookingRepository.findBookingsByBookerId(anyLong())).thenReturn(list);
+
+
+        List<Booking> testList = bookingService.getAllForBooker(null, null, "2", "1");
         assertNotNull(testList);
     }
 

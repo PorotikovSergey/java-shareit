@@ -157,9 +157,6 @@ public class ItemServiceImpl implements ItemService {
 
 
     private void validateItem(Item item, String ownerId) {
-        if (ownerId == null) {
-            throw new ServiceException("Отсутствует айди владельца");
-        }
         if (item.getAvailable() == null) {
             throw new ValidationException("Вещь без доступности.");
         }
