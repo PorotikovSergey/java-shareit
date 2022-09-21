@@ -19,9 +19,9 @@ class BookingMapperTest {
     LocalDateTime start = LocalDateTime.now();
     LocalDateTime end = start.plusDays(12);
 
-    Booking booking = new Booking(1L, start, end, booker, item, BookingStatus.WAITING, BookingState.ALL);
+    Booking booking = new Booking(1L, start, end, booker, item, BookingStatus.WAITING);
     BookingDto bookingDto = new BookingDto(23L, start, end, 1L, 1L,
-            booker, item, BookingStatus.WAITING, BookingState.ALL);
+            booker, item, BookingStatus.WAITING);
 
     @Test
     void fromBookingToDto() {
@@ -33,8 +33,7 @@ class BookingMapperTest {
         assertEquals(end, newDto.getEnd());
         assertEquals(booker, newDto.getBooker());
         assertEquals(item, newDto.getItem());
-        assertEquals(BookingStatus.WAITING, newDto.getStatus());
-        assertEquals(BookingState.ALL, newDto.getState());
+        assertEquals(BookingStatus.WAITING, newDto.getStatus());;
     }
 
     @Test

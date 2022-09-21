@@ -83,10 +83,10 @@ class BookingControllerTest {
         booking2 = new Booking(200L, start, end, user2, item2);
 
         bookingDto = new BookingDto(300L, start, end, 2L, 2L,
-                user2, item2, BookingStatus.WAITING, BookingState.ALL);
+                user2, item2, BookingStatus.WAITING);
 
         bookingDto2 = new BookingDto(400L, start, end, 1L, 1L,
-                user1, item1, BookingStatus.REJECTED, BookingState.FUTURE);
+                user1, item1, BookingStatus.REJECTED);
 
         list.add(booking1);
         list.add(booking2);
@@ -110,8 +110,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
                 .andExpect(jsonPath("$.bookerId", is(2)))
                 .andExpect(jsonPath("$.itemId", is(2)))
-                .andExpect(jsonPath("$.status", is("WAITING")))
-                .andExpect(jsonPath("$.state", is("ALL")));
+                .andExpect(jsonPath("$.status", is("WAITING")));
 
         verify(bookingMapper, times(1)).fromBookingToDto(any());
     }
@@ -134,8 +133,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
                 .andExpect(jsonPath("$.itemId", is(1)))
                 .andExpect(jsonPath("$.bookerId", is(1)))
-                .andExpect(jsonPath("$.status", is("REJECTED")))
-                .andExpect(jsonPath("$.state", is("FUTURE")));
+                .andExpect(jsonPath("$.status", is("REJECTED")));
 
         verify(bookingService, times(1)).patchBooking(anyString(), eq(null), eq(true));
         verify(bookingMapper, times(1)).fromBookingToDto(any());
@@ -156,8 +154,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.start", is("2023-09-17T21:30:00")))
                 .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
                 .andExpect(jsonPath("$.bookerId", is(2)))
-                .andExpect(jsonPath("$.status", is("WAITING")))
-                .andExpect(jsonPath("$.state", is("ALL")));
+                .andExpect(jsonPath("$.status", is("WAITING")));
 
         verify(bookingService, times(1)).getBooking(eq(null), anyString());
         verifyNoMoreInteractions(bookingService);
@@ -178,8 +175,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$[0].start", is("2023-09-17T21:30:00")))
                 .andExpect(jsonPath("$[0].end", is("2022-09-17T21:30:00")))
                 .andExpect(jsonPath("$[0].bookerId", is(2)))
-                .andExpect(jsonPath("$[0].status", is("WAITING")))
-                .andExpect(jsonPath("$[0].state", is("ALL")));
+                .andExpect(jsonPath("$[0].status", is("WAITING")));
 
         verify(bookingService, times(1)).getAllForBooker(any(), any(), any(), any());
         verifyNoMoreInteractions(bookingService);
@@ -203,14 +199,12 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$[0].end", is("2022-09-17T21:30:00")))
                 .andExpect(jsonPath("$[0].bookerId", is(2)))
                 .andExpect(jsonPath("$[0].status", is("WAITING")))
-                .andExpect(jsonPath("$[0].state", is("ALL")))
                 .andExpect(jsonPath("$[1].id", is(400)))
                 .andExpect(jsonPath("$[1].itemId", is(1)))
                 .andExpect(jsonPath("$[1].start", is("2023-09-17T21:30:00")))
                 .andExpect(jsonPath("$[1].end", is("2022-09-17T21:30:00")))
                 .andExpect(jsonPath("$[1].bookerId", is(1)))
-                .andExpect(jsonPath("$[1].status", is("REJECTED")))
-                .andExpect(jsonPath("$[1].state", is("FUTURE")));
+                .andExpect(jsonPath("$[1].status", is("REJECTED")));
 
         verify(bookingService, times(1)).getAllForOwner(any(), anyString(), anyString(), any());
         verifyNoMoreInteractions(bookingService);

@@ -36,10 +36,6 @@ public class Booking {
     @Column(name = "status")
     private BookingStatus status = BookingStatus.WAITING;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "state")
-    private BookingState state = BookingState.ALL;
-
     public Booking(long id, LocalDateTime start, LocalDateTime end, User booker, Item item) {
         this.id = id;
         this.start = start;

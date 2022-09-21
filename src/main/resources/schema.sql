@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS bookings (
                                         item_id BIGINT NOT NULL,
                                         booker_id BIGINT NOT NULL,
                                         status status,
-                                        state state,
+--                                         state state,
                                         CONSTRAINT pk_booking PRIMARY KEY (id),
                                         CONSTRAINT item_for_booking FOREIGN KEY(item_id) REFERENCES items(id),
                                         CONSTRAINT booker_of_booking FOREIGN KEY(booker_id) REFERENCES users(id)

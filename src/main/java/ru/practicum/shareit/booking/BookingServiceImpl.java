@@ -175,7 +175,6 @@ public class BookingServiceImpl implements BookingService {
                 for (Booking booking : before) {
                     LocalDateTime now = LocalDateTime.now();
                     if (booking.getEnd().isBefore(now)) {
-                        booking.setState(BookingState.PAST);
                         result.add(booking);
                     }
                 }
@@ -184,7 +183,6 @@ public class BookingServiceImpl implements BookingService {
                 for (Booking booking : before) {
                     LocalDateTime now = LocalDateTime.now();
                     if (booking.getStart().isAfter(now)) {
-                        booking.setState(BookingState.FUTURE);
                         result.add(booking);
                     }
                 }
@@ -193,7 +191,6 @@ public class BookingServiceImpl implements BookingService {
                 for (Booking booking : before) {
                     LocalDateTime now = LocalDateTime.now();
                     if (booking.getStart().isBefore(now) && (booking.getEnd().isAfter(now))) {
-                        booking.setState(BookingState.CURRENT);
                         result.add(booking);
                     }
                 }
