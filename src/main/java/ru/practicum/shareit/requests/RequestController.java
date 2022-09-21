@@ -2,6 +2,7 @@ package ru.practicum.shareit.requests;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.mapper.Mapper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -13,30 +14,30 @@ public class RequestController {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     private final RequestService requestService;
-    private final RequestMapper requestMapper;
+    private final Mapper mapper;
 
     @Autowired
-    public RequestController(RequestServiceImpl itemRequestService, RequestMapper requestMapper) {
+    public RequestController(RequestServiceImpl itemRequestService, Mapper mapper) {
         this.requestService = itemRequestService;
-        this.requestMapper = requestMapper;
+        this.mapper = mapper;
     }
 
     @PostMapping
     public RequestDto postItemRequest(HttpServletRequest requestor, @RequestBody RequestDto requestDto) {
-        return requestMapper.fromRequestToDto(requestService.postRequest(requestMapper.fromDtoToRequest(requestDto),
+        return mapper.fromRequestToDto(requestService.postRequest(mapper.fromDtoToRequest(requestDto),
                 requestor.getHeader(USER_ID_HEADER)));
     }
 
     @GetMapping
     public List<RequestDto> getAll(HttpServletRequest requestor) {
         return requestService.getAll(requestor.getHeader(USER_ID_HEADER)).stream()
-                .map(requestMapper::fromRequestToDto)
+                .map(mapper::fromRequestToDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{itemRequestId}")
     public RequestDto getItemRequest(HttpServletRequest requestor, @PathVariable String itemRequestId) {
-        return requestMapper.fromRequestToDto(requestService.getRequest(itemRequestId,
+        return mapper.fromRequestToDto(requestService.getRequest(itemRequestId,
                 requestor.getHeader(USER_ID_HEADER)));
     }
 
@@ -45,7 +46,7 @@ public class RequestController {
                                            @RequestParam(required = false) String from,
                                            @RequestParam(required = false) String size) {
         return requestService.getAllPageable(from, size, requestor.getHeader(USER_ID_HEADER)).stream()
-                .map(requestMapper::fromRequestToDto)
+                .map(mapper::fromRequestToDto)
                 .collect(Collectors.toList());
     }
 }

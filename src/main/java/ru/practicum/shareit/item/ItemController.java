@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.mapper.Mapper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
@@ -13,14 +14,14 @@ public class ItemController {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
-    private final CommentMapper commentMapper;
+    private final Mapper itemMapper;
+    private final Mapper mapper;
 
     @Autowired
-    public ItemController(ItemServiceImpl itemService, ItemMapper itemMapper, CommentMapper commentMapper) {
+    public ItemController(ItemServiceImpl itemService, Mapper itemMapper, Mapper mapper) {
         this.itemService = itemService;
         this.itemMapper = itemMapper;
-        this.commentMapper = commentMapper;
+        this.mapper = mapper;
     }
 
     @GetMapping
@@ -75,7 +76,7 @@ public class ItemController {
                                   @PathVariable long itemId,
                                   @RequestBody CommentDto commentDto) {
 
-        return commentMapper.fromCommentToDto(itemService.postComment(request.getHeader(USER_ID_HEADER),
-                itemId, commentMapper.fromDtoToComment(commentDto)));
+        return mapper.fromCommentToDto(itemService.postComment(request.getHeader(USER_ID_HEADER),
+                itemId, mapper.fromDtoToComment(commentDto)));
     }
 }
