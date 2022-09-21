@@ -18,22 +18,22 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "start")
+    @Column(name = "start", nullable = false)
     private LocalDateTime start;
 
-    @Column(name = "finish")
+    @Column(name = "finish", nullable = false)
     private LocalDateTime end;
 
-    @ManyToOne
-    @JoinColumn(name = "booker_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "booker_id", referencedColumnName = "id", nullable = false)
     private User booker;
 
-    @ManyToOne
-    @JoinColumn(name = "item_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "item_id", referencedColumnName = "id", nullable = false)
     private Item item;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private BookingStatus status = BookingStatus.WAITING;
 
     public Booking(long id, LocalDateTime start, LocalDateTime end, User booker, Item item) {

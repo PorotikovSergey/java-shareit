@@ -25,15 +25,15 @@ public class Item {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "available")
+    @Column(name = "available", nullable = false)
     private Boolean available;
 
     @Column(name = "request_id")
     private long requestId;
 
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
     @JsonIgnore
     private User owner;
 

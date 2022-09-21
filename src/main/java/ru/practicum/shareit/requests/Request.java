@@ -27,8 +27,8 @@ public class Request {
     @Column(name = "create_date")
     private Date created;
 
-    @ManyToOne
-    @JoinColumn(name = "requestor_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "requestor_id", referencedColumnName = "id", nullable = false)
     @JsonIgnore
     private User requestor;
 
