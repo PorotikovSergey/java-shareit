@@ -1,6 +1,7 @@
 package ru.practicum.shareit.requests;
 
 import org.junit.jupiter.api.Test;
+import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.User;
 
 import java.time.Instant;
@@ -8,14 +9,13 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-//@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class RequestMapperTest {
-    RequestMapper mapper = new RequestMapper();
+    Mapper mapper = new Mapper();
 
     User requestor1 = new User(1L, "bob", "bob@mail.ru");
 
     Request request = new Request(1L, "request-1", Date.from(Instant.now()), requestor1, null);
-    RequestDto requestDto = new RequestDto(2L, "request-2", 2L, Date.from(Instant.now()),  null);
+    RequestDto requestDto = new RequestDto(2L, "request-2", 2L, Date.from(Instant.now()), null);
     Date testDate = request.getCreated();
     Date testDtoDate = requestDto.getCreated();
 

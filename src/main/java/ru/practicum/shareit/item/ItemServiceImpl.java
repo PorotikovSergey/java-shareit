@@ -81,7 +81,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> searchItem(String text, String owner, String from, String size) {
+    public List<Item> searchItem(String text, String owner, int from, int size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
@@ -91,11 +91,11 @@ public class ItemServiceImpl implements ItemService {
                 .findAllByDescriptionContainingIgnoreCaseAndAvailableIs(text, true);
         foundNames.removeAll(foundDescriptions);
         foundNames.addAll(foundDescriptions);
-        if (from != null) {
-            int firstEl = Integer.parseInt(from);
-            int sizePage = Integer.parseInt(size);
+        if (from != 0) {
+//            int firstEl = Integer.parseInt(from);
+//            int sizePage = Integer.parseInt(size);
             long ownerId = Long.parseLong(owner);
-            return getPageable(foundNames, firstEl, sizePage, ownerId);
+            return getPageable(foundNames, from, size, ownerId);
         }
         return foundNames;
     }

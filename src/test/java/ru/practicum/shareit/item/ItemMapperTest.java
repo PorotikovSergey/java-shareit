@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.Test;
+import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.User;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ItemMapperTest {
-    ItemMapper mapper = new ItemMapper();
+    Mapper mapper = new Mapper();
 
     User requestor1 = new User(1L, "bob", "bob@mail.ru");
 

@@ -65,8 +65,8 @@ public class ItemController {
     @GetMapping("/search")
     public Collection<ItemDto> searchItem(HttpServletRequest request,
                                           @RequestParam String text,
-                                          @RequestParam(required = false) String from,
-                                          @RequestParam(required = false) String size) {
+                                          @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                          @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         return itemService.searchItem(text, request.getHeader(USER_ID_HEADER), from, size).stream()
                 .map(mapper::fromItemToDto)
                 .collect(Collectors.toList());

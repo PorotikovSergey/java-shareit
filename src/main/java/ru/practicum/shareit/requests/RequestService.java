@@ -7,7 +7,7 @@ public interface RequestService {
 
     List<Request> getAll(String requestor);
 
-    List<Request> getAllPageable(String from, String size, String requestor);
+    List<Request> getAllPageable(int from, int size, String requestor);
 
     Request getRequest(String itemRequestId, String requestor);
 }

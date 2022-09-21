@@ -13,7 +13,7 @@ public interface ItemService {
 
     Item getItem(String user, long itemId);
 
-    Collection<Item> searchItem(String text, String owner, String from, String size);
+    Collection<Item> searchItem(String text, String owner, int from, int size);
 
     Comment postComment(String booker, long itemId, Comment comment);
 

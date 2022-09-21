@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import org.junit.jupiter.api.Test;
+import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.User;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommentMapperTest {
-    CommentMapper mapper = new CommentMapper();
+    Mapper mapper = new Mapper();
 
     CommentDto commentDto = new CommentDto(1L, "comment-1", "Bob Brown");
     Item item = new Item(3L, "item-1", "description-1", true,

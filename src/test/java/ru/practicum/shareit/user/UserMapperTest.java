@@ -1,11 +1,12 @@
 package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.Test;
+import ru.practicum.shareit.mapper.Mapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserMapperTest {
-    UserMapper mapper = new UserMapper();
+    Mapper mapper = new Mapper();
 
     User user = new User(1L, "Bob", "bob@mail.ru");
     UserDto userDto = new UserDto(2L, "Mary", "mary@ya.ru");

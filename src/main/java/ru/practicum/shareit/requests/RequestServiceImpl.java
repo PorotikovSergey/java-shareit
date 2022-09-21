@@ -55,14 +55,9 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<Request> getAllPageable(String from, String size, String requestor) {
+    public List<Request> getAllPageable(int from, int size, String requestor) {
         long requestorId = Long.parseLong(requestor);
-        if ((from == null) || (size == null)) {
-            return new ArrayList<>();
-        }
-        int fromPage = Integer.parseInt(from);
-        int sizePage = Integer.parseInt(size);
-        Page<Request> page = requestRepository.findAll(PageRequest.of(fromPage, sizePage));
+        Page<Request> page = requestRepository.findAll(PageRequest.of(from, size));
         List<Request> result = page.toList();
         for (Request request : result) {
             request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));

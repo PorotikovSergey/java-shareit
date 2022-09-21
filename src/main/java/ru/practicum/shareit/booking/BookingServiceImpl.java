@@ -70,13 +70,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllForBooker(String state, String first, String size, String booker) {
+    public List<Booking> getAllForBooker(String state, int first, int size, String booker) {
         List<Booking> list = getAllBookingsForBooker(booker);
         return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
 
     @Override
-    public List<Booking> getAllForOwner(String state, String first, String size, String owner) {
+    public List<Booking> getAllForOwner(String state,int first, int size, String owner) {
         List<Booking> list = getAllBookingsByOwner(owner);
         return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
@@ -99,17 +99,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> checkStateAndPageAndReturnResultList(List<Booking> bookings, String state,
-                                                                      String first, String size) {
-        if ((state == null) && (first == null)) {
+                                                                      int first, int size) {
+        if ((state == null) && (first == 0)) {
             return bookings;
         }
-        if (first != null) {
-            int firstEl = Integer.parseInt(first);
-            int sizePage = Integer.parseInt(size);
-            if ((firstEl < 1) || (sizePage < 1)) {
-                throw new ValidationException("Невалидные значения from и size");
-            }
-            return getPageableList(new ArrayList<>(bookings), firstEl, sizePage);
+        if (first != 0) {
+            return getPageableList(new ArrayList<>(bookings), first, size);
         }
         return getRightStateList(bookings, getStateOfString(state));
     }

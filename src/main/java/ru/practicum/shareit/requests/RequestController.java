@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.mapper.Mapper;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,8 +45,10 @@ public class RequestController {
 
     @GetMapping("/all")
     public List<RequestDto> getAllPageable(HttpServletRequest requestor,
-                                           @RequestParam(required = false) String from,
-                                           @RequestParam(required = false) String size) {
+                                           @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                           Integer from,
+                                           @Positive @RequestParam(name = "size", defaultValue = "1")
+                                               Integer size) {
         return requestService.getAllPageable(from, size, requestor.getHeader(USER_ID_HEADER)).stream()
                 .map(mapper::fromRequestToDto)
                 .collect(Collectors.toList());

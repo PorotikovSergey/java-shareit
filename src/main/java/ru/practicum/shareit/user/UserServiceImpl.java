@@ -9,7 +9,6 @@ import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service

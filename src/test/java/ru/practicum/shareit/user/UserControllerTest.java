@@ -9,6 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.mapper.Mapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ class UserControllerTest {
     @MockBean
     UserServiceImpl userService;
     @MockBean
-    UserMapper userMapper;
+    Mapper userMapper;
 
     @Autowired
     private MockMvc mvc;

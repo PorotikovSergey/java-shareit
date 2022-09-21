@@ -108,25 +108,25 @@ class UserServiceImplTest {
         assertEquals("Bob", testUser.getName());
     }
 
-    @Test
-    void postUserWithNegativeId() {
-        User exceptionUser = new User(-10L, "Bob", "bobby@mail.ru");
-        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
-        final ValidationException exception = Assertions.assertThrows(
-                ValidationException.class,
-                () -> userService.postUser(exceptionUser));
-        Assertions.assertEquals("Id юзера не может быть отрицательным. Вы пытаетесь задать id: -10", exception.getMessage());
-    }
+//    @Test
+//    void postUserWithNegativeId() {
+//        User exceptionUser = new User(-10L, "Bob", "bobby@mail.ru");
+//        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
+//        final ValidationException exception = Assertions.assertThrows(
+//                ValidationException.class,
+//                () -> userService.postUser(exceptionUser));
+//        Assertions.assertEquals("Id юзера не может быть отрицательным. Вы пытаетесь задать id: -10", exception.getMessage());
+//    }
 
-    @Test
-    void postUserWithWrongEmail() {
-        User exceptionUser = new User(10L, "Bob", "bobbymailru");
-        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
-        final ValidationException exception = Assertions.assertThrows(
-                ValidationException.class,
-                () -> userService.postUser(exceptionUser));
-        Assertions.assertEquals("Email bobbymailru не соответсвтует требованиям.", exception.getMessage());
-    }
+//    @Test
+//    void postUserWithWrongEmail() {
+//        User exceptionUser = new User(10L, "Bob", "bobbymailru");
+//        Mockito.when(userRepository.save(exceptionUser)).thenReturn(user1);
+//        final ValidationException exception = Assertions.assertThrows(
+//                ValidationException.class,
+//                () -> userService.postUser(exceptionUser));
+//        Assertions.assertEquals("Email bobbymailru не соответсвтует требованиям.", exception.getMessage());
+//    }
 
     @Test
     void postUserWithNullEmail() {

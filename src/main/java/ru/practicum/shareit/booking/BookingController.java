@@ -1,14 +1,18 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.mapper.Mapper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Validated
 @RestController
 @RequestMapping(path = "/bookings")
 public class BookingController {
@@ -45,8 +49,10 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> getAll(HttpServletRequest request,
                                    @RequestParam(required = false) String state,
-                                   @RequestParam(required = false) String from,
-                                   @RequestParam(required = false) String size) {
+                                   @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                   Integer from,
+                                   @Positive @RequestParam(name = "size", defaultValue = "1")
+                                   Integer size) {
         return bookingService.getAllForBooker(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(mapper::fromBookingToDto)
                 .collect(Collectors.toList());
@@ -55,8 +61,10 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getForCurrentUser(HttpServletRequest request,
                                               @RequestParam(required = false) String state,
-                                              @RequestParam(required = false) String from,
-                                              @RequestParam(required = false) String size) {
+                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                              Integer from,
+                                              @Positive @RequestParam(name = "size", defaultValue = "10")
+                                              Integer size) {
         return bookingService.getAllForOwner(state, from, size, request.getHeader(USER_ID_HEADER)).stream()
                 .map(mapper::fromBookingToDto)
                 .collect(Collectors.toList());
