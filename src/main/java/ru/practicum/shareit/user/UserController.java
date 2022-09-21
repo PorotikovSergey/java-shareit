@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.mapper.Mapper;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserDto postUser(@RequestBody UserDto userDto) {
+    public UserDto postUser(@Valid @RequestBody UserDto userDto) {
         return mapper.fromUserToDto(userService.postUser(mapper.fromDtoToUser(userDto)));
     }
 
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto patchUser(@PathVariable long userId, @RequestBody UserDto userDto) {
+    public UserDto patchUser(@PathVariable long userId, @Valid @RequestBody UserDto userDto) {
         return mapper.fromUserToDto(userService.patchUser(userId, mapper.fromDtoToUser(userDto)));
     }
 

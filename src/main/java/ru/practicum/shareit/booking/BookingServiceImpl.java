@@ -141,11 +141,6 @@ public class BookingServiceImpl implements BookingService {
                 .getId()) {
             throw new NotFoundException("Нельзя арендовать свою вещь у себя же самого");
         }
-        if ((booking.getEnd().isBefore(booking.getStart()))
-                || (booking.getEnd().isBefore(LocalDateTime.now()))
-                || (booking.getStart().isBefore(LocalDateTime.now()))) {
-            throw new ValidationException("Время аренды не может быть в прошлом");
-        }
     }
 
     public List<Booking> getAllBookingsForBooker(String booker) {

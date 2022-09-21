@@ -30,7 +30,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User postUser(User user) {
-        validateUser(user);
+        if (user.getEmail() == null) {
+            throw new ValidationException("У юзера должен быть email");
+        }
         return userRepository.save(user);
     }
 
@@ -49,22 +51,6 @@ public class UserServiceImpl implements UserService {
     public User getUser(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Такого юзера нет"));
-    }
-
-    private void validateUser(User testUser) {
-        Pattern emailPattern = Pattern.compile(
-                "\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*\\.\\w{2,4}");
-
-        if (testUser.getId() < 0) {
-            throw new ValidationException("Id юзера не может быть отрицательным. " +
-                    "Вы пытаетесь задать id: " + testUser.getId());
-        }
-        if (testUser.getEmail() == null) {
-            throw new ValidationException("У юзера должен быть email");
-        }
-        if (!emailPattern.matcher(testUser.getEmail()).matches()) {
-            throw new ValidationException("Email " + testUser.getEmail() + " не соответсвтует требованиям.");
-        }
     }
 
     private User patchOneUserFromAnother(User donor, User recipient) {

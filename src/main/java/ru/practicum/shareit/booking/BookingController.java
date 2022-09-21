@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.mapper.Mapper;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,7 +24,7 @@ public class BookingController {
     }
 
     @PostMapping
-    public BookingDto postBooking(HttpServletRequest request, @RequestBody BookingDto bookingDto) {
+    public BookingDto postBooking(HttpServletRequest request, @Valid @RequestBody BookingDto bookingDto) {
         return mapper.fromBookingToDto(bookingService.postBooking(mapper.fromDtoToBooking(bookingDto),
                 request.getHeader(USER_ID_HEADER), bookingDto.getItemId()));
     }

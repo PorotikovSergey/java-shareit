@@ -37,24 +37,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getAll(String owner, String from, String size) {
+    public List<Item> getAll(String owner, int from, int size) {
         long ownerId = Long.parseLong(owner);
         List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(ownerId);
-        List<Item> allItems = itemsWithStartAndEnd(allItemsByOwner, ownerId);
 
-        if (from != null) {
-            int firstEl = Integer.parseInt(from);
-            int sizePage = Integer.parseInt(size);
-            return getPageable(allItems, firstEl, sizePage, ownerId);
-        }
-        return allItems;
+        return getPageable(itemsWithStartAndEnd(allItemsByOwner, ownerId), from, size, ownerId);
+
     }
 
     @Override
     public Item postItem(Item item, String ownerId) {
         long idOfOwner = Long.parseLong(ownerId);
         item.setOwner(userRepository.findById(idOfOwner).orElseThrow(() -> new NotFoundException("Такого юзера нет")));
-        validateItem(item, ownerId);
         itemRepository.save(item);
         return item;
     }
@@ -110,13 +104,12 @@ public class ItemServiceImpl implements ItemService {
     public Comment postComment(String bookerId, long itemId, Comment comment) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         long idOfBooker = Long.parseLong(bookerId);
-        List<Booking> temp = bookingRepository.findAllByItemId(itemId);
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
                 .filter(b -> b.getBooker().getId() == idOfBooker)
                 .findFirst()
                 .orElse(null);
 
-        checkCommentBeforePosting(booking, comment);
+        checkCommentBeforePosting(booking);
         comment.setItem(item);
         comment.setAuthorName(userRepository.findById(idOfBooker)
                 .orElseThrow(() -> new NotFoundException("Такого юзера нет"))
@@ -127,7 +120,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item postItemToRequest(Item item, String itemOwner, long requestId) {
-        validateItem(item, itemOwner);
         User owner = userRepository.findById(Long.parseLong(itemOwner))
                 .orElseThrow(() -> new NotFoundException("Такого юзера нет"));
         item.setOwner(owner);
@@ -143,28 +135,12 @@ public class ItemServiceImpl implements ItemService {
         return itemsWithStartAndEnd(page.getPageList(), userId);
     }
 
-    public void checkCommentBeforePosting(Booking booking, Comment comment) {
+    public void checkCommentBeforePosting(Booking booking) {
         if (booking == null) {
             throw new NotFoundException("Бронирования на данный айтем не было");
         }
         if (booking.getEnd().isAfter(LocalDateTime.now())) {
             throw new ValidationException("Отзывы возможны только к прошедшим броням");
-        }
-        if (comment.getText().isBlank()) {
-            throw new ValidationException("Текст отзыва не может быть пустым");
-        }
-    }
-
-
-    private void validateItem(Item item, String ownerId) {
-        if (item.getAvailable() == null) {
-            throw new ValidationException("Вещь без доступности.");
-        }
-        if (item.getName() == null || item.getName().isBlank()) {
-            throw new ValidationException("Вещь с пустым именем.");
-        }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
-            throw new ValidationException("Вещь с пустым описанием");
         }
     }
 

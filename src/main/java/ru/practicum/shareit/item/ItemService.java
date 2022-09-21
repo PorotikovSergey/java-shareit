@@ -3,7 +3,7 @@ package ru.practicum.shareit.item;
 import java.util.Collection;
 
 public interface ItemService {
-    Collection<Item> getAll(String owner, String from, String size);
+    Collection<Item> getAll(String owner, int from, int size);
 
     Item postItem(Item item, String owner);
 

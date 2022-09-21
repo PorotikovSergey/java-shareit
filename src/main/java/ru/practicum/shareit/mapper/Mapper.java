@@ -39,10 +39,10 @@ public class Mapper {
         bookingDto.setId(booking.getId());
         bookingDto.setStart(booking.getStart());
         bookingDto.setEnd(booking.getEnd());
-        bookingDto.setBooker(booking.getBooker());
+        bookingDto.setBooker(fromUserToDto(booking.getBooker()));
         bookingDto.setBookerId(booking.getBooker().getId());
         bookingDto.setStatus(booking.getStatus());
-        bookingDto.setItem(booking.getItem());
+        bookingDto.setItem(fromItemToDtoInBooking(booking.getItem()));
         return bookingDto;
     }
 
@@ -99,7 +99,7 @@ public class Mapper {
         if (commentsBefore != null) {
             List<CommentDto> commentsAfter = new ArrayList<>();
             for (Comment comment : item.getComments()) {
-                commentsAfter.add(fromCommentToDtoInItem(comment));
+                commentsAfter.add(fromCommentToDto(comment));
             }
             itemDto.setComments(commentsAfter);
         }
@@ -124,18 +124,21 @@ public class Mapper {
         bookingDto.setId(booking.getId());
         bookingDto.setStart(booking.getStart());
         bookingDto.setEnd(booking.getEnd());
-        bookingDto.setBooker(booking.getBooker());
+        bookingDto.setBooker(fromUserToDto(booking.getBooker()));
         bookingDto.setBookerId(booking.getBooker().getId());
         bookingDto.setStatus(booking.getStatus());
-        bookingDto.setItem(booking.getItem());
+        bookingDto.setItem(fromItemToDtoInBooking(booking.getItem()));
         return bookingDto;
     }
 
-    private CommentDto fromCommentToDtoInItem(Comment comment) {
-        CommentDto commentDto = new CommentDto();
-        commentDto.setId(comment.getId());
-        commentDto.setText(comment.getText());
-        commentDto.setAuthorName(comment.getAuthorName());
-        return commentDto;
+    private ItemDto fromItemToDtoInBooking(Item item) {
+        ItemDto itemDto = new ItemDto();
+        itemDto.setId(item.getId());
+        itemDto.setName(item.getName());
+        itemDto.setDescription(item.getDescription());
+        itemDto.setAvailable(item.getAvailable());
+        itemDto.setOwnerId(item.getOwner().getId());
+        itemDto.setRequestId(item.getRequestId());
+        return itemDto;
     }
 }

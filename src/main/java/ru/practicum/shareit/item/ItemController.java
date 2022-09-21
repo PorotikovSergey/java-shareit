@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.mapper.Mapper;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -14,32 +17,30 @@ public class ItemController {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     private final ItemService itemService;
-    private final Mapper itemMapper;
     private final Mapper mapper;
 
     @Autowired
-    public ItemController(ItemServiceImpl itemService, Mapper itemMapper, Mapper mapper) {
+    public ItemController(ItemServiceImpl itemService, Mapper mapper) {
         this.itemService = itemService;
-        this.itemMapper = itemMapper;
         this.mapper = mapper;
     }
 
     @GetMapping
     public Collection<ItemDto> getAll(HttpServletRequest request,
-                                      @RequestParam(required = false) String from,
-                                      @RequestParam(required = false) String size) {
+                                      @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                      @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         return itemService.getAll(request.getHeader(USER_ID_HEADER), from, size).stream()
-                .map(itemMapper::fromItemToDto)
+                .map(mapper::fromItemToDto)
                 .collect(Collectors.toList());
     }
 
     @PostMapping
-    public ItemDto postItem(HttpServletRequest request, @RequestBody ItemDto itemDto) {
+    public ItemDto postItem(HttpServletRequest request, @Valid @RequestBody ItemDto itemDto) {
         if (itemDto.getRequestId() == 0) {
-            return itemMapper.fromItemToDto(itemService.postItem(itemMapper.fromDtoToItem(itemDto),
+            return mapper.fromItemToDto(itemService.postItem(mapper.fromDtoToItem(itemDto),
                     request.getHeader(USER_ID_HEADER)));
         }
-        return itemMapper.fromItemToDto(itemService.postItemToRequest(itemMapper.fromDtoToItem(itemDto),
+        return mapper.fromItemToDto(itemService.postItemToRequest(mapper.fromDtoToItem(itemDto),
                 request.getHeader(USER_ID_HEADER), itemDto.getRequestId()));
     }
 
@@ -52,13 +53,13 @@ public class ItemController {
     public ItemDto patchItem(HttpServletRequest request,
                              @PathVariable long itemId,
                              @RequestBody ItemDto itemDto) {
-        return itemMapper.fromItemToDto(itemService.patchItem(itemId, itemMapper.fromDtoToItem(itemDto),
+        return mapper.fromItemToDto(itemService.patchItem(itemId, mapper.fromDtoToItem(itemDto),
                 request.getHeader(USER_ID_HEADER)));
     }
 
     @GetMapping("/{itemId}")
     public ItemDto getItem(HttpServletRequest request, @PathVariable long itemId) {
-        return itemMapper.fromItemToDto(itemService.getItem(request.getHeader(USER_ID_HEADER), itemId));
+        return mapper.fromItemToDto(itemService.getItem(request.getHeader(USER_ID_HEADER), itemId));
     }
 
     @GetMapping("/search")
@@ -67,14 +68,14 @@ public class ItemController {
                                           @RequestParam(required = false) String from,
                                           @RequestParam(required = false) String size) {
         return itemService.searchItem(text, request.getHeader(USER_ID_HEADER), from, size).stream()
-                .map(itemMapper::fromItemToDto)
+                .map(mapper::fromItemToDto)
                 .collect(Collectors.toList());
     }
 
     @PostMapping("{itemId}/comment")
     public CommentDto postComment(HttpServletRequest request,
                                   @PathVariable long itemId,
-                                  @RequestBody CommentDto commentDto) {
+                                  @Valid @RequestBody CommentDto commentDto) {
 
         return mapper.fromCommentToDto(itemService.postComment(request.getHeader(USER_ID_HEADER),
                 itemId, mapper.fromDtoToComment(commentDto)));
