@@ -23,6 +23,7 @@ public class BookingDto {
     @FutureOrPresent
     @NotNull
     private LocalDateTime end;
+
     private long itemId;
     private long bookerId;
     private UserDto booker;

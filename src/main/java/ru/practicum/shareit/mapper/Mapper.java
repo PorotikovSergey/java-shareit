@@ -42,7 +42,7 @@ public class Mapper {
         bookingDto.setBooker(fromUserToDto(booking.getBooker()));
         bookingDto.setBookerId(booking.getBooker().getId());
         bookingDto.setStatus(booking.getStatus());
-        bookingDto.setItem(fromItemToDtoInBooking(booking.getItem()));
+        bookingDto.setItem(fromItemToDtoInner(booking.getItem()));
         return bookingDto;
     }
 
@@ -58,7 +58,9 @@ public class Mapper {
         requestDto.setId(request.getId());
         requestDto.setCreated(request.getCreated());
         requestDto.setDescription(request.getDescription());
-        requestDto.setItems(request.getItems());
+        for(Item item: request.getItems()) {
+            requestDto.getItems().add(fromItemToDtoInner(item));
+        }
         return requestDto;
     }
 
@@ -127,11 +129,11 @@ public class Mapper {
         bookingDto.setBooker(fromUserToDto(booking.getBooker()));
         bookingDto.setBookerId(booking.getBooker().getId());
         bookingDto.setStatus(booking.getStatus());
-        bookingDto.setItem(fromItemToDtoInBooking(booking.getItem()));
+        bookingDto.setItem(fromItemToDtoInner(booking.getItem()));
         return bookingDto;
     }
 
-    private ItemDto fromItemToDtoInBooking(Item item) {
+    private ItemDto fromItemToDtoInner(Item item) {
         ItemDto itemDto = new ItemDto();
         itemDto.setId(item.getId());
         itemDto.setName(item.getName());

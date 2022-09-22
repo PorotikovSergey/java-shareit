@@ -34,7 +34,7 @@ public class Item {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
-    @JsonIgnore
+
     private User owner;
 
     @Transient
@@ -42,10 +42,10 @@ public class Item {
     List<Comment> comments;
 
     @Transient
-    @JsonIgnore
+
     private Booking lastBooking;
 
     @Transient
-    @JsonIgnore
+
     private Booking nextBooking;
 }

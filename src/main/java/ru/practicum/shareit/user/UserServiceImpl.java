@@ -54,17 +54,15 @@ public class UserServiceImpl implements UserService {
 
     private User patchOneUserFromAnother(User donor, User recipient) {
         if (donor.getEmail() != null) {
-            for (User user : getAll()) {
-                if (user.getEmail().equals(donor.getEmail())) {
-                    throw new ConflictException("Юзер с таким email " + user.getEmail() + " уже существует.");
-                }
+            if (userRepository.findUserByEmail(donor.getEmail()) != null) {
+                throw new ConflictException("Юзер с таким email " + donor.getEmail() + " уже существует.");
             }
             recipient.setEmail(donor.getEmail());
         }
         if (donor.getName() != null) {
             recipient.setName(donor.getName());
         }
-        userRepository.save(recipient);
         return recipient;
     }
+
 }

@@ -81,7 +81,7 @@ class RequestControllerTest {
                 .thenReturn(request);
 
         mvc.perform(post("/requests")
-                        .content(objectMapper.writeValueAsString(request))
+                        .content(objectMapper.writeValueAsString(requestDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

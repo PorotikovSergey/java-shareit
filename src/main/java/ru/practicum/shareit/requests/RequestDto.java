@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemDto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -16,5 +18,5 @@ public class RequestDto {
     private String description;
     private long requestor;
     private Date created;
-    private List<Item> items;
+    private List<ItemDto> items = new ArrayList<>();
 }

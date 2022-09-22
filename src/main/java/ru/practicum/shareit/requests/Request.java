@@ -29,7 +29,6 @@ public class Request {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "requestor_id", referencedColumnName = "id", nullable = false)
-    @JsonIgnore
     private User requestor;
 
     @Transient

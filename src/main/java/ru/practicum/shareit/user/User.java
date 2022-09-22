@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.item.Item;
@@ -33,7 +32,6 @@ public class User {
     private List<Request> requests;
 
     @OneToMany(mappedBy = "booker")
-    @JsonIgnore
     private List<Booking> bookings;
 
     public User(long id, String name, String email) {
