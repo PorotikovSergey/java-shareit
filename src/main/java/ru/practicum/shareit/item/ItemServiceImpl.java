@@ -92,8 +92,6 @@ public class ItemServiceImpl implements ItemService {
         foundNames.removeAll(foundDescriptions);
         foundNames.addAll(foundDescriptions);
         if (from != 0) {
-//            int firstEl = Integer.parseInt(from);
-//            int sizePage = Integer.parseInt(size);
             long ownerId = Long.parseLong(owner);
             return getPageable(foundNames, from, size, ownerId);
         }

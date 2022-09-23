@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingDto;
 import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.*;
 
@@ -114,10 +115,10 @@ class ItemControllerTest {
         when(mapper.fromItemToDto(any()))
                 .thenReturn(itemDto);
         when(mapper.fromBookingToDto(any()))
-                .thenReturn(null);
+                .thenReturn(new BookingDto());
         when(mapper.fromCommentToDto(any()))
-                .thenReturn(null);
-        when(itemService.getAll(anyString(), anyInt(), anyInt()))
+                .thenReturn(commentDto);
+        when(itemService.getAll(eq(null), anyInt(), anyInt()))
                 .thenReturn(list);
 
         mvc.perform(get("/items"))
@@ -133,7 +134,7 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$[1].available", is(false)));
         ;
 
-        verify(itemService, times(1)).getAll(any(), any(), any());
+        verify(itemService, times(1)).getAll(eq(null), anyInt(), anyInt());
         verifyNoMoreInteractions(itemService);
     }
 
@@ -197,10 +198,10 @@ class ItemControllerTest {
                 .thenReturn(null);
         when(mapper.fromCommentToDto(any()))
                 .thenReturn(null);
-        when(itemService.searchItem(anyString(), any(), any(), any()))
+        when(itemService.searchItem(anyString(), eq(null), anyInt(), anyInt()))
                 .thenReturn(list);
 
-        mvc.perform(get("/items/search?text=qwerty"))
+        mvc.perform(get("/items/search?text=qwerty&from=0&size=2"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(11)))
@@ -213,7 +214,7 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$[1].available", is(false)));
         ;
 
-        verify(itemService, times(1)).searchItem(any(), any(), any(), any());
+        verify(itemService, times(1)).searchItem(anyString(), eq(null), anyInt(), anyInt());
         verifyNoMoreInteractions(itemService);
     }
 
@@ -227,7 +228,7 @@ class ItemControllerTest {
                 .thenReturn(comment);
 
         mvc.perform(post("/items/2/comment")
-                        .content(objectMapper.writeValueAsString(item))
+                        .content(objectMapper.writeValueAsString(comment))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

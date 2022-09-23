@@ -39,7 +39,6 @@ class BookingMapperTest {
         assertEquals(start, newDto.getStart());
         assertEquals(end, newDto.getEnd());
         assertEquals(bookerDto, newDto.getBooker());
-        assertEquals(itemDto, newDto.getItem());
         assertEquals(BookingStatus.WAITING, newDto.getStatus());
         ;
     }

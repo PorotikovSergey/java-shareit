@@ -56,9 +56,10 @@ class BookingControllerTest {
     Booking booking2;
 
     BookingDto bookingDto;
+    BookingDto bookingDto1;
     BookingDto bookingDto2;
 
-    LocalDateTime end = LocalDateTime.of(2022, 9, 17, 21, 30);
+    LocalDateTime end = LocalDateTime.of(2024, 9, 30, 21, 30);
 
     List<Booking> list = new ArrayList<>();
 
@@ -92,6 +93,11 @@ class BookingControllerTest {
         bookingDto = new BookingDto(300L, start, end, 2L, 2L,
                 bookerDto, itemDto, BookingStatus.WAITING);
 
+        bookingDto1 = new BookingDto();
+        bookingDto1.setItemId(2L);
+        bookingDto1.setStart(start);
+        bookingDto1.setEnd(end);
+
         bookingDto2 = new BookingDto(400L, start, end, 1L, 1L,
                 bookerDto, itemDto, BookingStatus.REJECTED);
 
@@ -101,10 +107,13 @@ class BookingControllerTest {
 
     @Test
     void postBooking() throws Exception {
-        when(bookingMapper.fromBookingToDto(booking1))
+        when(bookingMapper.fromBookingToDto(any()))
                 .thenReturn(bookingDto);
+        when(bookingMapper.fromDtoToBooking(any()))
+                .thenReturn(booking1);
         when(bookingService.postBooking(any(), anyString(), anyLong()))
                 .thenReturn(booking1);
+
 
         mvc.perform(post("/bookings")
                         .content(mapper.writeValueAsString(bookingDto))
@@ -114,7 +123,7 @@ class BookingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(300)))
                 .andExpect(jsonPath("$.start", is("2023-09-17T21:30:00")))
-                .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$.end", is("2024-09-30T21:30:00")))
                 .andExpect(jsonPath("$.bookerId", is(2)))
                 .andExpect(jsonPath("$.itemId", is(2)))
                 .andExpect(jsonPath("$.status", is("WAITING")));
@@ -137,7 +146,7 @@ class BookingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(400)))
                 .andExpect(jsonPath("$.start", is("2023-09-17T21:30:00")))
-                .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$.end", is("2024-09-30T21:30:00")))
                 .andExpect(jsonPath("$.itemId", is(1)))
                 .andExpect(jsonPath("$.bookerId", is(1)))
                 .andExpect(jsonPath("$.status", is("REJECTED")));
@@ -159,7 +168,7 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(300)))
                 .andExpect(jsonPath("$.itemId", is(2)))
                 .andExpect(jsonPath("$.start", is("2023-09-17T21:30:00")))
-                .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$.end", is("2024-09-30T21:30:00")))
                 .andExpect(jsonPath("$.bookerId", is(2)))
                 .andExpect(jsonPath("$.status", is("WAITING")));
 
@@ -171,20 +180,21 @@ class BookingControllerTest {
     void getAll() throws Exception {
         when(bookingMapper.fromBookingToDto(any()))
                 .thenReturn(bookingDto);
-        when(bookingService.getAllForBooker(anyString(), anyInt(), anyInt(), anyString()))
+        when(bookingService.getAllForBooker(eq("ALL"), anyInt(), anyInt(), eq(null)))
                 .thenReturn(list);
 
-        mvc.perform(get("/bookings?from=0&size=20"))
+        mvc.perform(get("/bookings?state=ALL&from=0&size=20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(300)))
                 .andExpect(jsonPath("$[0].itemId", is(2)))
                 .andExpect(jsonPath("$[0].start", is("2023-09-17T21:30:00")))
-                .andExpect(jsonPath("$[0].end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$[0].end", is("2024-09-30T21:30:00")))
                 .andExpect(jsonPath("$[0].bookerId", is(2)))
                 .andExpect(jsonPath("$[0].status", is("WAITING")));
 
-        verify(bookingService, times(1)).getAllForBooker(any(), any(), any(), any());
+        verify(bookingService, times(1))
+                .getAllForBooker(eq("ALL"), anyInt(), anyInt(), eq(null));
         verifyNoMoreInteractions(bookingService);
     }
 
@@ -203,13 +213,13 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$[0].id", is(300)))
                 .andExpect(jsonPath("$[0].itemId", is(2)))
                 .andExpect(jsonPath("$[0].start", is("2023-09-17T21:30:00")))
-                .andExpect(jsonPath("$[0].end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$[0].end", is("2024-09-30T21:30:00")))
                 .andExpect(jsonPath("$[0].bookerId", is(2)))
                 .andExpect(jsonPath("$[0].status", is("WAITING")))
                 .andExpect(jsonPath("$[1].id", is(400)))
                 .andExpect(jsonPath("$[1].itemId", is(1)))
                 .andExpect(jsonPath("$[1].start", is("2023-09-17T21:30:00")))
-                .andExpect(jsonPath("$[1].end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$[1].end", is("2024-09-30T21:30:00")))
                 .andExpect(jsonPath("$[1].bookerId", is(1)))
                 .andExpect(jsonPath("$[1].status", is("REJECTED")));
 

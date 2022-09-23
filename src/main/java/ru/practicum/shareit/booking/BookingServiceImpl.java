@@ -35,7 +35,7 @@ public class BookingServiceImpl implements BookingService {
         long bookerId = Long.parseLong(bookerid);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("Такого юзера нет"));
-        validateBooking(booking, bookerid, itemId);
+        validateBooking(bookerid, itemId);
         booking.setStatus(BookingStatus.WAITING);
         booking.setItem(item);
         booking.setBooker(booker);
@@ -76,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllForOwner(String state,int first, int size, String owner) {
+    public List<Booking> getAllForOwner(String state, int first, int size, String owner) {
         List<Booking> list = getAllBookingsByOwner(owner);
         return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
@@ -99,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> checkStateAndPageAndReturnResultList(List<Booking> bookings, String state,
-                                                                      int first, int size) {
+                                                               int first, int size) {
         if ((state == null) && (first == 0)) {
             return bookings;
         }
@@ -124,7 +124,7 @@ public class BookingServiceImpl implements BookingService {
         return page.getPageList();
     }
 
-    private void validateBooking(Booking booking, String bookerId, long itemId) {
+    private void validateBooking(String bookerId, long itemId) {
         if (!itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Такого айтема нет"))
                 .getAvailable()) {

@@ -48,7 +48,7 @@ public class RequestController {
                                            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
                                            Integer from,
                                            @Positive @RequestParam(name = "size", defaultValue = "1")
-                                               Integer size)  {
+                                           Integer size) {
         return requestService.getAllPageable(from, size, requestor.getHeader(USER_ID_HEADER)).stream()
                 .map(mapper::fromRequestToDto)
                 .collect(Collectors.toList());
