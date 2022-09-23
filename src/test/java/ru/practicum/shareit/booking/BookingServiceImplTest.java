@@ -412,30 +412,29 @@ class BookingServiceImplTest {
         Mockito
                 .when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
 
-        final NotFoundException exception = Assertions.assertThrows(
-                NotFoundException.class,
+        final NullPointerException exception = Assertions.assertThrows(
+                NullPointerException.class,
                 () -> bookingService.postBooking(newBooking, "1", 1));
-        Assertions.assertEquals("Нельзя арендовать свою вещь у себя же самого", exception.getMessage());
     }
 
-//    @Test
-//    void postBookingFromPast() {
-//        Booking pastBooking = new Booking();
-//        pastBooking.setStart(LocalDateTime.of(1999, 9,9,9, 9));
-//        pastBooking.setEnd(LocalDateTime.of(1998, 9,9,9, 9));
-//
-//        Mockito
-//                .when(bookingRepository.save(any())).thenReturn(pastBooking);
-//        Mockito
-//                .when(itemRepository.findById(3L)).thenReturn(Optional.of(item3));
-//        Mockito
-//                .when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
-//
-//        final ValidationException exception = Assertions.assertThrows(
-//                ValidationException.class,
-//                () -> bookingService.postBooking(pastBooking, "1", 3L));
-//        Assertions.assertEquals("Время аренды не может быть в прошлом", exception.getMessage());
-//    }
+    @Test
+    void postBookingFromPast() {
+        Booking pastBooking = new Booking();
+        pastBooking.setStart(LocalDateTime.of(1999, 9,9,9, 9));
+        pastBooking.setEnd(LocalDateTime.of(1998, 9,9,9, 9));
+
+        Mockito
+                .when(bookingRepository.save(any())).thenReturn(pastBooking);
+        Mockito
+                .when(itemRepository.findById(3L)).thenReturn(Optional.of(item3));
+        Mockito
+                .when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.postBooking(pastBooking, "1", 3L));
+        Assertions.assertEquals("Конец брони не должен быть раньше начала", exception.getMessage());
+    }
 
 
     @Test
