@@ -35,7 +35,7 @@ public class BookingServiceImpl implements BookingService {
         long bookerId = Long.parseLong(bookerid);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("Такого юзера нет"));
-        if(booking.getEnd().isBefore(booking.getStart())){
+        if (booking.getEnd().isBefore(booking.getStart())) {
             throw new ValidationException("Конец брони не должен быть раньше начала");
         }
         validateBooking(bookerid, itemId);
