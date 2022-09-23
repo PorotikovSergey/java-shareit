@@ -58,9 +58,11 @@ public class Mapper {
         requestDto.setId(request.getId());
         requestDto.setCreated(request.getCreated());
         requestDto.setDescription(request.getDescription());
-        for(Item item: request.getItems()) {
+
+        for (Item item : request.getItems()) {
             requestDto.getItems().add(fromItemToDtoInner(item));
         }
+
         return requestDto;
     }
 

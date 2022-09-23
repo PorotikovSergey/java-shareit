@@ -1,6 +1,5 @@
 package ru.practicum.shareit.requests;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;

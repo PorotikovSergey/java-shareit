@@ -1,11 +1,11 @@
 package ru.practicum.shareit.item;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,7 +39,7 @@ public class Item {
 
     @Transient
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    List<Comment> comments;
+    List<Comment> comments = new ArrayList<>();
 
     @Transient
 

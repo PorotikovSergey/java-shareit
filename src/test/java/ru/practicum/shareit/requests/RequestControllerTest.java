@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -52,7 +53,7 @@ class RequestControllerTest {
 
     List<Request> list = new ArrayList<>();
     List<Request> pageableList = new ArrayList<>();
-    Date date = Date.from(Instant.ofEpochSecond(123456789));
+    Date date = Date.from(Instant.ofEpochSecond(1234567890));
 
     @BeforeEach
     void setUp() {
@@ -89,7 +90,7 @@ class RequestControllerTest {
                 .andExpect(jsonPath("$.id", is(22)))
                 .andExpect(jsonPath("$.description", is("description-22")))
                 .andExpect(jsonPath("$.requestor", is(22)))
-                .andExpect(jsonPath("$.created", is("1973-11-29T21:33:09.000+00:00")));
+                .andExpect(jsonPath("$.created", is("2009-02-13T23:31:30.000+00:00")));
 
         verify(requestMapper, times(1)).fromRequestToDto(any());
         verify(requestService, times(1)).postRequest(any(), any());
@@ -110,10 +111,10 @@ class RequestControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id", is(22)))
                 .andExpect(jsonPath("$[0].description", is("description-22")))
-                .andExpect(jsonPath("$[0].created", is("1973-11-29T21:33:09.000+00:00")))
+                .andExpect(jsonPath("$[0].created", is("2009-02-13T23:31:30.000+00:00")))
                 .andExpect(jsonPath("$[1].id", is(23)))
                 .andExpect(jsonPath("$[1].description", is("description-23")))
-                .andExpect(jsonPath("$[1].created", is("1973-11-29T21:33:09.000+00:00")));
+                .andExpect(jsonPath("$[1].created", is("2009-02-13T23:31:30.000+00:00")));
 
 
         verify(requestService, times(1)).getAll(any());
@@ -131,31 +132,30 @@ class RequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(22)))
                 .andExpect(jsonPath("$.description", is("description-22")))
-                .andExpect(jsonPath("$.created", is("1973-11-29T21:33:09.000+00:00")))
+                .andExpect(jsonPath("$.created", is("2009-02-13T23:31:30.000+00:00")))
                 .andExpect(jsonPath("$.items", is(Collections.emptyList())));
 
         verify(requestService, times(1)).getRequest(any(), any());
         verifyNoMoreInteractions(requestService);
     }
 
-//    @Test
-//    void getAllPageable() throws Exception {
-//        when(requestMapper.fromRequestToDto(request))
-//                .thenReturn(requestDto);
-//        when(requestMapper.fromRequestToDto(request2))
-//                .thenReturn(requestDto2);
-//        when(requestService.getAllPageable(any(), any(), any()))
-//                .thenReturn(pageableList);
-//
-//        mvc.perform(get("/requests/all?from=1&size=1"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(1)))
-//                .andExpect(jsonPath("$[0].id", is(23)))
-//                .andExpect(jsonPath("$[0].description", is("description-23")))
-//                .andExpect(jsonPath("$[0].created", is("1973-11-29T21:33:09.000+00:00")));
-//
-//        verify(requestService, times(1)).getAllPageable(any(), any(), any());
-//        verifyNoMoreInteractions(requestService);
-//
-//    }
+    @Test
+    void getAllPageable() throws Exception {
+        when(requestMapper.fromRequestToDto(any()))
+                .thenReturn(requestDto);
+        when(requestService.getAllPageable(anyInt(), anyInt(), eq(null)))
+                .thenReturn(pageableList);
+
+        this.mvc.perform(get("/requests/all?from=0&size=2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(22)))
+                .andExpect(jsonPath("$[0].description", is("description-22")))
+                .andExpect(jsonPath("$[0].created", is("2009-02-13T23:31:30.000+00:00")));
+
+        verify(requestService, times(1)).getAllPageable(anyInt(), anyInt(), eq(null));
+        verifyNoMoreInteractions(requestService);
+    }
+
 }
+

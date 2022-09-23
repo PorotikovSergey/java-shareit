@@ -37,9 +37,9 @@ class BookingControllerTest {
     ObjectMapper mapper;
 
     @MockBean
-    Mapper bookingMapper;
-    @MockBean
     BookingServiceImpl bookingService;
+    @MockBean
+    Mapper bookingMapper;
 
     @Autowired
     private MockMvc mvc;
@@ -99,28 +99,28 @@ class BookingControllerTest {
         list.add(booking2);
     }
 
-//    @Test
-//    void postBooking() throws Exception {
-//        when(bookingMapper.fromBookingToDto(any()))
-//                .thenReturn(bookingDto);
-//        when(bookingService.postBooking(any(), anyString(), anyLong()))
-//                .thenReturn(booking1);
-//
-//        mvc.perform(post("/bookings")
-//                        .content(mapper.writeValueAsString(booking1))
-//                        .characterEncoding(StandardCharsets.UTF_8)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.id", is(300)))
-//                .andExpect(jsonPath("$.start", is("2023-09-17T21:30:00")))
-//                .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
-//                .andExpect(jsonPath("$.bookerId", is(2)))
-//                .andExpect(jsonPath("$.itemId", is(2)))
-//                .andExpect(jsonPath("$.status", is("WAITING")));
-//
-//        verify(bookingMapper, times(1)).fromBookingToDto(any());
-//    }
+    @Test
+    void postBooking() throws Exception {
+        when(bookingMapper.fromBookingToDto(booking1))
+                .thenReturn(bookingDto);
+        when(bookingService.postBooking(any(), anyString(), anyLong()))
+                .thenReturn(booking1);
+
+        mvc.perform(post("/bookings")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(300)))
+                .andExpect(jsonPath("$.start", is("2023-09-17T21:30:00")))
+                .andExpect(jsonPath("$.end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$.bookerId", is(2)))
+                .andExpect(jsonPath("$.itemId", is(2)))
+                .andExpect(jsonPath("$.status", is("WAITING")));
+
+        verify(bookingMapper, times(1)).fromBookingToDto(any());
+    }
 
     @Test
     void patchBooking() throws Exception {
@@ -167,26 +167,26 @@ class BookingControllerTest {
         verifyNoMoreInteractions(bookingService);
     }
 
-//    @Test
-//    void getAll() throws Exception {
-//        when(bookingMapper.fromBookingToDto(any()))
-//                .thenReturn(bookingDto);
-//        when(bookingService.getAllForBooker(any(), any(), any(), any()))
-//                .thenReturn(list);
-//
-//        mvc.perform(get("/bookings?from=10&size=20"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(2)))
-//                .andExpect(jsonPath("$[0].id", is(300)))
-//                .andExpect(jsonPath("$[0].itemId", is(2)))
-//                .andExpect(jsonPath("$[0].start", is("2023-09-17T21:30:00")))
-//                .andExpect(jsonPath("$[0].end", is("2022-09-17T21:30:00")))
-//                .andExpect(jsonPath("$[0].bookerId", is(2)))
-//                .andExpect(jsonPath("$[0].status", is("WAITING")));
-//
-//        verify(bookingService, times(1)).getAllForBooker(any(), any(), any(), any());
-//        verifyNoMoreInteractions(bookingService);
-//    }
+    @Test
+    void getAll() throws Exception {
+        when(bookingMapper.fromBookingToDto(any()))
+                .thenReturn(bookingDto);
+        when(bookingService.getAllForBooker(anyString(), anyInt(), anyInt(), anyString()))
+                .thenReturn(list);
+
+        mvc.perform(get("/bookings?from=0&size=20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(300)))
+                .andExpect(jsonPath("$[0].itemId", is(2)))
+                .andExpect(jsonPath("$[0].start", is("2023-09-17T21:30:00")))
+                .andExpect(jsonPath("$[0].end", is("2022-09-17T21:30:00")))
+                .andExpect(jsonPath("$[0].bookerId", is(2)))
+                .andExpect(jsonPath("$[0].status", is("WAITING")));
+
+        verify(bookingService, times(1)).getAllForBooker(any(), any(), any(), any());
+        verifyNoMoreInteractions(bookingService);
+    }
 
     @Test
     void getForCurrentUser() throws Exception {

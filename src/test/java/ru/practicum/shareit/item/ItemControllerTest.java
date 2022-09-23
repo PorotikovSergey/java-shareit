@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -108,33 +109,33 @@ class ItemControllerTest {
         verify(mapper, times(1)).fromItemToDto(any());
     }
 
-//    @Test
-//    void getAll() throws Exception {
-//        when(mapper.fromItemToDto(any()))
-//                .thenReturn(itemDto);
-//        when(mapper.fromBookingToDto(any()))
-//                .thenReturn(null);
-//        when(mapper.fromCommentToDto(any()))
-//                .thenReturn(null);
-//        when(itemService.getAll(any(), any(), any()))
-//                .thenReturn(list);
-//
-//        mvc.perform(get("/items"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(2)))
-//                .andExpect(jsonPath("$[0].id", is(11)))
-//                .andExpect(jsonPath("$[0].name", is("itemDto")))
-//                .andExpect(jsonPath("$[0].description", is("descriptionDto")))
-//                .andExpect(jsonPath("$[0].available", is(false)))
-//                .andExpect(jsonPath("$[1].id", is(11)))
-//                .andExpect(jsonPath("$[1].name", is("itemDto")))
-//                .andExpect(jsonPath("$[1].description", is("descriptionDto")))
-//                .andExpect(jsonPath("$[1].available", is(false)));
-//        ;
-//
-//        verify(itemService, times(1)).getAll(any(), any(), any());
-//        verifyNoMoreInteractions(itemService);
-//    }
+    @Test
+    void getAll() throws Exception {
+        when(mapper.fromItemToDto(any()))
+                .thenReturn(itemDto);
+        when(mapper.fromBookingToDto(any()))
+                .thenReturn(null);
+        when(mapper.fromCommentToDto(any()))
+                .thenReturn(null);
+        when(itemService.getAll(anyString(), anyInt(), anyInt()))
+                .thenReturn(list);
+
+        mvc.perform(get("/items"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(11)))
+                .andExpect(jsonPath("$[0].name", is("itemDto")))
+                .andExpect(jsonPath("$[0].description", is("descriptionDto")))
+                .andExpect(jsonPath("$[0].available", is(false)))
+                .andExpect(jsonPath("$[1].id", is(11)))
+                .andExpect(jsonPath("$[1].name", is("itemDto")))
+                .andExpect(jsonPath("$[1].description", is("descriptionDto")))
+                .andExpect(jsonPath("$[1].available", is(false)));
+        ;
+
+        verify(itemService, times(1)).getAll(any(), any(), any());
+        verifyNoMoreInteractions(itemService);
+    }
 
     @Test
     void deleteItem() throws Exception {
@@ -188,54 +189,54 @@ class ItemControllerTest {
         verifyNoMoreInteractions(itemService);
     }
 
-//    @Test
-//    void searchItem() throws Exception {
-//        when(mapper.fromItemToDto(any()))
-//                .thenReturn(itemDto);
-//        when(mapper.fromBookingToDto(any()))
-//                .thenReturn(null);
-//        when(mapper.fromCommentToDto(any()))
-//                .thenReturn(null);
-//        when(itemService.searchItem(anyString(), any(), any(), any()))
-//                .thenReturn(list);
-//
-//        mvc.perform(get("/items/search?text=qwerty"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(2)))
-//                .andExpect(jsonPath("$[0].id", is(11)))
-//                .andExpect(jsonPath("$[0].name", is("itemDto")))
-//                .andExpect(jsonPath("$[0].description", is("descriptionDto")))
-//                .andExpect(jsonPath("$[0].available", is(false)))
-//                .andExpect(jsonPath("$[1].id", is(11)))
-//                .andExpect(jsonPath("$[1].name", is("itemDto")))
-//                .andExpect(jsonPath("$[1].description", is("descriptionDto")))
-//                .andExpect(jsonPath("$[1].available", is(false)));
-//        ;
-//
-//        verify(itemService, times(1)).searchItem(any(), any(), any(), any());
-//        verifyNoMoreInteractions(itemService);
-//    }
+    @Test
+    void searchItem() throws Exception {
+        when(mapper.fromItemToDto(any()))
+                .thenReturn(itemDto);
+        when(mapper.fromBookingToDto(any()))
+                .thenReturn(null);
+        when(mapper.fromCommentToDto(any()))
+                .thenReturn(null);
+        when(itemService.searchItem(anyString(), any(), any(), any()))
+                .thenReturn(list);
 
-//    @Test
-//    void postComment() throws Exception {
-//        when(mapper.fromItemToDto(any()))
-//                .thenReturn(itemDto);
-//        when(mapper.fromCommentToDto(any()))
-//                .thenReturn(commentDto);
-//        when(itemService.postComment(anyString(), anyLong(), any()))
-//                .thenReturn(comment);
-//
-//        mvc.perform(post("/items/2/comment")
-//                        .content(objectMapper.writeValueAsString(item))
-//                        .characterEncoding(StandardCharsets.UTF_8)
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .accept(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.id", is(27)))
-//                .andExpect(jsonPath("$.authorName", is("Bob")))
-//                .andExpect(jsonPath("$.text", is("this is comment")));
-//
-//        verify(itemService, times(1)).postComment(any(), anyLong(), any());
-//        verifyNoMoreInteractions(itemService);
-//    }
+        mvc.perform(get("/items/search?text=qwerty"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(11)))
+                .andExpect(jsonPath("$[0].name", is("itemDto")))
+                .andExpect(jsonPath("$[0].description", is("descriptionDto")))
+                .andExpect(jsonPath("$[0].available", is(false)))
+                .andExpect(jsonPath("$[1].id", is(11)))
+                .andExpect(jsonPath("$[1].name", is("itemDto")))
+                .andExpect(jsonPath("$[1].description", is("descriptionDto")))
+                .andExpect(jsonPath("$[1].available", is(false)));
+        ;
+
+        verify(itemService, times(1)).searchItem(any(), any(), any(), any());
+        verifyNoMoreInteractions(itemService);
+    }
+
+    @Test
+    void postComment() throws Exception {
+        when(mapper.fromItemToDto(any()))
+                .thenReturn(itemDto);
+        when(mapper.fromCommentToDto(any()))
+                .thenReturn(commentDto);
+        when(itemService.postComment(anyString(), anyLong(), any()))
+                .thenReturn(comment);
+
+        mvc.perform(post("/items/2/comment")
+                        .content(objectMapper.writeValueAsString(item))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(27)))
+                .andExpect(jsonPath("$.authorName", is("Bob")))
+                .andExpect(jsonPath("$.text", is("this is comment")));
+
+        verify(itemService, times(1)).postComment(any(), anyLong(), any());
+        verifyNoMoreInteractions(itemService);
+    }
 }
