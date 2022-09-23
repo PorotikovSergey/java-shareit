@@ -31,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking postBooking(Booking booking, String bookerid, long itemId) {
+    public Booking postBooking(Booking booking, String bookerid, long itemId) throws ValidationException {
         long bookerId = Long.parseLong(bookerid);
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("Такого юзера нет"));
