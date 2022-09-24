@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import lombok.Data;
+import lombok.*;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.user.User;
 
@@ -9,38 +9,38 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "start")
+    @Column(name = "start", nullable = false)
     private LocalDateTime start;
 
-    @Column(name = "finish")
+    @Column(name = "finish", nullable = false)
     private LocalDateTime end;
 
-    @Column(name = "item_id")
-    private long itemId;
-
-    @Column(name = "booker_id")
-    private long bookerId;
-
-    @Column(name = "owner_id")
-    private long itemOwnerId;
-
-    @Transient
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "booker_id", referencedColumnName = "id", nullable = false)
     private User booker;
 
-    @Transient
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "item_id", referencedColumnName = "id", nullable = false)
     private Item item;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private BookingStatus status;
+    @Column(name = "status", nullable = false)
+    private BookingStatus status = BookingStatus.WAITING;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "state")
-    private BookingState state = BookingState.ALL;
+    public Booking(long id, LocalDateTime start, LocalDateTime end, User booker, Item item) {
+        this.id = id;
+        this.start = start;
+        this.end = end;
+        this.booker = booker;
+        this.item = item;
+    }
 }

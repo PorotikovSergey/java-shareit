@@ -1,31 +1,35 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.mapper.Mapper;
 
-import java.util.Collection;
+import javax.validation.Valid;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@Validated
 @RequestMapping(path = "/users")
 public class UserController {
     private final UserService userService;
-    private final UserMapper userMapper;
+    private final Mapper mapper;
 
     @Autowired
-    public UserController(UserServiceImpl userService, UserMapper userMapper) {
+    public UserController(UserServiceImpl userService, Mapper mapper) {
         this.userService = userService;
-        this.userMapper = userMapper;
+        this.mapper = mapper;
     }
 
     @GetMapping
-    public Collection<UserDto> getAll() {
-        return userService.getAll().stream().map(userMapper::fromUserToDto).collect(Collectors.toList());
+    public List<UserDto> getAll() {
+        return userService.getAll().stream().map(mapper::fromUserToDto).collect(Collectors.toList());
     }
 
     @PostMapping
-    public UserDto postUser(@RequestBody User user) {
-        return userMapper.fromUserToDto(userService.postUser(user));
+    public UserDto postUser(@Valid @RequestBody UserDto userDto) {
+        return mapper.fromUserToDto(userService.postUser(mapper.fromDtoToUser(userDto)));
     }
 
     @DeleteMapping("/{userId}")
@@ -34,12 +38,12 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto patchUser(@PathVariable long userId, @RequestBody User user) {
-        return userMapper.fromUserToDto(userService.patchUser(userId, user));
+    public UserDto patchUser(@PathVariable long userId, @Valid @RequestBody UserDto userDto) {
+        return mapper.fromUserToDto(userService.patchUser(userId, mapper.fromDtoToUser(userDto)));
     }
 
     @GetMapping("/{userId}")
     public UserDto getUser(@PathVariable long userId) {
-        return userMapper.fromUserToDto(userService.getUser(userId));
+        return mapper.fromUserToDto(userService.getUser(userId));
     }
 }

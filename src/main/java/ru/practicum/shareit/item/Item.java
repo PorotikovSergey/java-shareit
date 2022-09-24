@@ -1,7 +1,8 @@
 package ru.practicum.shareit.item;
 
-import lombok.Data;
+import lombok.*;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -9,7 +10,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "items")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,18 +25,27 @@ public class Item {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "available")
+    @Column(name = "available", nullable = false)
     private Boolean available;
 
-    @Column(name = "owner_id")
-    private long ownerId;
+    @Column(name = "request_id")
+    private long requestId;
+
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
+
+    private User owner;
 
     @Transient
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    List<Comment> comments = new ArrayList<>();
+
+    @Transient
+
     private Booking lastBooking;
 
     @Transient
-    private Booking nextBooking;
 
-    @Transient
-    private List<Comment> comments = new ArrayList<>();
+    private Booking nextBooking;
 }

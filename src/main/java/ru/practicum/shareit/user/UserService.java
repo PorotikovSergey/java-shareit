@@ -1,9 +1,9 @@
 package ru.practicum.shareit.user;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface UserService {
-    Collection<User> getAll();
+    List<User> getAll();
 
     User postUser(User user);
 

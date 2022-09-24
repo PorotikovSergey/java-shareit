@@ -2,12 +2,14 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ServiceException;
 import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -34,116 +36,109 @@ public class ItemServiceImpl implements ItemService {
         this.commentRepository = commentRepository;
     }
 
-    public Collection<Item> getAll(String ownerId) {
-        List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(Long.parseLong(ownerId));
-        return itemsWithStartAndEnd(allItemsByOwner, ownerId);
+    @Override
+    public List<Item> getAll(String owner, int from, int size) {
+        long ownerId = Long.parseLong(owner);
+        List<Item> allItemsByOwner = itemRepository.findAllByOwnerId(ownerId);
+
+        return getPageable(itemsWithStartAndEnd(allItemsByOwner, ownerId), from, size, ownerId);
+
     }
 
+    @Override
     public Item postItem(Item item, String ownerId) {
         long idOfOwner = Long.parseLong(ownerId);
-        if (!userRepository.existsById(idOfOwner)) {
-            throw new NotFoundException("Неверный айди пользователя " + ownerId);
-        }
-        item.setOwnerId(idOfOwner);
-        validateItem(item, ownerId);
+        item.setOwner(userRepository.findById(idOfOwner).orElseThrow(() -> new NotFoundException("Такого юзера нет")));
         itemRepository.save(item);
         return item;
     }
 
+    @Override
     public void deleteItem(long itemId) {
         itemRepository.deleteById(itemId);
     }
 
+    @Override
     public Item patchItem(long itemId, Item item, String ownerId) {
         validateItemForPatch(ownerId, itemId);
-        itemRepository.save(patchOneItemFromAnother(item, getItemWithOutUser(itemId)));
-        return getItemWithOutUser(itemId);
+        Item forPatch = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
+        patchOneItemFromAnother(item, forPatch);
+        itemRepository.save(forPatch);
+        return forPatch;
     }
 
-    public Item getItemWithOutUser(long itemId) {
-        checkItem(itemId);
-        return itemRepository.findById(itemId).get();
-    }
-
+    @Override
     public Item getItem(String user, long itemId) {
         long userId = Long.parseLong(user);
-        checkItem(itemId);
-        Collection<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
-        Item resultItem = itemRepository.findById(itemId).get();
-        if (Long.parseLong(user) == resultItem.getOwnerId()) {
+        List<Booking> bookingsByUser = bookingRepository.findAllByBookerIdOrItemOwnerId(userId, userId);
+        Item resultItem = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
+        if (Long.parseLong(user) == resultItem.getOwner().getId()) {
             resultItem.setNextBooking(getNextBooking(bookingsByUser));
             resultItem.setLastBooking(getLastBooking(bookingsByUser));
         }
-        List<Comment> commentsForItem = commentRepository.findAllByItemId(itemId);
-        for (Comment comment : commentsForItem) {
-            comment.setAuthorName(userRepository.findById(comment.getBookerId()).get().getName());
-        }
-        resultItem.setComments(commentsForItem);
+        resultItem.setComments(commentRepository.findAllByItemId(itemId));
         return resultItem;
     }
 
-    public Collection<Item> searchItem(String text, String ownerId) {
+    @Override
+    public List<Item> searchItem(String text, String owner, int from, int size) {
         if (text.isBlank()) {
             return new ArrayList<>();
         }
-        Collection<Item> foundNames = itemRepository
+        List<Item> foundNames = itemRepository
                 .findAllByNameContainingIgnoreCaseAndAvailableIs(text, true);
-        Collection<Item> foundDescriptions = itemRepository
+        List<Item> foundDescriptions = itemRepository
                 .findAllByDescriptionContainingIgnoreCaseAndAvailableIs(text, true);
         foundNames.removeAll(foundDescriptions);
         foundNames.addAll(foundDescriptions);
+        if (from != 0) {
+            long ownerId = Long.parseLong(owner);
+            return getPageable(foundNames, from, size, ownerId);
+        }
         return foundNames;
     }
 
     @Override
     public Comment postComment(String bookerId, long itemId, Comment comment) {
-        Item item = getItemWithOutUser(itemId);
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         long idOfBooker = Long.parseLong(bookerId);
-        Collection<Booking> col = bookingRepository.findAllByItemId(itemId);
-        Booking booking = col.stream()
-                .filter(b -> b.getBookerId() == idOfBooker)
+        Booking booking = bookingRepository.findAllByItemId(itemId).stream()
+                .filter(b -> b.getBooker().getId() == idOfBooker)
                 .findFirst()
                 .orElse(null);
 
-        if (booking == null) {
-            throw new NotFoundException("Бронирования на данный айтем с айди " + itemId + " не было");
-        }
-        if (booking.getEnd().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Отзывы возможны только к прошедшим броням");
-        }
-        if (comment.getText().isBlank()) {
-            throw new ValidationException("Текст отзыва не может быть пустым");
-        }
-        comment.setText(comment.getText());
-        comment.setItemId(itemId);
-        comment.setBookerId(idOfBooker);
-        comment.setAuthorName(userRepository.findById(idOfBooker).get().getName());
+        checkCommentBeforePosting(booking);
+        comment.setItem(item);
+        comment.setAuthorName(userRepository.findById(idOfBooker)
+                .orElseThrow(() -> new NotFoundException("Такого юзера нет"))
+                .getName());
         commentRepository.save(comment);
-        item.getComments().add(comment);
         return comment;
     }
 
-    private void validateItem(Item item, String ownerId) {
-        if (ownerId == null) {
-            throw new ServiceException("Отсутствует владелец");
-        }
-        if (!userRepository.existsById(Long.parseLong(ownerId))) {
-            throw new NotFoundException("С таким Id " + ownerId + " владельца не существует");
-        }
-        if (item.getAvailable() == null) {
-            throw new ValidationException("Вещь без доступности.");
-        }
-        if (item.getName() == null || item.getName().isBlank()) {
-            throw new ValidationException("Вещь с пустым именем.");
-        }
-        if (item.getDescription() == null || item.getDescription().isBlank()) {
-            throw new ValidationException("Вещь с пустым описанием");
-        }
+    @Override
+    public Item postItemToRequest(Item item, String itemOwner, long requestId) {
+        User owner = userRepository.findById(Long.parseLong(itemOwner))
+                .orElseThrow(() -> new NotFoundException("Такого юзера нет"));
+        item.setOwner(owner);
+        item.setRequestId(requestId);
+        itemRepository.save(item);
+        return item;
     }
 
-    private void checkItem(long itemId) {
-        if (!itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Айтема с таким id " + itemId + " не существует");
+    private List<Item> getPageable(List<Item> items, int firstEl, int sizePage, long userId) {
+        PagedListHolder<Item> page = new PagedListHolder<>(new ArrayList<>(items.subList(firstEl, items.size())));
+        page.setPageSize(sizePage);
+        page.setPage(0);
+        return itemsWithStartAndEnd(page.getPageList(), userId);
+    }
+
+    public void checkCommentBeforePosting(Booking booking) {
+        if (booking == null) {
+            throw new NotFoundException("Бронирования на данный айтем не было");
+        }
+        if (booking.getEnd().isAfter(LocalDateTime.now())) {
+            throw new ValidationException("Отзывы возможны только к прошедшим броням");
         }
     }
 
@@ -151,12 +146,10 @@ public class ItemServiceImpl implements ItemService {
         if (ownerId == null) {
             throw new ServiceException("Отсутствует владелец");
         }
-        if (!userRepository.existsById(Long.parseLong(ownerId))) {
-            throw new NotFoundException("С таким Id " + ownerId + " владельца не существует");
-        }
-        if (Long.parseLong(ownerId) != getItemWithOutUser(id).getOwnerId()) {
+        Item item = itemRepository.findById(id).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
+        if (Long.parseLong(ownerId) != item.getOwner().getId()) {
             throw new NotFoundException("Патчить вещь может только её владелец с айди "
-                    + getItemWithOutUser(id).getOwnerId());
+                    + item.getOwner().getId());
         }
     }
 
@@ -173,12 +166,12 @@ public class ItemServiceImpl implements ItemService {
         return recipient;
     }
 
-    private List<Item> itemsWithStartAndEnd(List<Item> list, String ownerId) {
+    private List<Item> itemsWithStartAndEnd(List<Item> list, long userId) {
         List<Item> resultItems = new ArrayList<>();
-        Collection<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(Long.parseLong(ownerId));
+        List<Booking> bookings = bookingRepository.findBookingsByItemOwnerId(userId);
         for (Item item : list) {
             Collection<Booking> bookingsOfItem = bookings.stream()
-                    .filter(i -> i.getItemId() == item.getId())
+                    .filter(i -> i.getItem().getId() == item.getId())
                     .collect(Collectors.toList());
             item.setNextBooking(getNextBooking(bookingsOfItem));
             item.setLastBooking(getLastBooking(bookingsOfItem));
@@ -187,7 +180,7 @@ public class ItemServiceImpl implements ItemService {
         return resultItems;
     }
 
-    private Booking getNextBooking(Collection<Booking> bookings) {
+    public Booking getNextBooking(Collection<Booking> bookings) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allStarts = new ArrayList<>();
         for (Booking booking : bookings) {
@@ -200,7 +193,7 @@ public class ItemServiceImpl implements ItemService {
         return bookings.stream().filter(b -> b.getStart() == next.orElse(null)).findFirst().orElse(null);
     }
 
-    private Booking getLastBooking(Collection<Booking> bookings) {
+    public Booking getLastBooking(Collection<Booking> bookings) {
         LocalDateTime now = LocalDateTime.now();
         List<LocalDateTime> allEnds = new ArrayList<>();
         for (Booking booking : bookings) {

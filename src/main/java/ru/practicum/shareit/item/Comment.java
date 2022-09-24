@@ -1,24 +1,25 @@
 package ru.practicum.shareit.item;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "comments")
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "item_id")
-    private long itemId;
+    @ManyToOne(cascade = CascadeType.ALL, optional = false)
+    @JoinColumn(name = "item_id", referencedColumnName = "id", nullable = false)
+    private Item item;
 
-    @Column(name = "booker_id")
-    private long bookerId;
-
-    @Transient
+    @Column(name = "author_name")
     private String authorName;
 
     @Column(name = "text")
