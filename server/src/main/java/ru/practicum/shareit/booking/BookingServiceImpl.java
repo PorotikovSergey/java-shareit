@@ -33,14 +33,13 @@ public class BookingServiceImpl {
         this.userRepository = userRepository;
     }
 
-    public Booking postBooking(Booking booking, String bookerid, long itemId) throws ValidationException {
-        long bookerId = Long.parseLong(bookerid);
+    public Booking postBooking(Booking booking, long bookerId, long itemId) throws ValidationException {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("Такого юзера нет"));
         if (booking.getEnd().isBefore(booking.getStart())) {
             throw new ValidationException("Конец брони не должен быть раньше начала");
         }
-        validateBooking(bookerid, itemId);
+        validateBooking(bookerId, itemId);
         booking.setStatus(BookingStatus.WAITING);
         booking.setItem(item);
         booking.setBooker(booker);
@@ -48,37 +47,33 @@ public class BookingServiceImpl {
         return booking;
     }
 
-    public Booking patchBooking(String parsedBookingId, String parsedOwnerId, boolean approved) {
-        long idOfBooking = Long.parseLong(parsedBookingId);
-        long idOfOwner = Long.parseLong(parsedOwnerId);
+    public Booking patchBooking(long bookingId, long userId, boolean approved) {
 
-        Booking booking = bookingRepository.findById(idOfBooking)
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Такого букинга нет"));
-        checkAccessForPatchBooking(idOfOwner, booking);
+        checkAccessForPatchBooking(userId, booking);
 
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         bookingRepository.save(booking);
         return booking;
     }
 
-    public Booking getBooking(String ownerOrBooker, String bookingId) {
-        long idOfBooking = Long.parseLong(bookingId);
-        long idOfOwnerOrBooker = Long.parseLong(ownerOrBooker);
+    public Booking getBooking(long userId, long bookingId) {
 
-        Booking booking = bookingRepository.findById(idOfBooking)
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Такого букинга нет"));
-        checkAccessForGetBooking(booking, idOfOwnerOrBooker);
+        checkAccessForGetBooking(booking, userId);
 
         return booking;
     }
 
-    public List<Booking> getAllForBooker(String state, int first, int size, String booker) {
-        List<Booking> list = getAllBookingsForBooker(booker);
+    public List<Booking> getAllForBooker(String state, int first, int size, long bookerId) {
+        List<Booking> list = getAllBookingsForBooker(bookerId);
         return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
 
-    public List<Booking> getAllForOwner(String state, int first, int size, String owner) {
-        List<Booking> list = getAllBookingsByOwner(owner);
+    public List<Booking> getAllForOwner(String state, int first, int size, long ownerId) {
+        List<Booking> list = getAllBookingsByOwner(ownerId);
         return checkStateAndPageAndReturnResultList(list, state, first, size);
     }
 
@@ -125,37 +120,35 @@ public class BookingServiceImpl {
         return page.getPageList();
     }
 
-    private void validateBooking(String bookerId, long itemId) {
+    private void validateBooking(long bookerId, long itemId) {
         if (!itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Такого айтема нет"))
                 .getAvailable()) {
             throw new ValidationException("Недоступный для бронирования. Айди вещи " + itemId);
         }
 
-        if (Long.parseLong(bookerId) == itemRepository.findById(itemId)
+        if (bookerId == itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Такого айтема нет"))
                 .getId()) {
             throw new NotFoundException("Нельзя арендовать свою вещь у себя же самого");
         }
     }
 
-    public List<Booking> getAllBookingsForBooker(String booker) {
+    public List<Booking> getAllBookingsForBooker(long bookerId) {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
-        long idOfBooker = Long.parseLong(booker);
-        if (!userRepository.existsById(idOfBooker)) {
-            throw new NotFoundException("Юзера с таким id " + idOfBooker + " не существует");
+        if (!userRepository.existsById(bookerId)) {
+            throw new NotFoundException("Юзера с таким id " + bookerId + " не существует");
         }
-        result.addAll(bookingRepository.findBookingsByBookerId(idOfBooker));
+        result.addAll(bookingRepository.findBookingsByBookerId(bookerId));
         return new ArrayList<>(result);
     }
 
-    private List<Booking> getAllBookingsByOwner(String owner) {
+    private List<Booking> getAllBookingsByOwner(long ownerId) {
         Set<Booking> result = new TreeSet<>((o1, o2) -> (o2.getStart().compareTo(o1.getStart())));
-        long idOfOwner = Long.parseLong(owner);
-        if (!userRepository.existsById(idOfOwner)) {
-            throw new NotFoundException("Юзера с таким id " + owner + " не существует");
+        if (!userRepository.existsById(ownerId)) {
+            throw new NotFoundException("Юзера с таким id " + ownerId + " не существует");
         }
-        result.addAll(bookingRepository.findBookingsByItemOwnerId(idOfOwner));
+        result.addAll(bookingRepository.findBookingsByItemOwnerId(ownerId));
         return new ArrayList<>(result);
     }
 

@@ -3,13 +3,13 @@ package ru.practicum.shareit.booking;
 import java.util.List;
 
 public interface BookingService {
-    Booking postBooking(Booking booking, String bookerId, long itemId);
+    Booking postBooking(Booking booking, long userId, long itemId);
 
-    Booking patchBooking(String bookingId, String sharerId, boolean approved);
+    Booking patchBooking(long bookingId, long userId, boolean approved);
 
-    Booking getBooking(String ownerOrBooker, String bookingId);
+    Booking getBooking(long userId, long bookingId);
 
-    List<Booking> getAllForBooker(String state, String first, String size, String booker);
+    List<Booking> getAllForBooker(String state, int first, int size, long bookerId);
 
-    List<Booking> getAllForOwner(String state, String first, String size, String user);
+    List<Booking> getAllForOwner(String state, int first, int size, long userId);
 }

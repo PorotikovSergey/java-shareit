@@ -27,8 +27,7 @@ public class RequestServiceImpl{
         this.itemRepository = itemRepository;
     }
 
-    public Request postRequest(Request request, String requestor) {
-        long requestorId = Long.parseLong(requestor);
+    public Request postRequest(Request request, long requestorId) {
         checkDescription(request);
         request.setRequestor(userRepository.findById(requestorId)
                 .orElseThrow(() -> new NotFoundException("Такого юзера нет")));
@@ -37,8 +36,7 @@ public class RequestServiceImpl{
         return request;
     }
 
-    public List<Request> getAll(String requestor) {
-        long requestorId = Long.parseLong(requestor);
+    public List<Request> getAll(long requestorId) {
         Set<Request> allRequests = new TreeSet<>((o1, o2) -> (o2.getCreated().compareTo(o1.getCreated())));
         List<Request> requestList = requestRepository.findRequestsByRequestorId(userRepository.findById(requestorId)
                 .orElseThrow(() -> new NotFoundException("Такого юзера нет")).getId());
@@ -52,8 +50,7 @@ public class RequestServiceImpl{
         return new ArrayList<>(allRequests);
     }
 
-    public List<Request> getAllPageable(int from, int size, String requestor) {
-        long requestorId = Long.parseLong(requestor);
+    public List<Request> getAllPageable(int from, int size, long requestorId) {
         Page<Request> page = requestRepository.findAll(PageRequest.of(from, size));
         List<Request> result = page.toList();
         for (Request request : result) {
@@ -66,12 +63,11 @@ public class RequestServiceImpl{
                 .collect(Collectors.toList());
     }
 
-    public Request getRequest(String itemRequestId, String requestor) {
+    public Request getRequest(String itemRequestId, long requestorId) {
         long requestId = Long.parseLong(itemRequestId);
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Такого запроса нет"));
 
-        long requestorId = Long.parseLong(requestor);
         checkUser(requestorId);
 
         request.getItems().addAll(itemRepository.findAllByRequestId(request.getId()));
