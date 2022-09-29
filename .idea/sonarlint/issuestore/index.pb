@@ -1,0 +1,19 @@
+
+9
+	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
+n
+>gateway/src/main/java/ru/practicum/shareit/ShareItGateway.java,7\8\787bcaf0bc3731e912bee2086b524195abdde8b4
+n
+>server/src/main/java/ru/practicum/shareit/booking/Booking.java,d\a\daa87a7a4ca49176a9e1986557e6e59f35dd0ce7
+y
+Igateway/src/main/java/ru/practicum/shareit/request/RequestController.java,f\4\f4b4ea233352f285c17610bf6c92be76ab3483bd
+s
+Cgateway/src/main/java/ru/practicum/shareit/item/ItemController.java,3\a\3aa1c1ca67a0f9bc4546c70d0de0b8e7479968cf
+l
+<server/src/main/java/ru/practicum/shareit/mapper/Mapper.java,4\5\45f006b869dc9a25cd90658c892033483d6855e1
+r
+Bserver/src/main/java/ru/practicum/shareit/user/UserController.java,6\d\6de19c479378d96baabcef26f7d4eec80c344cd8
+x
+Hserver/src/main/java/ru/practicum/shareit/request/RequestController.java,e\1\e10d286fbf9fec99bb6d70bd0003d375189a2cea
+y
+Iserver/src/main/java/ru/practicum/shareit/request/RequestServiceImpl.java,1\f\1fd21b8ea9b47717bba1e6313d146e399c27cd27
