@@ -30,7 +30,6 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public BookingDto patchBooking(@RequestHeader(USER_ID_HEADER) long userId, @PathVariable Long bookingId,
                                    @RequestParam String approved) {
-
         return mapper.fromBookingToDto(bookingService.patchBooking(bookingId,
                 userId, Boolean.parseBoolean(approved)));
     }
