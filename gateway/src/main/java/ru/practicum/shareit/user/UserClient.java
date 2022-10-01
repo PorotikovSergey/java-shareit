@@ -10,8 +10,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.user.dto.UserDto;
 
-import java.util.List;
-
 @Service
 public class UserClient extends BaseClient {
     private static final String API_PREFIX = "/users";
@@ -26,28 +24,24 @@ public class UserClient extends BaseClient {
         );
     }
 
-    public List<ResponseEntity<Object>> getAll() {
-        System.out.println("into --> client getAll");
-        return null;
+    public ResponseEntity<Object> getAll() {
+        return get("");
+
     }
 
     public ResponseEntity<Object> postUser(UserDto userDto) {
-        System.out.println("into --> client postUser");
-        return null;
+        return post("", userDto);
     }
 
     public void deleteUser(long userId) {
-        System.out.println("into --> client deleteUser");
-        System.out.printf("удаление юзера");
+        delete("/" + userId);
     }
 
     public ResponseEntity<Object> patchUser(long userId, UserDto userDto) {
-        System.out.println("into --> client patchUser");
-        return null;
+        return patch("/" + userId, userDto);
     }
 
     public ResponseEntity<Object> getUser(long userId) {
-        System.out.println("into --> client getUser");
-        return null;
+        return get("/" + userId);
     }
 }

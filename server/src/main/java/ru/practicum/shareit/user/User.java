@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.request.Request;
+import ru.practicum.shareit.mapper.request.Request;
 
 import javax.persistence.*;
 import java.util.List;

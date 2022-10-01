@@ -48,8 +48,8 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto patchItem(@RequestHeader(USER_ID_HEADER) long userId,
                              @PathVariable long itemId,
-                             @RequestBody ItemDto itemDto) {
-        return mapper.fromItemToDto(itemService.patchItem(itemId, mapper.fromDtoToItem(itemDto),
+                             @RequestBody ItemPatchDto itemPatchDto) {
+        return mapper.fromItemToDto(itemService.patchItem(itemId, mapper.fromPatchDtoToItem(itemPatchDto),
                 userId));
     }
 
@@ -72,7 +72,6 @@ public class ItemController {
     public CommentDto postComment(@RequestHeader(USER_ID_HEADER) long userId,
                                   @PathVariable long itemId,
                                   @RequestBody CommentDto commentDto) {
-
         return mapper.fromCommentToDto(itemService.postComment(userId,
                 itemId, mapper.fromDtoToComment(commentDto)));
     }

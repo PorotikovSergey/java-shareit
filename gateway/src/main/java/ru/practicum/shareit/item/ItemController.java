@@ -5,11 +5,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemPatchDto;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Collection;
 
 @RestController
 @RequestMapping("/items")
@@ -24,11 +24,11 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ResponseEntity<Object>> getAll(@RequestHeader(USER_ID_HEADER) long userId,
-                                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
-                                                     Integer from,
-                                                     @Positive @RequestParam(name = "size", defaultValue = "10")
-                                                     Integer size) {
+    public ResponseEntity<Object> getAll(@RequestHeader(USER_ID_HEADER) long userId,
+                                         @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                         Integer from,
+                                         @Positive @RequestParam(name = "size", defaultValue = "10")
+                                         Integer size) {
         return itemClient.getAll(userId, from, size);
     }
 
@@ -51,8 +51,8 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> patchItem(@RequestHeader(USER_ID_HEADER) long userId,
                                             @PathVariable long itemId,
-                                            @RequestBody @Valid ItemDto itemDto) {
-        return itemClient.patchItem(itemId, itemDto,
+                                            @RequestBody @Valid ItemPatchDto itemPatchDto) {
+        return itemClient.patchItem(itemId, itemPatchDto,
                 userId);
     }
 
@@ -62,12 +62,12 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Collection<ResponseEntity<Object>> searchItem(@RequestParam String text,
-                                                         @RequestHeader(USER_ID_HEADER) long userId,
-                                                         @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
-                                                         Integer from,
-                                                         @Positive @RequestParam(name = "size", defaultValue = "10")
-                                                         Integer size) {
+    public ResponseEntity<Object> searchItem(@RequestParam String text,
+                                             @RequestHeader(USER_ID_HEADER) long userId,
+                                             @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                             Integer from,
+                                             @Positive @RequestParam(name = "size", defaultValue = "10")
+                                             Integer size) {
         return itemClient.searchItem(text, userId, from, size);
     }
 

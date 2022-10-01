@@ -10,8 +10,9 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemPatchDto;
 
-import java.util.Collection;
+import java.util.Map;
 
 @Service
 public class ItemClient extends BaseClient {
@@ -27,35 +28,44 @@ public class ItemClient extends BaseClient {
         );
     }
 
-    public Collection<ResponseEntity<Object>> getAll(long userId, Integer from, Integer size) {
-        return null;
+    public ResponseEntity<Object> getAll(long userId, Integer from, Integer size) {
+        Map<String, Object> parameters = Map.of(
+                "from", from,
+                "size", size
+        );
+        return get("?from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> postItem(ItemDto itemDto, long userId) {
-        return null;
+        return post("", userId, itemDto);
     }
 
     public ResponseEntity<Object> postItemToRequest(ItemDto itemDto, long userId, long requestId) {
-        return null;
+        return post("", userId, itemDto);
     }
 
     public void deleteItem(long itemId) {
-        System.out.println("Удаление айтема");
+        delete("/" + itemId);
     }
 
-    public ResponseEntity<Object> patchItem(long itemId, ItemDto itemDto, long userId) {
-        return null;
+    public ResponseEntity<Object> patchItem(long itemId, ItemPatchDto itemDto, long userId) {
+        return patch("/"+ itemId, userId, itemDto);
     }
 
     public ResponseEntity<Object> getItem(long userId, long itemId) {
-        return null;
+        return get("/"+itemId, userId);
     }
 
-    public Collection<ResponseEntity<Object>> searchItem(String text, long userId, Integer from, Integer size) {
-        return null;
+    public ResponseEntity<Object> searchItem(String text, long userId, Integer from, Integer size) {
+        Map<String, Object> parameters = Map.of(
+                "text", text,
+                "from", from,
+                "size", size
+        );
+        return get("/search?text={text}&from={from}&size={size}", userId, parameters);
     }
 
     public ResponseEntity<Object> postComment(long userId, long itemId, CommentDto commentDto) {
-        return null;
+        return post("/"+itemId+"/comment", commentDto);
     }
 }

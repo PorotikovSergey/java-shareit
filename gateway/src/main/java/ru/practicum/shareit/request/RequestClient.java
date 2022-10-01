@@ -11,6 +11,7 @@ import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.request.dto.RequestDto;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class RequestClient extends BaseClient {
@@ -27,18 +28,22 @@ public class RequestClient extends BaseClient {
     }
 
     public ResponseEntity<Object> postRequest(RequestDto requestDto, long userId) {
-        return null;
+        return post("", userId, requestDto);
     }
 
-    public List<ResponseEntity<Object>> getAll(long userId) {
-        return null;
+    public ResponseEntity<Object> getAll(long userId) {
+        return get("", userId);
     }
 
     public ResponseEntity<Object> getRequest(String itemRequestId, long userId) {
-        return null;
+        return get("/"+itemRequestId, userId);
     }
 
-    public List<ResponseEntity<Object>> getAllPageable(Integer from, Integer size, long userId) {
-        return null;
+    public ResponseEntity<Object> getAllPageable(Integer from, Integer size, long userId) {
+        Map<String, Object> parameters = Map.of(
+                "from", from,
+                "size", size
+        );
+        return get("/all?state={state}&from={from}&size={size}", userId);
     }
 }

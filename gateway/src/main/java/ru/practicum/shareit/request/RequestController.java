@@ -32,7 +32,7 @@ public class RequestController {
     }
 
     @GetMapping
-    public List<ResponseEntity<Object>> getAll(@RequestHeader(USER_ID_HEADER) long userId) {
+    public ResponseEntity<Object> getAll(@RequestHeader(USER_ID_HEADER) long userId) {
         return requestClient.getAll(userId);
     }
 
@@ -44,7 +44,7 @@ public class RequestController {
     }
 
     @GetMapping("/all")
-    public List<ResponseEntity<Object>> getAllPageable(@RequestHeader(USER_ID_HEADER) long userId,
+    public ResponseEntity<Object> getAllPageable(@RequestHeader(USER_ID_HEADER) long userId,
                                                        @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
                                                        Integer from,
                                                        @Positive @RequestParam(name = "size", defaultValue = "10")

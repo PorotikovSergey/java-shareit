@@ -3,7 +3,7 @@ package ru.practicum.shareit.request.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemPatchDto;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,5 +17,5 @@ public class RequestDto {
     private String description;
     private long requestor;
     private Date created;
-    private List<ItemDto> items = new ArrayList<>();
+    private List<ItemPatchDto> items = new ArrayList<>();
 }

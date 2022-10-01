@@ -1,4 +1,4 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.mapper.request;
 
 import java.util.List;
 

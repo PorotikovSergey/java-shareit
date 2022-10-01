@@ -3,12 +3,9 @@ package ru.practicum.shareit.mapper;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingDto;
-import ru.practicum.shareit.item.Comment;
-import ru.practicum.shareit.item.CommentDto;
-import ru.practicum.shareit.item.Item;
-import ru.practicum.shareit.item.ItemDto;
-import ru.practicum.shareit.request.Request;
-import ru.practicum.shareit.request.RequestDto;
+import ru.practicum.shareit.item.*;
+import ru.practicum.shareit.mapper.request.Request;
+import ru.practicum.shareit.mapper.request.RequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserDto;
 
@@ -117,6 +114,14 @@ public class Mapper {
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
         item.setAvailable(itemDto.getAvailable());
+        return item;
+    }
+
+    public Item fromPatchDtoToItem(ItemPatchDto itemPatchDto) {
+        Item item = new Item();
+        item.setName(itemPatchDto.getName());
+        item.setDescription(itemPatchDto.getDescription());
+        item.setAvailable(itemPatchDto.getAvailable());
         return item;
     }
 

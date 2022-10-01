@@ -16,4 +16,13 @@ public class UserDto {
     private String name;
 
     private String email;
+
+    @Override
+    public String toString() {
+        return "UserDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }
