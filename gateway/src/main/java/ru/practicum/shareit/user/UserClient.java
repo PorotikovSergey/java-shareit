@@ -27,22 +27,27 @@ public class UserClient extends BaseClient {
     }
 
     public List<ResponseEntity<Object>> getAll() {
+        System.out.println("into --> client getAll");
         return null;
     }
 
     public ResponseEntity<Object> postUser(UserDto userDto) {
+        System.out.println("into --> client postUser");
         return null;
     }
 
     public void deleteUser(long userId) {
+        System.out.println("into --> client deleteUser");
         System.out.printf("удаление юзера");
     }
 
     public ResponseEntity<Object> patchUser(long userId, UserDto userDto) {
+        System.out.println("into --> client patchUser");
         return null;
     }
 
     public ResponseEntity<Object> getUser(long userId) {
+        System.out.println("into --> client getUser");
         return null;
     }
 }
