@@ -11,4 +11,3 @@ public interface RequestService {
 
     Request getRequest(String itemRequestId, String requestor);
 }
-

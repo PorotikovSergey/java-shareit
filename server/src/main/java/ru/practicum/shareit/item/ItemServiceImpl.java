@@ -167,10 +167,9 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList());
             item.setNextBooking(getNextBooking(bookingsOfItem));
             item.setLastBooking(getLastBooking(bookingsOfItem));
-            if(item.getNextBooking()!=null) {
+            if (item.getNextBooking() != null) {
                 resultItems.add(0, item);
-            }
-            else {
+            } else {
                 resultItems.add(item);
             }
         }

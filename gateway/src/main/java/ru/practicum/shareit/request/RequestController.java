@@ -6,12 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -47,10 +44,10 @@ public class RequestController {
 
     @GetMapping("/all")
     public ResponseEntity<Object> getAllPageable(@RequestHeader(USER_ID_HEADER) long userId,
-                                                       @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
-                                                       Integer from,
-                                                       @Positive @RequestParam(name = "size", defaultValue = "10")
-                                                       Integer size) {
+                                                 @PositiveOrZero @RequestParam(name = "from", defaultValue = "0")
+                                                 Integer from,
+                                                 @Positive @RequestParam(name = "size", defaultValue = "10")
+                                                 Integer size) {
         return requestClient.getAllPageable(from, size, userId);
     }
 }

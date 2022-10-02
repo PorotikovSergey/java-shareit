@@ -11,4 +11,3 @@ public interface RequestRepository extends JpaRepository<Request, Long>, PagingA
     List<Request> findRequestsByRequestorId(long id);
 
 }
-

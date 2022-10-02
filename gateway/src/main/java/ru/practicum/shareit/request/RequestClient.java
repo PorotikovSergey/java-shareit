@@ -38,7 +38,7 @@ public class RequestClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getRequest(String itemRequestId, long userId) {
-        return get("/"+itemRequestId, userId);
+        return get("/" + itemRequestId, userId);
     }
 
     public ResponseEntity<Object> getAllPageable(Integer from, Integer size, long userId) {

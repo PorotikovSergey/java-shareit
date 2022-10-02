@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-import org.yaml.snakeyaml.util.EnumUtils;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingState;
 import ru.practicum.shareit.client.BaseClient;
@@ -38,7 +37,7 @@ public class BookingClient extends BaseClient {
     }
 
     public ResponseEntity<Object> patchBooking(long userId, Long bookingId, String approved) {
-        return patch("/" + bookingId+"?approved="+approved, userId);
+        return patch("/" + bookingId + "?approved=" + approved, userId);
     }
 
     public ResponseEntity<Object> bookItem(long userId, BookingDto requestDto) {

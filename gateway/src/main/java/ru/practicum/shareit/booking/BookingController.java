@@ -3,11 +3,9 @@ package ru.practicum.shareit.booking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingState;
@@ -16,7 +14,6 @@ import ru.practicum.shareit.exceptions.ValidationException;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Optional;
 
 @Controller
 @RequestMapping(path = "/bookings")
@@ -70,6 +67,6 @@ public class BookingController {
         BookingState state = BookingState.from(stateParam)
                 .orElseThrow(() -> new ValidationException("Unknown state: UNSUPPORTED_STATUS"));
         log.info("Get booking  with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
-            return bookingClient.getBookingsForOwner(userId, state, from, size);
+        return bookingClient.getBookingsForOwner(userId, state, from, size);
     }
 }
