@@ -11,7 +11,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.request.dto.RequestDto;
 
-import java.util.List;
 import java.util.Map;
 
 @Slf4j

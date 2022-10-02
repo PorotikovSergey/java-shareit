@@ -51,11 +51,11 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> patchItem(long itemId, ItemPatchDto itemDto, long userId) {
-        return patch("/"+ itemId, userId, itemDto);
+        return patch("/" + itemId, userId, itemDto);
     }
 
     public ResponseEntity<Object> getItem(long userId, long itemId) {
-        return get("/"+itemId, userId);
+        return get("/" + itemId, userId);
     }
 
     public ResponseEntity<Object> searchItem(String text, long userId, Integer from, Integer size) {
@@ -68,6 +68,6 @@ public class ItemClient extends BaseClient {
     }
 
     public ResponseEntity<Object> postComment(long userId, long itemId, CommentDto commentDto) {
-        return post("/"+itemId+"/comment", userId, commentDto);
+        return post("/" + itemId + "/comment", userId, commentDto);
     }
 }
