@@ -95,6 +95,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Comment postComment(long bookerId, long itemId, Comment comment) {
+        log.warn("Зашли во внутренний метод пост коммент");
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         Booking booking = bookingRepository.findAllByItemId(itemId).stream()
                 .filter(b -> b.getBooker().getId() == bookerId)

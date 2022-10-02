@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 
+@Slf4j
 @RestController
 @RequestMapping("/items")
 public class ItemController {
@@ -75,7 +77,6 @@ public class ItemController {
     public ResponseEntity<Object> postComment(@RequestHeader(USER_ID_HEADER) long userId,
                                               @PathVariable long itemId,
                                               @RequestBody @Valid CommentDto commentDto) {
-
         return itemClient.postComment(userId,
                 itemId, commentDto);
     }
