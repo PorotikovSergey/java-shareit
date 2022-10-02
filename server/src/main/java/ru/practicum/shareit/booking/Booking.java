@@ -35,9 +35,8 @@ public class Booking {
     @JoinColumn(name = "item_id", referencedColumnName = "id", nullable = false)
     private Item item;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private BookingStatus status = BookingStatus.WAITING;
+    private String status = "WAITING";
 
     public Booking(long id, LocalDateTime start, LocalDateTime end, User booker, Item item) {
         this.id = id;

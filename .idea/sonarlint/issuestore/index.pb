@@ -1,20 +1,12 @@
 
 9
 	README.md,8\e\8ec9a00bfd09b3190ac6b22251dbb1aa95a0579d
-n
->server/src/main/java/ru/practicum/shareit/booking/Booking.java,d\a\daa87a7a4ca49176a9e1986557e6e59f35dd0ce7
 k
 ;server/src/main/java/ru/practicum/shareit/user/UserDto.java,2\b\2b9bd966ef69d8c31d1524781f0e620f3633e13c
-?
-gateway/pom.xml,4\b\4b316bc60d1cfae51045f6fc8e58a8ae31f03ff3
 A
 server/Dockerfile,7\6\7616e2c202d821cf272f76f16fc84f194a512f67
->
-server/pom.xml,0\8\08a8b343eb3d041b4e874e74bf19e4275b4be110
 q
 Agateway/src/main/java/ru/practicum/shareit/client/BaseClient.java,b\2\b2f7e847a0699cf860bac452b83e2935f0a81ec2
-
-Oserver/src/main/java/ru/practicum/shareit/mapper/request/RequestController.java,e\e\ee21bab83078a1977f54e961fea9c47bb68083e8
 p
 @gateway/src/main/java/ru/practicum/shareit/item/dto/ItemDto.java,5\b\5bfaf9be56e232ad62880d466432360a3596a398
 u
@@ -29,14 +21,8 @@ k
 ;server/src/main/java/ru/practicum/shareit/item/ItemDto.java,a\2\a245d58e84a723253da50422d7da553b944b58a2
 p
 @server/src/main/java/ru/practicum/shareit/item/ItemPatchDto.java,9\a\9a22eaa75dc8a49654c4e8056444db96612c18f5
-l
-<server/src/main/java/ru/practicum/shareit/mapper/Mapper.java,4\5\45f006b869dc9a25cd90658c892033483d6855e1
 v
 Fgateway/src/main/java/ru/practicum/shareit/booking/dto/BookingDto.java,6\5\6590d4b56d7b8c1d01a85d265e6dada17672e6e3
-l
-<server/src/main/java/ru/practicum/shareit/ShareItServer.java,a\e\ae95c76d2cfe50deceb309075da3eea292a2f8d2
-x
-Hserver/src/main/java/ru/practicum/shareit/booking/BookingController.java,7\8\78862dad5d87019ee6731e081b40371a705db9be
 |
 Lgateway/src/main/java/ru/practicum/shareit/exceptions/ConflictException.java,0\c\0ce70c4c1892d2528045bada58789fdd707d4f5e
 x

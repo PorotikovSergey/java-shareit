@@ -40,7 +40,7 @@ public class BookingServiceImpl {
             throw new ValidationException("Конец брони не должен быть раньше начала");
         }
         validateBooking(bookerId, itemId);
-        booking.setStatus(BookingStatus.WAITING);
+        booking.setStatus("WAITING");
         booking.setItem(item);
         booking.setBooker(booker);
         bookingRepository.save(booking);
@@ -53,7 +53,7 @@ public class BookingServiceImpl {
                 .orElseThrow(() -> new NotFoundException("Такого букинга нет"));
         checkAccessForPatchBooking(userId, booking);
 
-        booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
+        booking.setStatus(approved ? "APPROVED" : "REJECTED");
         bookingRepository.save(booking);
         return booking;
     }
@@ -89,7 +89,7 @@ public class BookingServiceImpl {
             throw new NotFoundException("Патчить статус вещи может владелец, а не пользователь с айди " + idOfOwner);
         }
 
-        if (booking.getStatus() == BookingStatus.APPROVED) {
+        if (booking.getStatus().equals("APPROVED")) {
             throw new ValidationException("Нельзя менять статус уже подтверждённой брони");
         }
     }
@@ -181,12 +181,12 @@ public class BookingServiceImpl {
                 break;
             case WAITING:
                 result = before.stream()
-                        .filter(b -> b.getStatus().equals(BookingStatus.WAITING))
+                        .filter(b -> b.getStatus().equals("WAITING"))
                         .collect(Collectors.toList());
                 break;
             case REJECTED:
                 result = before.stream()
-                        .filter(b -> b.getStatus().equals(BookingStatus.REJECTED))
+                        .filter(b -> b.getStatus().equals("REJECTED"))
                         .collect(Collectors.toList());
                 break;
             default:

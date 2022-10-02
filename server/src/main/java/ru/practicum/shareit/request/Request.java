@@ -1,4 +1,4 @@
-package ru.practicum.shareit.mapper.request;
+package ru.practicum.shareit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

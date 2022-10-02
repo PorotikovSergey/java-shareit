@@ -20,16 +20,16 @@ services:
     depends_on:
       - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:6541/postgres
-      - SPRING_DATASOURCE_USERNAME=sa
-#      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:6541/shareit
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
 
   db:
     image: postgres:13
     container_name: java-postgres
     ports:
-      - 6541:5432
+      - "6541:5432"
     environment:
-      - POSTGRES_USER=sa
-      - POSTGRES_HOST_AUTH_METHOD=trust
-      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=shareit

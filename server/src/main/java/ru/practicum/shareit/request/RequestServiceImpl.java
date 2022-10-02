@@ -1,4 +1,4 @@
-package ru.practicum.shareit.mapper.request;
+package ru.practicum.shareit.request;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

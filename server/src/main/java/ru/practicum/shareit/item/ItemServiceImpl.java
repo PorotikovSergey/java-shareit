@@ -13,10 +13,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -170,7 +167,12 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList());
             item.setNextBooking(getNextBooking(bookingsOfItem));
             item.setLastBooking(getLastBooking(bookingsOfItem));
-            resultItems.add(item);
+            if(item.getNextBooking()!=null) {
+                resultItems.add(0, item);
+            }
+            else {
+                resultItems.add(item);
+            }
         }
         return resultItems;
     }
