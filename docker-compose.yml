@@ -2,7 +2,7 @@ version: '3.8'
 services:
   gateway:
     build: gateway
-#        image:
+    image: gateway-image
     container_name: gateway-container-app
     ports:
       - "8080:8080"
@@ -13,14 +13,14 @@ services:
 
   server:
     build: server
-    #    image:
-    container_name: server-container-app
+    image: server-image
+    container_name: server-container
     ports:
       - "9090:9090"
     depends_on:
       - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:6541/shareit
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
 
