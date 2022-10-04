@@ -71,7 +71,7 @@ public class BookingController {
         return bookingClient.getBookingsForOwner(userId, state, from, size);
     }
 
-    private void checkTime(BookingDto bookingDto) {
+    private void checkTime(BookingDto bookingDto) throws ValidationException{
         if (!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
             throw new ValidationException("Конец брони не должен быть раньше начала");
         }
