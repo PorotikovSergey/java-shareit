@@ -36,9 +36,6 @@ public class BookingServiceImpl {
     public Booking postBooking(Booking booking, long bookerId, long itemId) throws ValidationException {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Такого айтема нет"));
         User booker = userRepository.findById(bookerId).orElseThrow(() -> new NotFoundException("Такого юзера нет"));
-        if (booking.getEnd().isBefore(booking.getStart())) {
-            throw new ValidationException("Конец брони не должен быть раньше начала");
-        }
         validateBooking(bookerId, itemId);
         booking.setStatus("WAITING");
         booking.setItem(item);

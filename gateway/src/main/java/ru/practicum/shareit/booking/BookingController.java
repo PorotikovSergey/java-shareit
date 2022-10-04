@@ -39,9 +39,10 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<Object> bookItem(@RequestHeader(USER_ID_HEADER) long userId,
-                                           @RequestBody @Valid BookingDto requestDto) {
-        log.info("Creating booking {}, userId={}", requestDto, userId);
-        return bookingClient.bookItem(userId, requestDto);
+                                           @RequestBody @Valid BookingDto bookingDto) {
+        log.info("Creating booking {}, userId={}",bookingDto, userId);
+        checkTime(bookingDto);
+        return bookingClient.bookItem(userId, bookingDto);
     }
 
     @PatchMapping("/{bookingId}")
@@ -68,5 +69,11 @@ public class BookingController {
                 .orElseThrow(() -> new ValidationException("Unknown state: UNSUPPORTED_STATUS"));
         log.info("Get booking  with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
         return bookingClient.getBookingsForOwner(userId, state, from, size);
+    }
+
+    private void checkTime (BookingDto bookingDto) {
+        if(!bookingDto.getStart().isBefore(bookingDto.getEnd())) {
+            throw new ValidationException("Конец брони не должен быть раньше начала");
+        }
     }
 }
